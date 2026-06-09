@@ -4,10 +4,13 @@ import { Input } from '../ui/Input';
 interface RegisterCredentialsFormProps {
   email: string;
   password: string;
+  confirmPassword: string;
+  confirmPasswordError: string | null;
   codeforcesHandle: string;
   isSubmitting: boolean;
   onEmailChange: (value: string) => void;
   onPasswordChange: (value: string) => void;
+  onConfirmPasswordChange: (value: string) => void;
   onCodeforcesHandleChange: (value: string) => void;
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
   onSwitchToLogin: () => void;
@@ -16,10 +19,13 @@ interface RegisterCredentialsFormProps {
 export function RegisterCredentialsForm({
   email,
   password,
+  confirmPassword,
+  confirmPasswordError,
   codeforcesHandle,
   isSubmitting,
   onEmailChange,
   onPasswordChange,
+  onConfirmPasswordChange,
   onCodeforcesHandleChange,
   onSubmit,
   onSwitchToLogin,
@@ -51,6 +57,24 @@ export function RegisterCredentialsForm({
           autoComplete="new-password"
           required
         />
+        <div className="flex flex-col gap-2">
+          <Input
+            label="Confirm Password"
+            type="password"
+            placeholder="••••••••"
+            value={confirmPassword}
+            onChange={(e) => onConfirmPasswordChange(e.target.value)}
+            autoComplete="new-password"
+            required
+            aria-invalid={confirmPasswordError ? true : undefined}
+            aria-describedby={confirmPasswordError ? 'confirm-password-error' : undefined}
+          />
+          {confirmPasswordError ? (
+            <p id="confirm-password-error" className="text-xs text-red-400">
+              {confirmPasswordError}
+            </p>
+          ) : null}
+        </div>
 
         <Input
           label="Codeforces handle"

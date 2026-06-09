@@ -9,15 +9,22 @@ const INITIAL_CREDENTIALS: Omit<RegisterCredentials, 'role'> = {
 
 export function useRegister() {
   const [credentials, setCredentials] = useState(INITIAL_CREDENTIALS);
+  const [confirmPassword, setConfirmPasswordState] = useState('');
+  const [confirmPasswordError, setConfirmPasswordError] = useState<string | null>(null);
   const [selectedRole, setSelectedRole] = useState<UserRole | null>('trainee');
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+ 
   const setEmail = useCallback((email: string) => {
     setCredentials((prev) => ({ ...prev, email }));
   }, []);
 
   const setPassword = useCallback((password: string) => {
     setCredentials((prev) => ({ ...prev, password }));
+  }, []);
+
+  const setConfirmPassword = useCallback((value: string) => {
+    setConfirmPasswordState(value);
+    setConfirmPasswordError(null);
   }, []);
 
   const setCodeforcesHandle = useCallback((codeforcesHandle: string) => {
@@ -33,6 +40,11 @@ export function useRegister() {
       event.preventDefault();
       if (!selectedRole) return;
 
+      if (credentials.password !== confirmPassword) {
+        setConfirmPasswordError('Passwords do not match.');
+        return;
+      }
+
       setIsSubmitting(true);
 
       try {
@@ -42,17 +54,20 @@ export function useRegister() {
         setIsSubmitting(false);
       }
     },
-    [credentials, selectedRole],
+    [credentials, confirmPassword, selectedRole],
   );
 
   return {
     email: credentials.email,
     password: credentials.password,
+    confirmPassword,
+    confirmPasswordError,
     codeforcesHandle: credentials.codeforcesHandle,
     selectedRole,
     isSubmitting,
     setEmail,
     setPassword,
+    setConfirmPassword,
     setCodeforcesHandle,
     selectRole,
     handleSignUp,
