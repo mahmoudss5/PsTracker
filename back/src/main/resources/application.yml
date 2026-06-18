@@ -9,3 +9,8 @@ spring:
     enabled: true
     baseline-on-migrate: true
     locations: classpath:dbMigration
+
+jwt:
+  secret: THIS_IS_A_VERY_LONG_SECRET_KEY_MINIMUM_32_CHARS
+  access-expiration: 900000
+  refresh-expiration: 604800000

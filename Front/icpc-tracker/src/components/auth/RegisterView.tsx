@@ -1,4 +1,4 @@
-import { useRegister } from '../../hooks/useRegister';
+import { useRegister } from '../../hooks/Auth/useRegister';
 import { RegisterCredentialsForm } from './RegisterCredentialsForm';
 import { RoleSelection } from './RoleSelection';
 

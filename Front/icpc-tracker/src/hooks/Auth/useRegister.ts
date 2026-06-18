@@ -1,5 +1,5 @@
 import { useCallback, useState, type FormEvent } from 'react';
-import type { RegisterCredentials, UserRole } from '../types/auth.types';
+import type { RegisterCredentials, UserRole } from '../../types/auth.types';
 
 const INITIAL_CREDENTIALS: Omit<RegisterCredentials, 'role'> = {
   email: '',

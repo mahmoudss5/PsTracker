@@ -1,14 +1,8 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { AuthPage } from './pages/AuthPage';
+import { RouterProvider } from 'react-router-dom';
+import { router } from './router';
 
 function App() {
-  return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<AuthPage />} />
-      </Routes>
-    </Router>
-  );
+  return <RouterProvider router={router} />;
 }
 
 export default App;

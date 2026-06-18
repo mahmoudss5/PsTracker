@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/ICPCTracker.iml" filepath="$PROJECT_DIR$/.idea/ICPCTracker.iml" />
-      <module fileurl="file://$PROJECT_DIR$/back/TraingingTracker.iml" filepath="$PROJECT_DIR$/back/TraingingTracker.iml" />
     </modules>
   </component>
 </project>

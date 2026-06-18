@@ -11,6 +11,17 @@
       rel="stylesheet"
     />
     <title>AlgoTrack</title>
+    <script>
+      (function () {
+        const stored = localStorage.getItem('theme');
+        const preferred = window.matchMedia('(prefers-color-scheme: dark)').matches
+          ? 'dark'
+          : 'light';
+        if (stored === 'dark' || (!stored && preferred === 'dark')) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

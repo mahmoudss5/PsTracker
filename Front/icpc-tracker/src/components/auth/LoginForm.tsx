@@ -1,4 +1,4 @@
-import { useLogin } from '../../hooks/useLogin';
+import { useLogin } from '../../hooks/Auth/useLogin';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 
@@ -16,7 +16,6 @@ export function LoginForm({ onSwitchToRegister }: LoginFormProps) {
     setEmail,
     setPassword,
     handleSignIn,
-    handleCodeforcesSignIn,
     handleForgotPassword,
   } = useLogin();
 

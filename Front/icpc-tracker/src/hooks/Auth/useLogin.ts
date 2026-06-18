@@ -1,5 +1,5 @@
 import { useCallback, useState, type FormEvent } from 'react';
-import type { LoginCredentials } from '../types/auth.types';
+import type { LoginCredentials } from '../../types/auth.types';
 
 const INITIAL_CREDENTIALS: LoginCredentials = {
   email: '',

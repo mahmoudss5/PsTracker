@@ -1,13 +1,163 @@
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --dashboard-bg: 241 245 249;
+  --dashboard-panel: 255 255 255;
+  --dashboard-elevated: 248 250 252;
+  --dashboard-border: 203 213 225;
+  --dashboard-text: 15 23 42;
+  --dashboard-muted: 100 116 139;
+  --dashboard-primary: 37 99 235;
+  --dashboard-primary-contrast: 239 246 255;
+}
+
+.dark {
+  --dashboard-bg: 5 20 36;
+  --dashboard-panel: 13 28 45;
+  --dashboard-elevated: 18 33 49;
+  --dashboard-border: 45 62 80;
+  --dashboard-text: 212 228 250;
+  --dashboard-muted: 140 144 161;
+  --dashboard-primary: 176 198 255;
+  --dashboard-primary-contrast: 0 38 97;
+}
+
 @layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    min-width: 320px;
+  }
+
   body {
     @apply m-0 min-h-screen bg-surface font-sans antialiased;
+  }
+
+  button,
+  input {
+    font: inherit;
+  }
+
+  button {
+    cursor: pointer;
   }
 
   #root {
     @apply min-h-screen;
   }
+
+  ::selection {
+    background: rgb(var(--dashboard-primary) / 0.3);
+  }
+}
+
+@layer components {
+  .glass-panel {
+    @apply rounded-lg border;
+    border-color: rgb(var(--dashboard-border));
+    background-color: rgb(var(--dashboard-panel) / 0.75);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.08),
+      0 18px 45px rgb(15 23 42 / 0.06);
+    backdrop-filter: blur(16px);
+  }
+
+  .dark .glass-panel {
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.035),
+      0 18px 50px rgb(0 0 0 / 0.16);
+  }
+
+  .icon-button {
+    @apply inline-flex h-10 w-10 items-center justify-center rounded transition;
+    color: rgb(var(--dashboard-muted));
+  }
+
+  .icon-button:hover {
+    color: rgb(var(--dashboard-text));
+    background-color: rgb(var(--dashboard-primary) / 0.1);
+  }
+
+  .icon-button:focus-visible {
+    outline: 2px solid rgb(var(--dashboard-primary) / 0.5);
+    outline-offset: 2px;
+  }
+
+  .primary-action {
+    @apply inline-flex items-center justify-center gap-2 rounded px-5 py-3 font-mono text-sm font-semibold tracking-wide transition;
+    color: rgb(var(--dashboard-primary-contrast));
+    background-color: rgb(var(--dashboard-primary));
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.4),
+      0 0 20px rgb(var(--dashboard-primary) / 0.2);
+  }
+
+  .primary-action:hover {
+    filter: brightness(1.06);
+    transform: translateY(-1px);
+  }
+
+  .dashboard-heading {
+    @apply text-xl font-semibold tracking-tight sm:text-2xl;
+  }
+
+  .heat-cell {
+    @apply block h-3 w-3 shrink-0 rounded-[2px] transition duration-150 hover:z-10 hover:scale-125;
+  }
+
+  .heat-key {
+    @apply block h-3 w-3 shrink-0 rounded-[2px];
+  }
+}
+
+/* Keep heat levels outside @layer so Tailwind does not purge dynamic class names */
+.heat-0 {
+  background-color: rgb(var(--dashboard-primary) / 0.1);
+}
+
+.heat-1 {
+  background-color: rgb(var(--dashboard-primary) / 0.28);
+}
+
+.heat-2 {
+  background-color: rgb(var(--dashboard-primary) / 0.48);
+}
+
+.heat-3 {
+  background-color: rgb(var(--dashboard-primary) / 0.72);
+}
+
+.heat-4 {
+  background-color: rgb(var(--dashboard-primary) / 1);
+}
+
+.dashboard-ambient {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(circle at 15% 45%, rgb(var(--dashboard-primary) / 0.08), transparent 28%),
+    radial-gradient(circle at 85% 20%, rgb(124 58 237 / 0.06), transparent 25%);
+}
+
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgb(var(--dashboard-bg));
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgb(var(--dashboard-muted) / 0.35);
 }
