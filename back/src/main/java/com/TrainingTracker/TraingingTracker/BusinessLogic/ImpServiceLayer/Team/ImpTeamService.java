@@ -1,4 +1,4 @@
-package com.TrainingTracker.TraingingTracker.BusinessLogic.ImpServiceLayer;
+package com.TrainingTracker.TraingingTracker.BusinessLogic.ImpServiceLayer.Team;
 
 import com.TrainingTracker.TraingingTracker.BusinessLogic.InterfacesServiceLayer.TeamsService;
 import com.TrainingTracker.TraingingTracker.BusinessLogic.InterfacesServiceLayer.UserService;
@@ -54,6 +54,12 @@ public class ImpTeamService implements TeamsService {
               .orElseThrow(()-> new RuntimeException("Team not found with id: "+teamId));
       team.getTrainees().remove( user);
       teamRepository.save(team);
+    }
+
+    @Override
+    public Team getTeamById(Long teamId) {
+        return teamRepository.findById(teamId)
+                .orElseThrow(() -> new RuntimeException("Team not found with id: " + teamId));
     }
 
 

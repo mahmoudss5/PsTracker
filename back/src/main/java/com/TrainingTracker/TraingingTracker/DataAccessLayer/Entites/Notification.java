@@ -1,5 +1,6 @@
 package com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites;
 
+import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.Types.NotificationType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

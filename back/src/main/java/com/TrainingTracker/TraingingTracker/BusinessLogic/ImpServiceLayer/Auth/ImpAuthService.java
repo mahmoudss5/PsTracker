@@ -1,11 +1,11 @@
-package com.TrainingTracker.TraingingTracker.BusinessLogic.ImpServiceLayer;
+package com.TrainingTracker.TraingingTracker.BusinessLogic.ImpServiceLayer.Auth;
 
 import com.TrainingTracker.TraingingTracker.BusinessLogic.InterfacesServiceLayer.AuthService;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Auth.AuthResponse;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Auth.SignInDto;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Auth.SignUpDto;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.RefreshToken;
-import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.Role;
+import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.Types.Role;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.User;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Repositories.RefershTokenRepositroy;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Repositories.UserRepository;

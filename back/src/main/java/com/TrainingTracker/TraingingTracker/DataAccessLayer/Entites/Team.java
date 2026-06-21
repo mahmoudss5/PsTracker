@@ -37,4 +37,8 @@ public class Team {
     @OneToMany(mappedBy = "team")
     @Builder.Default
     private List<TeamMessage> messages = new ArrayList<>();
+
+    @OneToMany(mappedBy = "team")
+    @Builder.Default
+    private List<AnnouncmentTeam> announcements = new ArrayList<>();
 }

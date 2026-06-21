@@ -1,4 +1,4 @@
-package com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites;
+package com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.Types;
 
 public enum NotificationType {
     TRAINEE_ASSIGNMENT_SUBMISSION,

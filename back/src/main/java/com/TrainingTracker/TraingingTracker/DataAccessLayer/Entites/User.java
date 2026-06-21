@@ -1,5 +1,6 @@
 package com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites;
 
+import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.Types.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -56,9 +57,9 @@ public class User {
     @Builder.Default
     private List<Announcment> sentAnnouncments = new ArrayList<>();
 
-    @OneToMany(mappedBy = "receiver")
+    @OneToMany(mappedBy = "user")
     @Builder.Default
-    private List<Announcment> receivedAnnouncments = new ArrayList<>();
+    private List<AnnouncmentUser> receivedAnnouncments = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")
     @Builder.Default
