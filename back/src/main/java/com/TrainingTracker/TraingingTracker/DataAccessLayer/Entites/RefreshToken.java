@@ -29,7 +29,7 @@ public class RefreshToken {
     private String hased_refresh_token;
 
     @Column(name = "revoked", nullable = false)
-    private Boolean valid;
+    private Boolean revoked;
 
     @Column(name = "created_at")
     private Instant createdAt;

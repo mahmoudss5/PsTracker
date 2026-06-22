@@ -14,7 +14,16 @@ services:
     networks:
       - icpc-network
     restart: always
-
+  redis-db:
+    image: redis:7-alpine
+    container_name: redis-db
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./redis-data:/data
+    networks:
+      - icpc-network
+    restart: always
 volumes:
   postgres_data:
 

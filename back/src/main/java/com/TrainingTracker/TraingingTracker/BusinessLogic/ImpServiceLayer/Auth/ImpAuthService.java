@@ -1,6 +1,7 @@
 package com.TrainingTracker.TraingingTracker.BusinessLogic.ImpServiceLayer.Auth;
 
 import com.TrainingTracker.TraingingTracker.BusinessLogic.InterfacesServiceLayer.AuthService;
+import com.TrainingTracker.TraingingTracker.BusinessLogic.InterfacesServiceLayer.CfService;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Auth.AuthResponse;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Auth.SignInDto;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Auth.SignUpDto;
@@ -35,6 +36,7 @@ public class ImpAuthService implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final CfService cfService;
     @Override
     public AuthResponse signIn(SignInDto signDto) {
         try {
@@ -63,12 +65,19 @@ public class ImpAuthService implements AuthService {
         if (userRepository.findByEmail(dto.email()).isPresent()) {
             throw new IllegalArgumentException("Email is already registered");
         }
+        if(!cfService.checkIfUserCfAccountExist(dto.codeforcesHandle())){
+            throw new IllegalArgumentException("Codeforces account does not exist");
+        }
+
+        Long rating = cfService.getUserRating(dto.codeforcesHandle());
 
         User user = User.builder()
                 .username(dto.userName())
                 .email(dto.email())
                 .password(passwordEncoder.encode(dto.password()))
                 .role(dto.isCoach() ? Role.Coach : Role.Trainee)
+                .rate(rating)
+                .codeforcesHandle(dto.codeforcesHandle())
                 .createdAt(LocalDateTime.now())
                 .build();
 

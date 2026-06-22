@@ -7,8 +7,12 @@ import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.User;
 
 public interface UserService {
 
-    public User getUserById(Long id);
-    public List<TraineResponse> getAllUserByTeamId(Long teamId);
+    User getUserById(Long id);
+    TraineResponse getUserResponseById(Long id);
+    TraineResponse getCurrentUser();
+    List<TraineResponse> getAllUsers();
+    List<TraineResponse> getAllUserByTeamId(Long teamId);
+    List<User>getAllUserEntites();
     
     
 }

@@ -4,6 +4,10 @@ spring:
     username: user
     password: password
     driver-class-name: org.postgresql.Driver
+  redis:
+    host: localhost
+    port: 6379
+    timeout: 10000
 
   flyway:
     enabled: true

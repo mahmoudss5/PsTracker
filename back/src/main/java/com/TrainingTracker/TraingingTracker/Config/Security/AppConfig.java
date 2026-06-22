@@ -9,6 +9,7 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.client.RestClient;
 
 @Configuration
 @RequiredArgsConstructor
@@ -22,6 +23,12 @@ public class AppConfig {
         return new BCryptPasswordEncoder();
     }
 
+    @Bean
+    public RestClient restClient() {
+        return RestClient.builder()
+                .baseUrl("https://codeforces.com/api")
+                .build();
+    }
 
     @Bean
     public AuthenticationProvider authenticationProvider() {

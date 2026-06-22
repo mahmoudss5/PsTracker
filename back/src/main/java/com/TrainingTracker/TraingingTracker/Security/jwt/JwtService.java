@@ -49,7 +49,7 @@ public class JwtService {
                 .hased_refresh_token(hashRefreshToken(rawRefreshToken))
                 .createdAt(Instant.now())
                 .expiryDate(Instant.now().plusMillis(refresh_expiration))
-                .valid(true)
+                .revoked(false)
                 .build();
         refreshTokenRepository.save(refreshToken);
         return rawRefreshToken;
@@ -64,7 +64,7 @@ public class JwtService {
                 .findByHasedRefreshToken(hashRefreshToken(rawRefreshToken))
                 .orElseThrow(() -> new IllegalArgumentException("Refresh token not found"));
 
-        if (!Boolean.TRUE.equals(token.getValid())
+        if (Boolean.TRUE.equals(token.getRevoked())
                 || !token.getExpiryDate().isAfter(Instant.now())) {
             throw new IllegalArgumentException("Refresh token is not valid");
         }

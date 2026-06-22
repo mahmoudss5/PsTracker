@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 
 @Entity
-@Table(name = "announcment_team")
+@Table(name = "announcement_teams")
 @Data
 @Builder
 public class AnnouncmentTeam {
@@ -16,8 +16,8 @@ public class AnnouncmentTeam {
 
 
     @ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
-    @MapsId("announcmetId")
-    @JoinColumn(name = "announcmet_id", referencedColumnName = "id")
+    @MapsId("announcmentId")
+    @JoinColumn(name = "announcement_id", referencedColumnName = "id")
     private Announcment announcment;
 
 

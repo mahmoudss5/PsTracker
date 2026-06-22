@@ -12,7 +12,7 @@ public class SecuiryUserUtil {
     public static Long getCurrntUserId(){
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if(authentication != null || authentication.getPrincipal() != null){
+        if(authentication == null || authentication.getPrincipal() == null){
             throw  new RuntimeException("Authentication required");
         }
         Object principal = authentication.getPrincipal();

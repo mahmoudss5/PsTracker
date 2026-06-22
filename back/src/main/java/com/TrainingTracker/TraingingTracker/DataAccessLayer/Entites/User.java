@@ -38,6 +38,8 @@ public class User {
     @Column(name = "role")
     private Role role;
 
+    private Long rate;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 

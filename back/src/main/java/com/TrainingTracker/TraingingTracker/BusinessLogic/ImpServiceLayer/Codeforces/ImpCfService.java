@@ -1,0 +1,117 @@
+package com.TrainingTracker.TraingingTracker.BusinessLogic.ImpServiceLayer.Codeforces;
+
+import com.TrainingTracker.TraingingTracker.BusinessLogic.InterfacesServiceLayer.CfService;
+import com.TrainingTracker.TraingingTracker.BusinessLogic.InterfacesServiceLayer.UserService;
+import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Codeforces.Submission.codeforcesSubmissionDto;
+import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Codeforces.Submission.result.CodeforcesSubmissionResult;
+import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.User;
+import com.TrainingTracker.TraingingTracker.Util.SecuiryUserUtil;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.RestClient;
+import tools.jackson.databind.JsonNode;
+
+import java.lang.reflect.ParameterizedType;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class ImpCfService implements CfService {
+
+    private final RestClient restClient;
+    private final UserService userService;
+
+
+    @Scheduled(fixedDelay = 12, timeUnit = TimeUnit.HOURS)
+    private void syncCodeforcesUserData() {
+
+
+    }
+
+
+    @Scheduled(fixedDelay = 2, timeUnit = TimeUnit.MINUTES)
+    private void syncCodforcesSubmissionData() {
+        List<User>userList=userService.getAllUserEntites();
+        for(User user:userList) {
+            try {
+                codeforcesSubmissionDto response = restClient.get()
+                        .uri("/user.status?handle={handle}&from=1&count=10", getUserCodeforecesHandle())
+                        .retrieve()
+                        .body(codeforcesSubmissionDto.class);
+                if(!response.getStatus().equals("OK")){
+                    log.error("Failed to fetch submissions for user {}: {}", user.getId(), response.getStatus());
+                    continue;
+                }
+
+
+            } catch (HttpClientErrorException e) {
+                log.error("User not found on Codeforces: {}", e.getMessage());
+            } catch (HttpServerErrorException e) {
+                log.error("Couldn't connect to Codeforces: {}", e.getMessage());
+            }
+
+              // sleep for 2 seconds before the next request (Codeforces API rate limit)
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                log.error("Thread interrupted during sleep: {}", e.getMessage());
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
+
+
+    @Override
+    public boolean checkIfUserCfAccountExist(String userHandle) {
+        try {
+            ResponseEntity<JsonNode> response = restClient.get()
+                    .uri("/user.info?handles={handle}&checkHistoricHandles=false", userHandle)
+                    .retrieve()
+                    .toEntity(JsonNode.class);
+
+            return response.getStatusCode().is2xxSuccessful()
+                    && "OK".equals(response.getBody().get("status").asText());
+        } catch (HttpClientErrorException e) {
+            return false;
+        } catch (HttpServerErrorException e) {
+            throw new RuntimeException("couldn't connect to codeforces");
+        }
+    }
+
+    @Override
+    public Long getUserRating(String userHandle) {
+         try {
+            ResponseEntity<JsonNode> response = restClient.get()
+                    .uri("/user.info?handles={handle}&checkHistoricHandles=false", userHandle)
+                    .retrieve()
+                    .toEntity(JsonNode.class);
+
+            if (response.getStatusCode().is2xxSuccessful() && "OK".equals(response.getBody().get("status").asText())) {
+                JsonNode userInfo = response.getBody().get("result").get(0);
+                return userInfo.has("rating") ? userInfo.get("rating").asLong() : 0L;
+            } else {
+                throw new RuntimeException("Failed to fetch user rating from Codeforces");
+            }
+         }catch (HttpClientErrorException e) {
+            throw new RuntimeException("User not found on Codeforces");
+        } catch (HttpServerErrorException e) {
+             throw new RuntimeException("couldn't connect to codeforces");
+         }
+    }
+
+
+
+
+    private String getUserCodeforecesHandle() {
+        Long userId = SecuiryUserUtil.getCurrntUserId();
+        return userService.getUserById(userId).getCodeforcesHandle();
+    }
+}

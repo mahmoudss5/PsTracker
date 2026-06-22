@@ -9,7 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "announcmet_user")
+@Table(name = "announcement_users")
 @Data
 @Builder
 @AllArgsConstructor
@@ -20,8 +20,8 @@ public class AnnouncmentUser {
     private AnnouncmentUserId announcmentUserId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("announcmetId")
-    @JoinColumn(name = "announcmet_id", referencedColumnName = "id")
+    @MapsId("announcmentId")
+    @JoinColumn(name = "announcement_id", referencedColumnName = "id")
     private Announcment announcment;
 
     @ManyToOne(fetch = FetchType.LAZY)
