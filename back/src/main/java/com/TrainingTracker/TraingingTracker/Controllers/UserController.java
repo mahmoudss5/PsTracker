@@ -1,5 +1,4 @@
 package com.TrainingTracker.TraingingTracker.Controllers;
-
 import com.TrainingTracker.TraingingTracker.BusinessLogic.InterfacesServiceLayer.UserService;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.User.TraineResponse;
 import io.swagger.v3.oas.annotations.Operation;

@@ -51,7 +51,7 @@ public class ImpCfService implements CfService {
         for(User user:userList) {
             try {
                 codeforcesSubmissionDto response = restClient.get()
-                        .uri("/user.status?handle={handle}&from=1&count=10", getUserCodeforecesHandle())
+                        .uri("/user.status?handle={handle}&from=1&count=10", getUserCodeforecesHandle(user.getId()))
                         .retrieve()
                         .body(codeforcesSubmissionDto.class);
 
@@ -61,10 +61,14 @@ public class ImpCfService implements CfService {
                 }
             List<CodeforcesSubmissionResult> submissions = response.getResult();
             for (CodeforcesSubmissionResult submission : submissions) {
+
                 Problem problem = problemMapper.ToEntity(submission.getProblem());
-                Submission submissionEntity =submissionMapper.toEntity(submission);
+
+                Problem dbProblem = problemRepository.findByName(problem.getName())
+                        .orElseGet(() -> problemRepository.save(problem));
+                Submission submissionEntity =submissionMapper.toEntity(submission,user.getId());
                 if(!problemRepository.existsByName(problem.getName())){
-                    problemRepository.save(problem);
+                    problemRepository.save(dbProblem);
                 }
                 if(!submissionRepository.existsByCodeforcesSubmissionId(submission.getId())){
                     submissionRepository.save(submissionEntity);
@@ -76,10 +80,9 @@ public class ImpCfService implements CfService {
             } catch (HttpServerErrorException e) {
                 log.error("Couldn't connect to Codeforces: {}", e.getMessage());
             }
-
-              // sleep for 2 seconds before the next request (Codeforces API rate limit)
+              // sleep for 3 seconds before the next request (Codeforces API rate limit)
             try {
-                Thread.sleep(2000);
+                Thread.sleep(3000);
             } catch (InterruptedException e) {
                 log.error("Thread interrupted during sleep: {}", e.getMessage());
                 Thread.currentThread().interrupt();
@@ -125,8 +128,7 @@ public class ImpCfService implements CfService {
              throw new RuntimeException("couldn't connect to codeforces");
          }
     }
-    private String getUserCodeforecesHandle() {
-        Long userId = SecuiryUserUtil.getCurrntUserId();
+    private String getUserCodeforecesHandle(Long userId) {
         return userService.getUserById(userId).getCodeforcesHandle();
     }
 }

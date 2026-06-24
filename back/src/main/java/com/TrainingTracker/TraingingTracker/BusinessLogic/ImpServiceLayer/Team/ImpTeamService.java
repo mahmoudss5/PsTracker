@@ -2,6 +2,7 @@ package com.TrainingTracker.TraingingTracker.BusinessLogic.ImpServiceLayer.Team;
 
 import com.TrainingTracker.TraingingTracker.BusinessLogic.InterfacesServiceLayer.TeamsService;
 import com.TrainingTracker.TraingingTracker.BusinessLogic.InterfacesServiceLayer.UserService;
+import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Team.TeamResponseDto;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.Team;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.User;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Repositories.TeamRepository;
@@ -9,7 +10,9 @@ import com.TrainingTracker.TraingingTracker.Util.SecuiryUserUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.CacheEvict;
 import java.security.SecureRandom;
 
@@ -20,11 +23,13 @@ public class ImpTeamService implements TeamsService {
 
     private final TeamRepository teamRepository;
     private final UserService userService;
+    private final TeamMapper teamMapper;
     private static final String CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     private static final int CODE_LENGTH = 6;
 
 
     @Override
+    @Transactional
     public String createTeam(String teamName) {
         Long coachId = SecuiryUserUtil.getCurrntUserId();
         User coach = userService.getUserById(coachId);
@@ -33,11 +38,13 @@ public class ImpTeamService implements TeamsService {
             teamCode = GenerateRandomTeamCode();
         } while (teamRepository.existsByTeamCode(teamCode));
         Team team = Team.builder().teamCode(teamCode).teamName(teamName).coach(coach).build();
+        teamRepository.save(team);
         return teamCode;
     }
 
     @Override
-    @CacheEvict(value = {"trainees", "teamTrainees", "allTrainees"}, allEntries = true)
+    @Transactional
+    @CacheEvict(value = {"teams", "trainees", "teamTrainees", "allTrainees"}, allEntries = true)
     public void JoinTeam(String teamCode) {
         Team team = teamRepository.findByTeamCode(teamCode).orElseThrow(() -> new RuntimeException("Team not found with code: " + teamCode));
         if (!team.getTeamCode().equals(teamCode)) throw new RuntimeException("Team code is not valid");
@@ -49,20 +56,29 @@ public class ImpTeamService implements TeamsService {
     }
 
     @Override
-    @CacheEvict(value = {"trainees", "teamTrainees", "allTrainees"}, allEntries = true)
+    @Transactional
+    @CacheEvict(value = {"teams", "trainees", "teamTrainees", "allTrainees"}, allEntries = true)
     public void leaveTeam(Long teamId) {
         Long userId = SecuiryUserUtil.getCurrntUserId();
         User user = userService.getUserById(userId);
-      Team team = teamRepository.findById(teamId)
-              .orElseThrow(()-> new RuntimeException("Team not found with id: "+teamId));
-      team.getTrainees().remove( user);
-      teamRepository.save(team);
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(()-> new RuntimeException("Team not found with id: "+teamId));
+        team.getTrainees().remove(user);
+        teamRepository.save(team);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Team getTeamById(Long teamId) {
         return teamRepository.findById(teamId)
                 .orElseThrow(() -> new RuntimeException("Team not found with id: " + teamId));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    @Cacheable(value = "teams", key = "#teamId")
+    public TeamResponseDto getTeamResponseById(Long teamId) {
+        return teamMapper.toDto(getTeamById(teamId));
     }
 
 
@@ -79,3 +95,4 @@ public class ImpTeamService implements TeamsService {
         return sb.toString();
     }
 }
+

@@ -1,6 +1,7 @@
 package com.TrainingTracker.TraingingTracker.BusinessLogic.ImpServiceLayer.Team;
 
 import com.TrainingTracker.TraingingTracker.BusinessLogic.InterfacesServiceLayer.UserService;
+import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Team.TeamResponseDto;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.Team;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.User;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Repositories.TeamRepository;
@@ -28,6 +29,9 @@ class ImpTeamServiceTest {
     @Mock
     private UserService userService;
 
+    @Mock
+    private TeamMapper teamMapper;
+
     @InjectMocks
     private ImpTeamService teamService;
 
@@ -47,6 +51,7 @@ class ImpTeamServiceTest {
             assertEquals(6, teamCode.length());
             verify(userService).getUserById(coachId);
             verify(teamRepository).existsByTeamCode(teamCode);
+            verify(teamRepository).save(any(Team.class));
         }
     }
 
@@ -142,5 +147,22 @@ class ImpTeamServiceTest {
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> teamService.getTeamById(teamId));
         assertEquals("Team not found with id: " + teamId, exception.getMessage());
+    }
+
+    @Test
+    void testGetTeamResponseById_Success() {
+        Long teamId = 100L;
+        Team team = Team.builder().id(teamId).teamName("Alpha").build();
+        TeamResponseDto responseDto = new TeamResponseDto(teamId, "Alpha", "ABC123", 1L, "coach", List.of());
+
+        when(teamRepository.findById(teamId)).thenReturn(Optional.of(team));
+        when(teamMapper.toDto(team)).thenReturn(responseDto);
+
+        TeamResponseDto result = teamService.getTeamResponseById(teamId);
+
+        assertNotNull(result);
+        assertEquals("Alpha", result.teamName());
+        verify(teamRepository).findById(teamId);
+        verify(teamMapper).toDto(team);
     }
 }

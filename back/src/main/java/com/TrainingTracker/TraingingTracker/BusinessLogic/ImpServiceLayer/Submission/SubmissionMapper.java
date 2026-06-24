@@ -64,9 +64,9 @@ public class SubmissionMapper {
         return submissionTime;
     }
 
-    public Submission toEntity(CodeforcesSubmissionResult codeforcesSubmissionResult) {
+    public Submission toEntity(CodeforcesSubmissionResult codeforcesSubmissionResult,Long userId) {
         Problem problem=problemMapper.ToEntity(codeforcesSubmissionResult.getProblem());
-        Long userId= SecuiryUserUtil.getCurrntUserId();
+
         User user=userRepository.findById(userId).orElseThrow(
                 ()->new RuntimeException("User not found with id: "+userId)
         );
