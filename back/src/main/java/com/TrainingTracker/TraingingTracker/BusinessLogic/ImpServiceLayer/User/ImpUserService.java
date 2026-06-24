@@ -35,6 +35,7 @@ public class ImpUserService implements UserService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "trainees",key = "#id")
     public TraineResponse getUserResponseById(Long id) {
         return userMapper.toTraineResponse(getUserById(id));
     }
@@ -48,6 +49,7 @@ public class ImpUserService implements UserService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "allTrainees")
     public List<TraineResponse> getAllUsers() {
         return userRepository.findAll()
                 .stream()
@@ -57,6 +59,7 @@ public class ImpUserService implements UserService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "teamTrainees",key = "#teamId")
     public List<TraineResponse> getAllUserByTeamId(Long teamId) {
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new RuntimeException("Team not found with id: " + teamId));
@@ -68,7 +71,6 @@ public class ImpUserService implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "users")
     public List<User> getAllUserEntites() {
         return userRepository.findAll();
     }

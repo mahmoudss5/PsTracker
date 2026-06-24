@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import org.springframework.cache.annotation.CacheEvict;
 import java.security.SecureRandom;
 
 @Service
@@ -36,6 +37,7 @@ public class ImpTeamService implements TeamsService {
     }
 
     @Override
+    @CacheEvict(value = {"trainees", "teamTrainees", "allTrainees"}, allEntries = true)
     public void JoinTeam(String teamCode) {
         Team team = teamRepository.findByTeamCode(teamCode).orElseThrow(() -> new RuntimeException("Team not found with code: " + teamCode));
         if (!team.getTeamCode().equals(teamCode)) throw new RuntimeException("Team code is not valid");
@@ -47,6 +49,7 @@ public class ImpTeamService implements TeamsService {
     }
 
     @Override
+    @CacheEvict(value = {"trainees", "teamTrainees", "allTrainees"}, allEntries = true)
     public void leaveTeam(Long teamId) {
         Long userId = SecuiryUserUtil.getCurrntUserId();
         User user = userService.getUserById(userId);

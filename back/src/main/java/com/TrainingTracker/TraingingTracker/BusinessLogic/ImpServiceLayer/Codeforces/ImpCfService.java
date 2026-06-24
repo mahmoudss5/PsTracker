@@ -1,10 +1,15 @@
 package com.TrainingTracker.TraingingTracker.BusinessLogic.ImpServiceLayer.Codeforces;
-
+import com.TrainingTracker.TraingingTracker.BusinessLogic.ImpServiceLayer.Problem.ProblemMapper;
+import com.TrainingTracker.TraingingTracker.BusinessLogic.ImpServiceLayer.Submission.SubmissionMapper;
 import com.TrainingTracker.TraingingTracker.BusinessLogic.InterfacesServiceLayer.CfService;
 import com.TrainingTracker.TraingingTracker.BusinessLogic.InterfacesServiceLayer.UserService;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Codeforces.Submission.codeforcesSubmissionDto;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Codeforces.Submission.result.CodeforcesSubmissionResult;
+import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.Problem;
+import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.Submission;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.User;
+import com.TrainingTracker.TraingingTracker.DataAccessLayer.Repositories.ProblemRepository;
+import com.TrainingTracker.TraingingTracker.DataAccessLayer.Repositories.SubmissionRepository;
 import com.TrainingTracker.TraingingTracker.Util.SecuiryUserUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,11 +33,14 @@ public class ImpCfService implements CfService {
 
     private final RestClient restClient;
     private final UserService userService;
-
+    private final ProblemMapper problemMapper;
+    private final SubmissionMapper submissionMapper;
+    private final ProblemRepository problemRepository;
+    private final SubmissionRepository submissionRepository;
 
     @Scheduled(fixedDelay = 12, timeUnit = TimeUnit.HOURS)
     private void syncCodeforcesUserData() {
-
+       //TODO: we will sync user contest data from codeforces here
 
     }
 
@@ -46,11 +54,22 @@ public class ImpCfService implements CfService {
                         .uri("/user.status?handle={handle}&from=1&count=10", getUserCodeforecesHandle())
                         .retrieve()
                         .body(codeforcesSubmissionDto.class);
+
                 if(!response.getStatus().equals("OK")){
                     log.error("Failed to fetch submissions for user {}: {}", user.getId(), response.getStatus());
                     continue;
                 }
-
+            List<CodeforcesSubmissionResult> submissions = response.getResult();
+            for (CodeforcesSubmissionResult submission : submissions) {
+                Problem problem = problemMapper.ToEntity(submission.getProblem());
+                Submission submissionEntity =submissionMapper.toEntity(submission);
+                if(!problemRepository.existsByName(problem.getName())){
+                    problemRepository.save(problem);
+                }
+                if(!submissionRepository.existsByCodeforcesSubmissionId(submission.getId())){
+                    submissionRepository.save(submissionEntity);
+                }
+            }
 
             } catch (HttpClientErrorException e) {
                 log.error("User not found on Codeforces: {}", e.getMessage());
@@ -106,10 +125,6 @@ public class ImpCfService implements CfService {
              throw new RuntimeException("couldn't connect to codeforces");
          }
     }
-
-
-
-
     private String getUserCodeforecesHandle() {
         Long userId = SecuiryUserUtil.getCurrntUserId();
         return userService.getUserById(userId).getCodeforcesHandle();

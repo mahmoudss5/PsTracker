@@ -46,7 +46,7 @@ public class JwtService {
         String rawRefreshToken = UUID.randomUUID().toString();
         RefreshToken refreshToken = RefreshToken.builder()
                 .user(user)
-                .hased_refresh_token(hashRefreshToken(rawRefreshToken))
+                .hasedRefreshToken(hashRefreshToken(rawRefreshToken))
                 .createdAt(Instant.now())
                 .expiryDate(Instant.now().plusMillis(refresh_expiration))
                 .revoked(false)

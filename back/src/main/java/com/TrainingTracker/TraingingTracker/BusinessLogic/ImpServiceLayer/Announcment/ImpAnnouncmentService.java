@@ -19,6 +19,9 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import java.util.List;
 
 @Service
@@ -39,6 +42,7 @@ public class ImpAnnouncmentService implements AnnouncmentService {
 
     @Override
     @Transactional
+    @CacheEvict(value = {"userAnnouncements", "teamAnnouncements"}, allEntries = true)
     public void sendAnnouncment(AnnouncmentCreateDto announcmentCreateDto) {
         Announcment announcment = announcmentMapper.toEntityWithSave(announcmentCreateDto);
         if(announcmentCreateDto.isTeamAnnouncment()) {
@@ -61,6 +65,7 @@ public class ImpAnnouncmentService implements AnnouncmentService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "userAnnouncements", key = "#userId")
     public List<AnnouncementResponseDto> getAllAnnouncmentsForUser(Long userId) {
        List<Announcment>announcments=announcmentUserRepository.findByUserId(userId)
                 .stream()
@@ -73,6 +78,7 @@ public class ImpAnnouncmentService implements AnnouncmentService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "teamAnnouncements", key = "#teamId")
     public List<AnnouncementResponseDto> getAllAnnouncmentsForTeam(Long teamId) {
       List<Announcment>announcments=announcmentTeamRepository.findByTeamId(teamId)
                 .stream()

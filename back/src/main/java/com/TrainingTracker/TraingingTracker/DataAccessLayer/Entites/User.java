@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +18,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class User {
+public class User  implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -38,7 +39,17 @@ public class User {
     @Column(name = "role")
     private Role role;
 
+    @Column(name = "rate")
     private Long rate;
+
+    @Column(name="max_rate")
+    private Long maxRate;
+
+    @Column(name = "rank")
+    private String rank;
+
+    @Column(name = "max_rank")
+    private String maxRank;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

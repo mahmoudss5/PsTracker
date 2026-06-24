@@ -38,4 +38,5 @@ List<Submission> findAcceptedSubmissionsByUserAndDateRange(
         @Param("startOfNextDay") LocalDateTime startOfNextDay
 );
 
+boolean existsByCodeforcesSubmissionId(Long codeforcesSubmissionId);
 }

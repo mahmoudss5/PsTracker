@@ -1,18 +1,28 @@
 package com.TrainingTracker.TraingingTracker.BusinessLogic.ImpServiceLayer.Submission;
 
+import com.TrainingTracker.TraingingTracker.BusinessLogic.ImpServiceLayer.Problem.ProblemMapper;
+import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Codeforces.Submission.result.CodeforcesSubmissionResult;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Submission.SubmissionCreateDto;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Submission.SubmissionResponseDto;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Submission.SubmissionUpdateDto;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.Problem;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.Submission;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.User;
+import com.TrainingTracker.TraingingTracker.DataAccessLayer.Repositories.UserRepository;
+import com.TrainingTracker.TraingingTracker.Util.SecuiryUserUtil;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 @Component
+@RequiredArgsConstructor
 public class SubmissionMapper {
 
+    private final UserRepository userRepository;
+    private final ProblemMapper problemMapper;
     public Submission toEntity(SubmissionCreateDto dto, User user, Problem problem) {
         return Submission.builder()
                 .user(user)
@@ -44,5 +54,31 @@ public class SubmissionMapper {
                 submission.getMemoryConsumedBytes(),
                 submission.getCreatedAt()
         );
+    }
+
+    private LocalDateTime toLocalDateTime(Long epochSecond) {
+        LocalDateTime submissionTime = Instant
+                .ofEpochSecond(epochSecond)
+                .atZone(ZoneId.of("Africa/Cairo"))
+                .toLocalDateTime();
+        return submissionTime;
+    }
+
+    public Submission toEntity(CodeforcesSubmissionResult codeforcesSubmissionResult) {
+        Problem problem=problemMapper.ToEntity(codeforcesSubmissionResult.getProblem());
+        Long userId= SecuiryUserUtil.getCurrntUserId();
+        User user=userRepository.findById(userId).orElseThrow(
+                ()->new RuntimeException("User not found with id: "+userId)
+        );
+        Submission submission=Submission.builder()
+                .codeforcesSubmissionId(codeforcesSubmissionResult.getId())
+                .user(user)
+                .problem(problem)
+                .verdict(codeforcesSubmissionResult.getVerdict())
+                .timeConsumedMs(codeforcesSubmissionResult.getTimeConsumedMillis())
+                .memoryConsumedBytes(codeforcesSubmissionResult.getMemoryConsumedBytes())
+                .createdAt(toLocalDateTime(codeforcesSubmissionResult.getCreationTimeSeconds()))
+                .build();
+        return submission;
     }
 }

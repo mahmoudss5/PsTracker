@@ -26,7 +26,7 @@ public class RefreshToken {
 
 
     @Column(name = "hased_refresh_token", nullable = false, unique = true)
-    private String hased_refresh_token;
+    private String hasedRefreshToken;
 
     @Column(name = "revoked", nullable = false)
     private Boolean revoked;

@@ -25,6 +25,9 @@ public class Submission {
     @Column(name = "time_consumed_ms")
     private int timeConsumedMs;
 
+    @Column(name = "codeforces_submission_id")
+    private Long codeforcesSubmissionId;
+
     @Column(name = "memory_consumed_bytes")
     private int memoryConsumedBytes;
 

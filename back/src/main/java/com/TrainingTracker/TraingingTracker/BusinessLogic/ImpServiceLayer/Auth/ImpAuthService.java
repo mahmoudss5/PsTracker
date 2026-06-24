@@ -15,6 +15,7 @@ import com.TrainingTracker.TraingingTracker.Security.jwt.JwtService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -59,8 +60,10 @@ public class ImpAuthService implements AuthService {
         return authResponse;
     }
 
+
     @Override
     @Transactional
+    @CacheEvict(value = "trainees",allEntries = true,condition = "#dto.isCoach() == false")
     public AuthResponse signUp(SignUpDto dto) {
         if (userRepository.findByEmail(dto.email()).isPresent()) {
             throw new IllegalArgumentException("Email is already registered");
@@ -82,6 +85,7 @@ public class ImpAuthService implements AuthService {
                 .build();
 
         User savedUser = userRepository.save(user);
+
         AuthResponse authResponse = generateAuthResponse(savedUser);
         log.info("User {} signed up successfully", savedUser.getEmail());
         return authResponse;

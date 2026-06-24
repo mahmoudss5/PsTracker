@@ -10,6 +10,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import java.util.List;
 
 @Service
@@ -28,6 +31,7 @@ public class ImpTagService implements TagService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "allTags", allEntries = true)
     public TagResponseDto createTag(TagCreateDto dto) {
         tagRepository.findByTagName(dto.tagName()).ifPresent(tag -> {
             throw new RuntimeException("Tag already exists with name: " + dto.tagName());
@@ -38,6 +42,10 @@ public class ImpTagService implements TagService {
 
     @Override
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "tags", key = "#id"),
+        @CacheEvict(value = "allTags", allEntries = true)
+    })
     public TagResponseDto updateTag(Long id, TagUpdateDto dto) {
         Tag tag = getTagEntityById(id);
         tagRepository.findByTagName(dto.tagName()).ifPresent(existingTag -> {
@@ -51,12 +59,14 @@ public class ImpTagService implements TagService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "tags", key = "#id")
     public TagResponseDto getTagById(Long id) {
         return tagMapper.toDto(getTagEntityById(id));
     }
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "allTags")
     public List<TagResponseDto> getAllTags() {
         return tagRepository.findAll()
                 .stream()
@@ -66,6 +76,10 @@ public class ImpTagService implements TagService {
 
     @Override
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "tags", key = "#id"),
+        @CacheEvict(value = "allTags", allEntries = true)
+    })
     public void deleteTag(Long id) {
         Tag tag = getTagEntityById(id);
         tagRepository.delete(tag);

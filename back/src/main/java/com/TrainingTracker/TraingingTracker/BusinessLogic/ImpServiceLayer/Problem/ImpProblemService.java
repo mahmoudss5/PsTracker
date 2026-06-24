@@ -10,6 +10,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import java.util.List;
 
 @Service
@@ -28,6 +31,7 @@ public class ImpProblemService implements ProblemService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "allProblems", allEntries = true)
     public ProblemResponseDto createProblem(ProblemCreateDto dto) {
         problemRepository.findByName(dto.name()).ifPresent(problem -> {
             throw new RuntimeException("Problem already exists with name: " + dto.name());
@@ -38,6 +42,10 @@ public class ImpProblemService implements ProblemService {
 
     @Override
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "problems", key = "#id"),
+        @CacheEvict(value = "allProblems", allEntries = true)
+    })
     public ProblemResponseDto updateProblem(Long id, ProblemUpdateDto dto) {
         Problem problem = getProblemEntityById(id);
         problemMapper.updateEntity(problem, dto);
@@ -46,12 +54,14 @@ public class ImpProblemService implements ProblemService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "problems", key = "#id")
     public ProblemResponseDto getProblemById(Long id) {
         return problemMapper.toDto(getProblemEntityById(id));
     }
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "allProblems")
     public List<ProblemResponseDto> getAllProblems() {
         return problemRepository.findAll()
                 .stream()
@@ -61,6 +71,10 @@ public class ImpProblemService implements ProblemService {
 
     @Override
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "problems", key = "#id"),
+        @CacheEvict(value = "allProblems", allEntries = true)
+    })
     public void deleteProblem(Long id) {
         Problem problem = getProblemEntityById(id);
         problemRepository.delete(problem);

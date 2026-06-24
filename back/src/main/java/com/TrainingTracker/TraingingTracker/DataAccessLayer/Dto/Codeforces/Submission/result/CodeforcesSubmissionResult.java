@@ -15,6 +15,7 @@ public class CodeforcesSubmissionResult {
   private Long id ;
   private CodeforcesProblem problem;
   private String verdict;
-  private Long timeConsumedMillis;
-  private Long memoryConsumedBytes;
+  private int timeConsumedMillis;
+  private int memoryConsumedBytes;
+  private Long creationTimeSeconds;
 }

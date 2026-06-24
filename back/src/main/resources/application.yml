@@ -1,13 +1,23 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/icpc_db
-    username: user
+    url: jdbc:postgresql://localhost:5432/pstracker
+    username: pstracker_user
     password: password
     driver-class-name: org.postgresql.Driver
-  redis:
-    host: localhost
-    port: 6379
-    timeout: 10000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  data:
+   redis:
+     host: localhost
+     port: 6379
+     timeout: 10000
 
   flyway:
     enabled: true

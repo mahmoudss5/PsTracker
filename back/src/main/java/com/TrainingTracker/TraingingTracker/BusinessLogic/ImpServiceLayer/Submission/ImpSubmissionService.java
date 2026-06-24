@@ -15,6 +15,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -30,6 +33,11 @@ public class ImpSubmissionService implements SubmissionService {
 
     @Override
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "userSubmissions", key = "#dto.userId"),
+        @CacheEvict(value = "solvedProblemsToday", key = "#dto.userId"),
+        @CacheEvict(value = "allTrainees", allEntries = true)
+    })
     public SubmissionResponseDto createSubmission(SubmissionCreateDto dto) {
         User user = userService.getUserById(dto.userId());
         Problem problem = problemService.getProblemEntityById(dto.problemId());
@@ -39,6 +47,11 @@ public class ImpSubmissionService implements SubmissionService {
 
     @Override
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "userSubmissions", allEntries = true),
+        @CacheEvict(value = "solvedProblemsToday", allEntries = true),
+        @CacheEvict(value = "allTrainees", allEntries = true)
+    })
     public SubmissionResponseDto createCurrentUserSubmission(SubmissionCreateDto dto) {
         Long currentUserId = SecuiryUserUtil.getCurrntUserId();
         SubmissionCreateDto currentUserDto = new SubmissionCreateDto(
@@ -53,6 +66,12 @@ public class ImpSubmissionService implements SubmissionService {
 
     @Override
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "submissions", key = "#id"),
+        @CacheEvict(value = "userSubmissions", allEntries = true),
+        @CacheEvict(value = "solvedProblemsToday", allEntries = true),
+        @CacheEvict(value = "allTrainees", allEntries = true)
+    })
     public SubmissionResponseDto updateSubmission(Long id, SubmissionUpdateDto dto) {
         Submission submission = getSubmissionEntityById(id);
         submissionMapper.updateEntity(submission, dto);
@@ -61,6 +80,7 @@ public class ImpSubmissionService implements SubmissionService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "submissions", key = "#id")
     public SubmissionResponseDto getSubmissionById(Long id) {
         return submissionMapper.toDto(getSubmissionEntityById(id));
     }
@@ -76,6 +96,7 @@ public class ImpSubmissionService implements SubmissionService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "userSubmissions", key = "#userId")
     public List<SubmissionResponseDto> getSubmissionsByUserId(Long userId) {
         userService.getUserById(userId);
         return submissionRepository.findByUserIdOrderByCreatedAtDesc(userId)
@@ -102,12 +123,19 @@ public class ImpSubmissionService implements SubmissionService {
 
     @Override
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "submissions", key = "#id"),
+        @CacheEvict(value = "userSubmissions", allEntries = true),
+        @CacheEvict(value = "solvedProblemsToday", allEntries = true),
+        @CacheEvict(value = "allTrainees", allEntries = true)
+    })
     public void deleteSubmission(Long id) {
         Submission submission = getSubmissionEntityById(id);
         submissionRepository.delete(submission);
     }
 
     @Override
+    @Cacheable(value = "solvedProblemsToday", key = "#userId")
     public List<SubmissionResponseDto> getSolvedProblemsToday(Long userId) {
 
         LocalDate today = LocalDate.now();
