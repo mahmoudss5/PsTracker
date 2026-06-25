@@ -6,11 +6,12 @@ import { ConsistencyHeatmap } from '../components/dashboard/ConsistencyHeatmap';
 import { RecentSubmissions } from '../components/dashboard/RecentSubmissions';
 import { mockProfileData } from '../data/mockProfile';
 
+
 export function TraineeDashboard() {
   
   return (
-    <div className="p-4 space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
         <div className="md:col-span-2">
           <ProfileCard
             username={mockProfileData.username}
@@ -18,6 +19,8 @@ export function TraineeDashboard() {
             title={mockProfileData.title}
             streak={mockProfileData.streak}
             bio={mockProfileData.bio}
+            maxRank={mockProfileData.maxRank}
+            maxRate={mockProfileData.maxRate}
           />
         </div>
         <div className="md:col-span-1">
@@ -29,9 +32,14 @@ export function TraineeDashboard() {
         </div>
       </div>
       
-      <ConsistencyHeatmap data={mockProfileData.heatmapData} />
+      <ConsistencyHeatmap 
+        data={mockProfileData.heatmapData} 
+        totalSolved={mockProfileData.problemsSolved}
+        submissionsToday={mockProfileData.submissionsToday}
+      />
       
       <RecentSubmissions submissions={mockProfileData.recentSubmissions} />
     </div>
   );
 }
+

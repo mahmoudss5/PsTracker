@@ -35,7 +35,8 @@ public class AuthController {
               .sameSite("Strict")
               .build();
       response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-
+     authResponse.RefershToken()
+              .replace(authResponse.RefershToken(), ""); // Clear the refresh token from the response body
       return ResponseEntity.ok(authResponse);
 
   }

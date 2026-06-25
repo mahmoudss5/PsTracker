@@ -108,11 +108,11 @@
   }
 
   .heat-cell {
-    @apply block h-3 w-3 shrink-0 rounded-[2px] transition duration-150 hover:z-10 hover:scale-125;
+    @apply block h-3 w-3 sm:h-5 sm:w-5 shrink-0 rounded-[3px] sm:rounded-[4px] transition duration-150 hover:z-10 hover:scale-125;
   }
 
   .heat-key {
-    @apply block h-3 w-3 shrink-0 rounded-[2px];
+    @apply block h-3 w-3 sm:h-5 sm:w-5 shrink-0 rounded-[3px] sm:rounded-[4px];
   }
 }
 

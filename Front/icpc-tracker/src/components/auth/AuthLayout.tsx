@@ -19,7 +19,7 @@ export function AuthLayout({ children, wide = false }: AuthLayoutProps) {
           backgroundSize: '48px 48px',
         }}
       />
-      <div className="pointer-events-none absolute left-1/2 top-1/2 h-[500px] w-[700px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/5 blur-3xl" />
+      <div className="pointer-events-none absolute left-1/2 top-1/2 h-[500px] w-[90vw] max-w-[700px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/5 blur-3xl" />
 
       <div className={`relative z-10 w-full ${wide ? 'max-w-5xl' : 'max-w-md'}`}>
         <AuthLogo />

@@ -38,6 +38,7 @@ public class ImpCfService implements CfService {
     private final ProblemRepository problemRepository;
     private final SubmissionRepository submissionRepository;
 
+
     @Scheduled(fixedDelay = 12, timeUnit = TimeUnit.HOURS)
     private void syncCodeforcesUserData() {
        //TODO: we will sync user contest data from codeforces here
@@ -47,8 +48,10 @@ public class ImpCfService implements CfService {
 
     @Scheduled(fixedDelay = 2, timeUnit = TimeUnit.MINUTES)
     private void syncCodforcesSubmissionData() {
+        log.info("Starting Codeforces submission data synchronization...");
         List<User>userList=userService.getAllUserEntites();
         for(User user:userList) {
+           log.info("Fetching submissions for user: {}", user.getUsername());
             try {
                 codeforcesSubmissionDto response = restClient.get()
                         .uri("/user.status?handle={handle}&from=1&count=10", getUserCodeforecesHandle(user.getId()))
@@ -66,11 +69,9 @@ public class ImpCfService implements CfService {
 
                 Problem dbProblem = problemRepository.findByName(problem.getName())
                         .orElseGet(() -> problemRepository.save(problem));
-                Submission submissionEntity =submissionMapper.toEntity(submission,user.getId());
-                if(!problemRepository.existsByName(problem.getName())){
-                    problemRepository.save(dbProblem);
-                }
+
                 if(!submissionRepository.existsByCodeforcesSubmissionId(submission.getId())){
+                    Submission submissionEntity = submissionMapper.toEntity(submission, user, dbProblem);
                     submissionRepository.save(submissionEntity);
                 }
             }
@@ -123,8 +124,10 @@ public class ImpCfService implements CfService {
                 throw new RuntimeException("Failed to fetch user rating from Codeforces");
             }
          }catch (HttpClientErrorException e) {
+             log.error("User not found on Codeforces: {}", e.getMessage());
             throw new RuntimeException("User not found on Codeforces");
         } catch (HttpServerErrorException e) {
+             log.error("Couldn't connect to Codeforces: {}", e.getMessage());
              throw new RuntimeException("couldn't connect to codeforces");
          }
     }

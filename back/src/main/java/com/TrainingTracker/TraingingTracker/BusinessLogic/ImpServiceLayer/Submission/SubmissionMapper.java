@@ -64,12 +64,7 @@ public class SubmissionMapper {
         return submissionTime;
     }
 
-    public Submission toEntity(CodeforcesSubmissionResult codeforcesSubmissionResult,Long userId) {
-        Problem problem=problemMapper.ToEntity(codeforcesSubmissionResult.getProblem());
-
-        User user=userRepository.findById(userId).orElseThrow(
-                ()->new RuntimeException("User not found with id: "+userId)
-        );
+    public Submission toEntity(CodeforcesSubmissionResult codeforcesSubmissionResult, User user, Problem problem) {
         Submission submission=Submission.builder()
                 .codeforcesSubmissionId(codeforcesSubmissionResult.getId())
                 .user(user)

@@ -16,6 +16,9 @@ export const mockProfileData = {
   weeklyChange: 342,
   isPositiveChange: true,
   problemsSolved: 845,
+  submissionsToday: 8,
+  maxRank: 'Candidate Master',
+  maxRate: 1985,
   avgSubmissionsToAccept: 1.4,
   heatmapData: Array.from({ length: 365 }, () => Math.floor(Math.random() * 5)),
   recentSubmissions: [
