@@ -1,7 +1,10 @@
-import { useCallback, useState, type FormEvent } from 'react';
+import { useCallback, useState} from 'react';
+import type {SubmitEvent} from "react";
 import type { RegisterCredentials, UserRole } from '../../types/auth.types';
-
-const INITIAL_CREDENTIALS: Omit<RegisterCredentials, 'role'> = {
+import { toast } from 'sonner';
+import {useAuth} from "../../contextes/AuthContext";
+const INITIAL_CREDENTIALS: Omit<RegisterCredentials, 'isCoach'> = {
+  username:'',
   email: '',
   password: '',
   codeforcesHandle: '',
@@ -10,10 +13,17 @@ const INITIAL_CREDENTIALS: Omit<RegisterCredentials, 'role'> = {
 export function useRegister() {
   const [credentials, setCredentials] = useState(INITIAL_CREDENTIALS);
   const [confirmPassword, setConfirmPasswordState] = useState('');
-  const [confirmPasswordError, setConfirmPasswordError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [selectedRole, setSelectedRole] = useState<UserRole | null>('trainee');
   const [isSubmitting, setIsSubmitting] = useState(false);
- 
+const {register}=useAuth();
+
+
+
+  const setUserName=useCallback((name:string)=>{
+    setCredentials((prev)=>({...prev,username:name}))
+  },[])
+
   const setEmail = useCallback((email: string) => {
     setCredentials((prev) => ({ ...prev, email }));
   }, []);
@@ -24,7 +34,6 @@ export function useRegister() {
 
   const setConfirmPassword = useCallback((value: string) => {
     setConfirmPasswordState(value);
-    setConfirmPasswordError(null);
   }, []);
 
   const setCodeforcesHandle = useCallback((codeforcesHandle: string) => {
@@ -36,35 +45,54 @@ export function useRegister() {
   }, []);
 
   const handleSignUp = useCallback(
-    async (event: FormEvent<HTMLFormElement>) => {
+    async (event: SubmitEvent<HTMLFormElement>) => {
       event.preventDefault();
       if (!selectedRole) return;
-
       if (credentials.password !== confirmPassword) {
-        setConfirmPasswordError('Passwords do not match.');
+        setError('Passwords do not match');
         return;
       }
+      if(credentials.username.length<5){
+        setError("Username must be at least 5 characters long");
+        return;
+      }
+      if(credentials.email.length<5 || !credentials.email.includes("@")){
+        setError("Please enter a valid email address");
+       return;
+      }
+      const finalCredentials: RegisterCredentials = {
+        ...credentials,
+        isCoach: selectedRole === 'coach',
+      };
 
       setIsSubmitting(true);
 
       try {
-        // TODO: connect to auth API
-        console.log('Sign up:', { ...credentials, role: selectedRole });
-      } finally {
+        await register(finalCredentials);
+        toast.success('Successfully signed up!');
+        console.log('Sign up:', { ...credentials, role: selectedRole==='coach'});
+      }catch (error) {
+         const message=error instanceof Error?error.message:String(error);
+         setError(message);
+         toast.error(message);
+      }
+      finally {
         setIsSubmitting(false);
       }
     },
-    [credentials, confirmPassword, selectedRole],
+    [credentials, confirmPassword, selectedRole,register],
   );
 
   return {
     email: credentials.email,
     password: credentials.password,
     confirmPassword,
-    confirmPasswordError,
+    username:credentials.username,
     codeforcesHandle: credentials.codeforcesHandle,
     selectedRole,
+    error,
     isSubmitting,
+    setUserName,
     setEmail,
     setPassword,
     setConfirmPassword,
@@ -72,4 +100,5 @@ export function useRegister() {
     selectRole,
     handleSignUp,
   };
+
 }

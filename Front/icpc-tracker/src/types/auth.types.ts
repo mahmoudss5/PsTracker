@@ -10,7 +10,7 @@ export interface RegisterCredentials {
   email: string;
   password: string;
   codeforcesHandle: string;
-  role: UserRole | null;
+  isCoach: boolean;
 }
 
 export interface AuthContextType {

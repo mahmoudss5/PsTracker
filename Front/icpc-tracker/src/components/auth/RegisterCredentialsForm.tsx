@@ -5,13 +5,14 @@ interface RegisterCredentialsFormProps {
   email: string;
   password: string;
   confirmPassword: string;
-  confirmPasswordError: string | null;
   codeforcesHandle: string;
+  username: string;
   isSubmitting: boolean;
   onEmailChange: (value: string) => void;
   onPasswordChange: (value: string) => void;
   onConfirmPasswordChange: (value: string) => void;
   onCodeforcesHandleChange: (value: string) => void;
+  onUsernameChange: (value: string) => void;
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
   onSwitchToLogin: () => void;
 }
@@ -20,13 +21,14 @@ export function RegisterCredentialsForm({
   email,
   password,
   confirmPassword,
-  confirmPasswordError,
   codeforcesHandle,
+  username,
   isSubmitting,
   onEmailChange,
   onPasswordChange,
   onConfirmPasswordChange,
   onCodeforcesHandleChange,
+  onUsernameChange,
   onSubmit,
   onSwitchToLogin,
 }: RegisterCredentialsFormProps) {
@@ -38,6 +40,17 @@ export function RegisterCredentialsForm({
       </p>
 
       <form onSubmit={onSubmit} className="mt-8 flex flex-col gap-5">
+        
+        <Input
+          label="Username"
+          type="text"
+          placeholder="Enter your username"
+          value={username}
+          onChange={(e) => onUsernameChange(e.target.value)}
+          autoComplete="username"
+          required
+        />
+      
         <Input
           label="Email"
           type="email"
@@ -66,14 +79,8 @@ export function RegisterCredentialsForm({
             onChange={(e) => onConfirmPasswordChange(e.target.value)}
             autoComplete="new-password"
             required
-            aria-invalid={confirmPasswordError ? true : undefined}
-            aria-describedby={confirmPasswordError ? 'confirm-password-error' : undefined}
           />
-          {confirmPasswordError ? (
-            <p id="confirm-password-error" className="text-xs text-red-400">
-              {confirmPasswordError}
-            </p>
-          ) : null}
+         
         </div>
 
         <Input

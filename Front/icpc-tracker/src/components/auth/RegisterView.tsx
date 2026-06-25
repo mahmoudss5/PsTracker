@@ -11,11 +11,13 @@ export function RegisterView({ onSwitchToLogin }: RegisterViewProps) {
     email,
     password,
     confirmPassword,
-    confirmPasswordError,
+
+    username,
     codeforcesHandle,
     selectedRole,
     isSubmitting,
     setEmail,
+    setUserName,
     setPassword,
     setConfirmPassword,
     setCodeforcesHandle,
@@ -30,13 +32,14 @@ export function RegisterView({ onSwitchToLogin }: RegisterViewProps) {
           email={email}
           password={password}
           confirmPassword={confirmPassword}
-          confirmPasswordError={confirmPasswordError}
           codeforcesHandle={codeforcesHandle}
+          username={username}
           isSubmitting={isSubmitting}
           onEmailChange={setEmail}
           onPasswordChange={setPassword}
           onConfirmPasswordChange={setConfirmPassword}
           onCodeforcesHandleChange={setCodeforcesHandle}
+          onUsernameChange={setUserName}
           onSubmit={handleSignUp}
           onSwitchToLogin={onSwitchToLogin}
         />

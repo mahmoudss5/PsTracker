@@ -14,9 +14,9 @@ export function LoginForm({ onSwitchToRegister }: LoginFormProps) {
     password,
     isSubmitting,
     setEmail,
+    error,
     setPassword,
     handleSignIn,
-    handleForgotPassword,
   } = useLogin();
 
   return (
@@ -45,23 +45,12 @@ export function LoginForm({ onSwitchToRegister }: LoginFormProps) {
           onChange={(e) => setPassword(e.target.value)}
           autoComplete="current-password"
           required
-          labelAction={
-            <button
-              type="button"
-              onClick={handleForgotPassword}
-              className="text-xs text-accent transition-colors hover:text-accent-hover"
-            >
-              Forgot?
-            </button>
-          }
         />
 
         <Button type="submit" fullWidth disabled={isSubmitting}>
           {isSubmitting ? 'Signing in...' : 'Sign In'}
         </Button>
       </form>
-
-      
 
       <p className="mt-6 text-center text-sm text-muted">
         Don&apos;t have an account?{' '}
@@ -73,6 +62,7 @@ export function LoginForm({ onSwitchToRegister }: LoginFormProps) {
           Sign up
         </button>
       </p>
+      {error && <p className="text-red-500 text-center mt-4">{error}</p>}
     </div>
   );
 }
