@@ -1,8 +1,8 @@
 import axios from "axios";
-import { API_BASE_URL } from "../config/api";
-import { jwtDecode } from "jwt-decode";
-import type { LoginCredentials,RegisterCredentials } from "../types/auth.types";
+import { API_BASE_URL, getHeaders } from "../config/api";
+import type { LoginCredentials, RegisterCredentials } from "../types/auth.types";
 import { normalizeApiError } from "./ErrorService";
+
 
 export function storeUserId(userId:number){
     localStorage.setItem("userId",JSON.stringify(userId))
@@ -66,5 +66,18 @@ export async function register(credentials:RegisterCredentials){
         storeIsCoach(response.data.user.isCoach)
     } catch (error) {
       throw normalizeApiError(error,"Failed to register")
+    }
+}
+export async function logout(){
+    try{
+        const response=await axios.post(`${API_BASE_URL}/auth/logout`,null,
+            {
+                headers:getHeaders()
+            }
+        ) 
+        removeUser()
+        return response.data
+    }catch(error){
+        throw normalizeApiError(error,"Failed to logout")
     }
 }
