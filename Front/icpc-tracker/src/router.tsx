@@ -3,6 +3,7 @@ import { AuthPage } from './pages/AuthPage';
 import { ErrorPage } from './pages/ErrorPage';
 import { RootLayout } from './pages/RootLayout';
 import { TraineeDashboard } from './pages/TraineeDashboard';
+import { InvalidUrl } from './components/shared/InvalidUrl';
 
 export const router = createBrowserRouter([
   {
@@ -27,6 +28,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '*',
-    element: <Navigate to="/dashboard" replace />,
+    element: <InvalidUrl />,
   },
 ]);
+

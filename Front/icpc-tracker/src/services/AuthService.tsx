@@ -1,8 +1,14 @@
 import axios from "axios";
-import { API_BASE_URL, getHeaders } from "../config/api";
+import {apiClient} from "../config/api.tsx";
 import type { LoginCredentials, RegisterCredentials } from "../types/auth.types";
 import { normalizeApiError } from "./ErrorService";
 
+
+
+export function isAuthenticated(){
+    const token=localStorage.getItem("token")
+    return !!token
+}
 
 export function storeUserId(userId:number){
     localStorage.setItem("userId",JSON.stringify(userId))
@@ -46,7 +52,7 @@ export function removeUser(){
 
 export async function login(credentials:LoginCredentials){
     try {
-        const response = await axios.post(`${API_BASE_URL}/auth/login`,credentials)
+        const response = await apiClient.post('/auth/login', credentials);
         storeUserId(response.data.user.id)
         storeUserNmae(response.data.user.userName)
         storeToken(response.data.user.token)
@@ -59,7 +65,7 @@ export async function login(credentials:LoginCredentials){
 
 export async function register(credentials:RegisterCredentials){
     try {
-        const response = await axios.post(`${API_BASE_URL}/auth/register`,credentials)
+        const response = await apiClient.post('/auth/register', credentials);
         storeUserId(response.data.user.id)
         storeUserNmae(response.data.user.userName)
         storeToken(response.data.user.token)
@@ -70,11 +76,7 @@ export async function register(credentials:RegisterCredentials){
 }
 export async function logout(){
     try{
-        const response=await axios.post(`${API_BASE_URL}/auth/logout`,null,
-            {
-                headers:getHeaders()
-            }
-        ) 
+       const response=await apiClient.post("/auth/logout")
         removeUser()
         return response.data
     }catch(error){

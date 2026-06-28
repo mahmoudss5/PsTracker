@@ -29,5 +29,14 @@ public interface SubmissionService {
     Long countSolvedProblemsToday(Long userId);
     
     boolean checkIfSubmissionExists(Long submissionId);
+    int getAllSubmissionsCount();
+    int getAllAcceptedSubmissionsCount();
+    double getAcceptanceRate();
+    int getTimeLimitExceededCount();
+    int getWrongAnswerCount();
+    int getRunTimeErrorCount();
+    
+    
+    
 }
 

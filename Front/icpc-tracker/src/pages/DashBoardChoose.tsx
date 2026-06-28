@@ -1,7 +1,14 @@
+import { getIsCoach } from "../services/AuthService";
+import { Navigate } from "react-router-dom";
 export function DashBoardChoose() {
+    const isCoach=getIsCoach()
     return (
         <div>
-            <h1>DashBoardChoose</h1>
+            {isCoach?(
+                <Navigate to="coach" replace />
+            ):(
+                <Navigate to="trainee" replace />
+            )}
         </div>
     );
 }

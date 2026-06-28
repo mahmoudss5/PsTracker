@@ -8,6 +8,8 @@ import {
   X,
   LogOutIcon,
 } from "lucide-react";
+import { RiTeamFill } from "react-icons/ri";
+
 
 interface SidebarProps {
   isOpen: boolean;
@@ -19,6 +21,7 @@ const navItems = [
   { path: "/dashboard/problems", label: "Problems", icon: ListTodo },
   { path: "/dashboard/contests", label: "Contests", icon: Trophy },
   { path: "/dashboard/leaderboard", label: "Leaderboard", icon: Medal },
+  { path: "/dashboard/team", label: "Team", icon: RiTeamFill },
   { path: "/settings", label: "Settings", icon: Settings },
 ];
 

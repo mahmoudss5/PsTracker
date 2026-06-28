@@ -5,7 +5,7 @@ import type { LoginCredentials, RegisterCredentials } from '../types/auth.types'
 import { login, register, logout } from '../services/AuthService'
 
 
-export const AuthContext = createContext<AuthContextType | undefined>(undefined)
+ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
 

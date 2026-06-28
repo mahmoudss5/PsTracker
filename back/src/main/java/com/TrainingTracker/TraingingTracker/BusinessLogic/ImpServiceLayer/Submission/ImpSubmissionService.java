@@ -70,7 +70,13 @@ public class ImpSubmissionService implements SubmissionService {
         @CacheEvict(value = "submissions", key = "#id"),
         @CacheEvict(value = "userSubmissions", allEntries = true),
         @CacheEvict(value = "solvedProblemsToday", allEntries = true),
-        @CacheEvict(value = "allTrainees", allEntries = true)
+        @CacheEvict(value = "allTrainees", allEntries = true),
+        @CacheEvict(value = "allSubmissionsCount", allEntries = true),
+        @CacheEvict(value = "allAcceptedSubmissionsCount", allEntries = true),
+        @CacheEvict(value = "acceptanceRate", allEntries = true),
+        @CacheEvict(value = "timeLimitExceededCount", allEntries = true),
+        @CacheEvict(value = "wrongAnswerCount", allEntries = true),
+        @CacheEvict(value = "runTimeErrorCount", allEntries = true)
     })
     public SubmissionResponseDto updateSubmission(Long id, SubmissionUpdateDto dto) {
         Submission submission = getSubmissionEntityById(id);
@@ -157,14 +163,93 @@ public class ImpSubmissionService implements SubmissionService {
 
 
     @Override
+    @Cacheable(value = "solvedProblemsTodayCount", key = "#userId")
     public Long countSolvedProblemsToday(Long userId) {
         return submissionRepository.countSolvedProblemsByUserId(userId);
     }
 
     @Override
+    @Cacheable(value = "checkIfSubmissionExists", key = "#submissionId")
     public boolean checkIfSubmissionExists(Long submissionId) {
 
         return submissionRepository.existsById(submissionId);
+    }
+
+    @Override
+    @Cacheable(value = "allSubmissionsCount", key = "#userId")
+    public int getAllSubmissionsCount() {
+        Long userId= SecuiryUserUtil.getCurrntUserId();
+        User user = userService.getUserById(userId);
+        int count = user.getSubmissions().size();
+        return count;
+    }
+
+    @Override
+    @Cacheable(value = "allAcceptedSubmissionsCount", key = "#userId")
+    public int getAllAcceptedSubmissionsCount() {
+        Long userId= SecuiryUserUtil.getCurrntUserId();
+        User user = userService.getUserById(userId);
+        int count=user.getSubmissions().stream()
+                .filter(submission -> submission.getVerdict().equals("Accepted")
+                        || submission.getVerdict().equals("Ok"))
+                .toList()
+                .size();
+        return count;
+    }
+
+    @Override
+    @Cacheable(value = "acceptanceRate", key = "#userId")
+    public double getAcceptanceRate() {
+        Long userId= SecuiryUserUtil.getCurrntUserId();
+        User user = userService.getUserById(userId);
+        int count=user.getSubmissions().size();
+        int AcCount=user.getSubmissions().stream()
+                .filter(submission -> submission.getVerdict().equals("Accepted")
+                        || submission.getVerdict().equals("Ok"))
+                .toList()
+                .size();
+        if (count!=0){
+         return (double)AcCount/count*100;
+        }
+        return 0;
+    }
+
+
+
+    @Override
+    @Cacheable(value = "timeLimitExceededCount", key = "#userId")
+    public int getTimeLimitExceededCount() {
+        Long userId= SecuiryUserUtil.getCurrntUserId();
+        User user = userService.getUserById(userId);
+        int count=user.getSubmissions().stream()
+                .filter(submission -> submission.getVerdict().equals("Time Limit Exceeded"))
+                .toList()
+                .size();
+        return count;
+    }
+
+    @Override
+    @Cacheable(value = "wrongAnswerCount", key = "#userId")
+    public int getWrongAnswerCount() {
+        Long userId= SecuiryUserUtil.getCurrntUserId();
+        User user = userService.getUserById(userId);
+        int count=user.getSubmissions().stream()
+                .filter(submission -> submission.getVerdict().equals("Wrong Answer"))
+                .toList()
+                .size();
+        return count;
+    }
+
+    @Override
+    @Cacheable(value = "runTimeErrorCount", key = "#userId")
+    public int getRunTimeErrorCount() {
+        Long userId= SecuiryUserUtil.getCurrntUserId();
+        User user = userService.getUserById(userId);
+        int count=user.getSubmissions().stream()
+                .filter(submission -> submission.getVerdict().equals("Runtime Error"))
+                .toList()
+                .size();
+        return count;
     }
 
     private Submission getSubmissionEntityById(Long id) {
