@@ -12,7 +12,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import type { TeamResponse } from '../types/api.types';
-import { getTeamById } from '../services/teamService';
+import { getCurrentCoachTeams, getTeamById } from '../services/teamService';
 
 interface UseTeamResult {
   team: TeamResponse | null;
@@ -45,4 +45,37 @@ export function useTeam(teamId: number | null): UseTeamResult {
   }, [fetchData]);
 
   return { team, isLoading, error, refetch: fetchData };
+}
+
+interface UseCoachTeamsResult {
+  teams: TeamResponse[];
+  isLoading: boolean;
+  error: string | null;
+  refetch: () => void;
+}
+
+export function useCoachTeams(enabled = true): UseCoachTeamsResult {
+  const [teams, setTeams] = useState<TeamResponse[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchData = useCallback(async () => {
+    if (!enabled) return;
+    setIsLoading(true);
+    setError(null);
+    try {
+      const data = await getCurrentCoachTeams();
+      setTeams(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load coach teams');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [enabled]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  return { teams, isLoading, error, refetch: fetchData };
 }

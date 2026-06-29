@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.CacheEvict;
 import java.security.SecureRandom;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -51,7 +52,7 @@ public class ImpTeamService implements TeamsService {
         if (team.getTrainees().size() >= 4) throw new RuntimeException("Team is full");
         Long traineeId = SecuiryUserUtil.getCurrntUserId();
         User trainee = userService.getUserById(traineeId);
-        team.getTrainees().add(trainee);
+        trainee.setTraineeTeam(team);
         teamRepository.save(team);
     }
 
@@ -63,7 +64,9 @@ public class ImpTeamService implements TeamsService {
         User user = userService.getUserById(userId);
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(()-> new RuntimeException("Team not found with id: "+teamId));
-        team.getTrainees().remove(user);
+        if (user.getTraineeTeam() != null && user.getTraineeTeam().getId().equals(team.getId())) {
+            user.setTraineeTeam(null);
+        }
         teamRepository.save(team);
     }
 
@@ -81,6 +84,23 @@ public class ImpTeamService implements TeamsService {
         return teamMapper.toDto(getTeamById(teamId));
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<TeamResponseDto> getCurrentCoachTeams() {
+        Long coachId = SecuiryUserUtil.getCurrntUserId();
+        return teamRepository.findByCoachId(coachId)
+                .stream()
+                .map(teamMapper::toDto)
+                .toList();
+    }
+
+    @Override
+    public void updateTeamName(Long teamId, String teamName) {
+        Team team = getTeamById(teamId);
+        team.setTeamName(teamName);
+        teamRepository.save(team);
+    }
+
 
     private String GenerateRandomTeamCode() {
         SecureRandom random = new SecureRandom();
@@ -95,4 +115,3 @@ public class ImpTeamService implements TeamsService {
         return sb.toString();
     }
 }
-

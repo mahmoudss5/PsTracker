@@ -3,6 +3,8 @@ package com.TrainingTracker.TraingingTracker.BusinessLogic.InterfacesServiceLaye
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Team.TeamResponseDto;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.Team;
 
+import java.util.List;
+
 public interface TeamsService {
 
      public String createTeam(String teamName);
@@ -14,5 +16,6 @@ public interface TeamsService {
 
      public TeamResponseDto getTeamResponseById(Long teamId);
 
+     public List<TeamResponseDto> getCurrentCoachTeams();
+     void updateTeamName(Long teamId, String teamName);
 }
-

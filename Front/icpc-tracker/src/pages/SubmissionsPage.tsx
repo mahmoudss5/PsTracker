@@ -26,6 +26,8 @@ export function SubmissionsPage() {
   const trainee = handle
     ? MOCK_TRAINEES.find((t) => t.handle === handle)
     : null;
+  const numericUserId = handle && /^\d+$/.test(handle) ? Number(handle) : undefined;
+  const isViewingUser = Boolean(handle);
 
   // Derive a numeric userId from the trainee handle.
   // TODO: once the backend returns userId on the profile or a handle→id lookup
@@ -36,7 +38,7 @@ export function SubmissionsPage() {
     jana_cp: 3,
     ahmed_mohsed: 4,
   };
-  const targetUserId = handle ? (MOCK_USER_IDS[handle] ?? undefined) : undefined;
+  const targetUserId = numericUserId ?? (handle ? (MOCK_USER_IDS[handle] ?? undefined) : undefined);
 
   const { submissions, isLoading, error, refetch } = useSubmissions(
     targetUserId !== undefined ? { userId: targetUserId } : {},
@@ -49,7 +51,7 @@ export function SubmissionsPage() {
       {/* ── Page Header ──────────────────────────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-start gap-3">
         <div className="flex-1 min-w-0">
-          {trainee && (
+          {isViewingUser && (
             <Link
               to="/dashboard/team"
               className="inline-flex items-center gap-1.5 text-xs font-semibold text-dashboard-muted hover:text-dashboard-primary transition-colors mb-2"
@@ -60,19 +62,19 @@ export function SubmissionsPage() {
           )}
 
           <div className="flex items-center gap-3">
-            {trainee && (
+            {isViewingUser && (
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-dashboard-primary text-dashboard-primary-contrast font-bold text-sm">
-                {trainee.avatarInitials}
+                {trainee?.avatarInitials ?? "U"}
               </div>
             )}
             <div>
               <h1 className="text-2xl font-extrabold tracking-tight text-dashboard-text flex items-center gap-2">
                 <BarChart2 size={22} className="text-dashboard-primary shrink-0" />
-                {trainee ? `${trainee.name}'s Submissions` : 'My Submissions'}
+                {isViewingUser ? `${trainee?.name ?? `User #${targetUserId ?? handle}`}'s Submissions` : 'My Submissions'}
               </h1>
               <p className="text-sm text-dashboard-muted mt-0.5">
-                {trainee
-                  ? `Viewing submission history for @${trainee.handle}`
+                {isViewingUser
+                  ? `Viewing submission history for ${trainee ? `@${trainee.handle}` : `user ${targetUserId ?? handle}`}`
                   : 'Your complete submission history and performance analytics.'}
               </p>
             </div>

@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { Menu, Search, Sun, Moon, Bell, User, X } from 'lucide-react';
+import { Menu, Sun, Moon, Bell, User } from 'lucide-react';
 import type { Theme } from '../../hooks/theme/useTheme';
 
 interface NavBarProps {
@@ -9,8 +8,6 @@ interface NavBarProps {
 }
 
 export function NavBar({ onOpenMenu, theme, onToggleTheme }: NavBarProps) {
-  const [searchOpen, setSearchOpen] = useState(false);
-
   return (
     <header className="sticky top-0 z-30 border-b border-dashboard-border bg-dashboard/80 backdrop-blur">
       {/* Main bar */}

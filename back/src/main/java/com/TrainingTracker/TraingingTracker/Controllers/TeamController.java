@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/teams")
@@ -43,5 +44,11 @@ public class TeamController {
     @GetMapping("/{id}")
     public ResponseEntity<TeamResponseDto> getTeamById(@PathVariable Long id) {
         return ResponseEntity.ok(teamsService.getTeamResponseById(id));
+    }
+
+    @Operation(summary = "Get teams created by the current coach")
+    @GetMapping("/coach/me")
+    public ResponseEntity<List<TeamResponseDto>> getCurrentCoachTeams() {
+        return ResponseEntity.ok(teamsService.getCurrentCoachTeams());
     }
 }

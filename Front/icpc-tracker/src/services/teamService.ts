@@ -69,3 +69,16 @@ export async function getTeamById(id: number): Promise<TeamResponse> {
     throw normalizeApiError(err, `Failed to fetch team ${id}`);
   }
 }
+
+/**
+ * GET /api/teams/coach/me
+ * Returns teams created by the authenticated coach.
+ */
+export async function getCurrentCoachTeams(): Promise<TeamResponse[]> {
+  try {
+    const res = await apiClient.get<TeamResponse[]>(`${BASE}/coach/me`);
+    return res.data;
+  } catch (err) {
+    throw normalizeApiError(err, 'Failed to fetch coach teams');
+  }
+}

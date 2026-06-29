@@ -1,9 +1,8 @@
 import { useState } from 'react';
-import { Outlet,Navigate } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 import { DashboardSidebar } from '../components/shared/DashboardSidebar';
 import { NavBar } from '../components/shared/NavBar';
 import { useTheme } from '../hooks/theme/useTheme';
-import { isAuthenticated } from '../services/AuthService';
 
 export function RootLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);

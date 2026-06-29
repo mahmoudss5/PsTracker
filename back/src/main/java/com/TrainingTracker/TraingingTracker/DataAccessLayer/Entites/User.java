@@ -77,4 +77,8 @@ public class User  implements Serializable {
     @OneToMany(mappedBy = "user")
     @Builder.Default
     private List<Submission> submissions = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    @Builder.Default
+    private List<Report> reports = new ArrayList<>();
 }

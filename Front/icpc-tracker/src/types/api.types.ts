@@ -38,8 +38,9 @@ export interface AuthResponse {
 export interface TraineeResponse {
   id: number;
   userName: string;
-  role: string;                        // "TRAINEE" | "COACH"
+  role: string;                        // "Trainee" | "Coach" | "Admin"
   email: string;
+  teamId: number | null;
   teamName: string | null;
   numberOfSolveProblems: number;
   totalSumbissions: number;            // note: typo in backend kept intentionally

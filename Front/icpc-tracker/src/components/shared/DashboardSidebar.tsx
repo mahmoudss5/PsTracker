@@ -7,22 +7,25 @@ import {
   LogOutIcon,
 } from "lucide-react";
 import { RiTeamFill } from "react-icons/ri";
-
+import { useCurrentUser } from "../../hooks/useCurrentUser";
 
 interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const navItems = [
-  { path: "/dashboard/trainee", label: "Dashboard", icon: Home },
-  { path: "/dashboard/submissions", label: "Submissions", icon: ListTodo },
-  { path: "/dashboard/team", label: "Team", icon: RiTeamFill },
-  { path: "/settings", label: "Settings", icon: Settings },
-];
-
 export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
   const location = useLocation();
+  const { user } = useCurrentUser();
+  
+  const isCoach = user?.role === 'COACH' || user?.role === 'coach';
+
+  const navItems = [
+    { path: isCoach ? "/dashboard/coach" : "/dashboard/trainee", label: "Dashboard", icon: Home },
+    { path: "/dashboard/submissions", label: "Submissions", icon: ListTodo },
+    { path: "/dashboard/team", label: "Team", icon: RiTeamFill },
+    { path: "/settings", label: "Settings", icon: Settings },
+  ];
 
   return (
     <>

@@ -1,5 +1,5 @@
 import { useCallback, useState} from 'react';
-import type {SubmitEvent} from "react";
+import type { FormEvent } from "react";
 import type { RegisterCredentials, UserRole } from '../../types/auth.types';
 import { toast } from 'sonner';
 import {useAuth} from "../../contextes/AuthContext";
@@ -45,7 +45,7 @@ const {register}=useAuth();
   }, []);
 
   const handleSignUp = useCallback(
-    async (event: SubmitEvent<HTMLFormElement>) => {
+    async (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
       if (!selectedRole) return;
       if (credentials.password !== confirmPassword) {
