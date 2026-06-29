@@ -1,4 +1,3 @@
-import axios from "axios";
 import {apiClient} from "../config/api.tsx";
 import type { LoginCredentials, RegisterCredentials } from "../types/auth.types";
 import { normalizeApiError } from "./ErrorService";

@@ -2,8 +2,6 @@ import { Link, useLocation } from "react-router-dom";
 import {
   Home,
   ListTodo,
-  Trophy,
-  Medal,
   Settings,
   X,
   LogOutIcon,
@@ -18,9 +16,7 @@ interface SidebarProps {
 
 const navItems = [
   { path: "/dashboard/trainee", label: "Dashboard", icon: Home },
-  { path: "/dashboard/problems", label: "Problems", icon: ListTodo },
-  { path: "/dashboard/contests", label: "Contests", icon: Trophy },
-  { path: "/dashboard/leaderboard", label: "Leaderboard", icon: Medal },
+  { path: "/dashboard/submissions", label: "Submissions", icon: ListTodo },
   { path: "/dashboard/team", label: "Team", icon: RiTeamFill },
   { path: "/settings", label: "Settings", icon: Settings },
 ];

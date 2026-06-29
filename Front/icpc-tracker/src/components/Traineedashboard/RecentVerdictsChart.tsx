@@ -4,10 +4,9 @@ export function RecentVerdictsChart() {
   const waPercent = 24;
   const tlePercent = 14;
 
-  // Donut calculations
   const radius = 50;
   const strokeWidth = 12;
-  const circumference = 2 * Math.PI * radius; // ~314.16
+  const circumference = 2 * Math.PI * radius;
 
   // Dash offsets
   const acDash = (acPercent / 100) * circumference;
@@ -82,6 +81,8 @@ export function RecentVerdictsChart() {
               strokeLinecap="round"
               className="transition-all duration-500 hover:opacity-80 cursor-pointer"
             />
+
+
           </svg>
 
           {/* Central absolute stats overlay */}
@@ -107,6 +108,7 @@ export function RecentVerdictsChart() {
           <span className="font-mono text-dashboard-muted font-bold">{acPercent}%</span>
         </div>
 
+
         {/* WA Item */}
         <div className="flex items-center justify-between rounded bg-dashboard-bg/30 px-3 py-1.5 text-xs border border-dashboard-border/30 hover:border-red-500/20 transition-all">
           <div className="flex items-center gap-2">
@@ -115,6 +117,7 @@ export function RecentVerdictsChart() {
           </div>
           <span className="font-mono text-dashboard-muted font-bold">{waPercent}%</span>
         </div>
+
 
         {/* TLE Item */}
         <div className="flex items-center justify-between rounded bg-dashboard-bg/30 px-3 py-1.5 text-xs border border-dashboard-border/30 hover:border-orange-500/20 transition-all">
@@ -125,6 +128,24 @@ export function RecentVerdictsChart() {
           <span className="font-mono text-dashboard-muted font-bold">{tlePercent}%</span>
         </div>
       </div>
+
+      <div className="flex items-center justify-between rounded bg-dashboard-bg/30 px-3 py-1.5 text-xs border border-dashboard-border/30 hover:border-red-500/20 transition-all">
+        <div className="flex items-center gap-2">
+          <span className="h-2.5 w-2.5 rounded-full bg-blue-500" />
+          <span className="font-semibold text-dashboard-text">RE</span>
+        </div>
+        <span className="font-mono text-dashboard-muted font-bold">{waPercent}%</span>
+      </div>
+
+      <div className="flex items-center justify-between rounded bg-dashboard-bg/30 px-3 py-1.5 text-xs border border-dashboard-border/30 hover:border-red-500/20 transition-all">
+        <div className="flex items-center gap-2">
+          <span className="h-2.5 w-2.5 rounded-full bg-gray-500" />
+          <span className="font-semibold text-dashboard-text">ME</span>
+        </div>
+        <span className="font-mono text-dashboard-muted font-bold">{waPercent}%</span>
+      </div>
+
     </div>
+
   );
 }

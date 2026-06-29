@@ -5,6 +5,10 @@ public record TraineResponse(Long id,
                              String role,
                              String email,
                              String teamName,
-                             Long numberOfSolveProblems
+                             Long numberOfSolveProblems,
+                             Long totalSumbissions,
+                             Long numberOfTimeLimitVerdict,
+                             Long numberOfMemoryLimitVerdict,
+                             Long numberOfWrongAnswerVerdict
                              ) {
 }

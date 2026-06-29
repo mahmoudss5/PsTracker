@@ -1,11 +1,11 @@
-import { ProfileCard } from '../components/dashboard/ProfileCard';
-import { RankCard } from '../components/dashboard/RankCard';
-import { ConsistencyHeatmap } from '../components/dashboard/ConsistencyHeatmap';
-import { RecentSubmissions } from '../components/dashboard/RecentSubmissions';
+import { ProfileCard } from '../components/Traineedashboard/ProfileCard';
+import { RankCard } from '../components/Traineedashboard/RankCard';
+import { ConsistencyHeatmap } from '../components/Traineedashboard/ConsistencyHeatmap';
+import { RecentSubmissions } from '../components/Traineedashboard/RecentSubmissions';
 import { mockProfileData } from '../data/mockProfile';
-import { StatsGroup } from '../components/dashboard/StatsCard';
-import { RatingProgressChart } from '../components/dashboard/RatingProgressChart';
-import { RecentVerdictsChart } from '../components/dashboard/RecentVerdictsChart';
+import { StatsGroup } from '../components/Traineedashboard/StatsCard';
+import { RatingProgressChart } from '../components/Traineedashboard/RatingProgressChart';
+import { RecentVerdictsChart } from '../components/Traineedashboard/RecentVerdictsChart';
 
 export function TraineeDashboard() {
   return (
@@ -24,9 +24,8 @@ export function TraineeDashboard() {
         </div>
         <div className="md:col-span-1">
           <RankCard
-            rank={mockProfileData.globalRank}
-            change={mockProfileData.weeklyChange}
-            isPositive={mockProfileData.isPositiveChange}
+            acceptanceRate={31}
+            totalSubmissions={mockProfileData.recentSubmissions.length}
           />
         </div>
       </div>
