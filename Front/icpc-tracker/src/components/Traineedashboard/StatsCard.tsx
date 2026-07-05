@@ -66,26 +66,34 @@ export function StatItem({ title, value, subtext, icon, valueSuffix }: StatItemP
   );
 }
 
-export function StatsGroup() {
+interface StatsGroupProps {
+  solved: number;
+  submissions: number;
+  streak: number;
+}
+
+export function StatsGroup({ solved, submissions, streak }: StatsGroupProps) {
+  const acceptanceRate = submissions > 0 ? Math.round((solved / submissions) * 100) : 0;
+  
   return (
     <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-3">
       <StatItem
         title="Total Solved"
-        value="1,492"
-        subtext="+24 this week"
+        value={solved.toString()}
+        subtext="From your submissions"
         icon="solved"
       />
       <StatItem
         title="Total Submissions"
-        value="4,815"
-        subtext="31% Acceptance Rate"
+        value={submissions.toString()}
+        subtext={`${acceptanceRate}% Acceptance Rate`}
         icon="submissions"
       />
       <StatItem
         title="Current Streak"
-        value="42"
+        value={streak.toString()}
         valueSuffix="days"
-        subtext="Best: 68 days"
+        subtext="Keep it up!"
         icon="streak"
       />
     </div>

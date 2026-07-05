@@ -72,7 +72,7 @@ public class ImpAnnouncmentService implements AnnouncmentService {
                 .map(AnnouncmentUser::getAnnouncment)
                 .toList();
        return announcments.stream()
-               .map(announcment -> announcmentMapper.toUserDto(announcment, userId))
+               .map(announcment -> announcmentMapper.toAnnouncmentResponseDto(announcment, userId))
                .toList();
     }
 
@@ -85,7 +85,7 @@ public class ImpAnnouncmentService implements AnnouncmentService {
                 .map(AnnouncmentTeam::getAnnouncment)
                 .toList();
        return announcments.stream()
-               .map(announcment -> announcmentMapper.toTeamDto(announcment, teamId))
+               .map(announcment -> announcmentMapper.toAnnouncmentResponseDto(announcment, teamId))
                .toList();
     }
 

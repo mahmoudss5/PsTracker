@@ -10,6 +10,11 @@ public record TraineResponse(Long id,
                              Long totalSumbissions,
                              Long numberOfTimeLimitVerdict,
                              Long numberOfMemoryLimitVerdict,
-                             Long numberOfWrongAnswerVerdict
+                             Long numberOfWrongAnswerVerdict,
+                             String codeforcesHandle,
+                             Long rate,
+                             Long maxRate,
+                             String rank,
+                             String maxRank
                              ) {
 }

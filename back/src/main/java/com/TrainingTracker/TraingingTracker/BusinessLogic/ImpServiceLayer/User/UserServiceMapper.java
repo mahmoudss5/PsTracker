@@ -36,7 +36,12 @@ public class UserServiceMapper {
                 totalSubmissions,
                 timeLimitVerdicts,
                 memoryLimitVerdicts,
-                wrongAnswerVerdicts
+                wrongAnswerVerdicts,
+                user.getCodeforcesHandle(),
+                user.getRate(),
+                user.getMaxRate(),
+                user.getRank(),
+                user.getMaxRank()
         );
     }
 

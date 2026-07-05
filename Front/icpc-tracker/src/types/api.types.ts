@@ -47,6 +47,11 @@ export interface TraineeResponse {
   numberOfTimeLimitVerdict: number;
   numberOfMemoryLimitVerdict: number;
   numberOfWrongAnswerVerdict: number;
+  codeforcesHandle: string;
+  rate: number;
+  maxRate: number;
+  rank: string;
+  maxRank: string;
 }
 
 // ── Team ─────────────────────────────────────────────────────────────────────

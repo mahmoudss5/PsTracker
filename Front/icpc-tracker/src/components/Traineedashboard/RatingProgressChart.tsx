@@ -1,18 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 // --- Rating Progress data ---
 interface ContestRatingPoint {
   contestName: string;
   rating: number;
 }
-
-const contestData: ContestRatingPoint[] = [
-  { contestName: "Round #842", rating: 1420 },
-  { contestName: "Round #843", rating: 1680 },
-  { contestName: "Round #844", rating: 1600 },
-  { contestName: "Edu #145", rating: 1850 },
-  { contestName: "Round #845", rating: 1940 },
-];
 
 // --- Problems Solved per Day (last 7 days) data ---
 interface DailySolvedPoint {
@@ -54,6 +46,14 @@ function LineChart({
   const chartWidth = 460;
   const paddingLeft = 40;
   const paddingRight = 20;
+
+  if (points.length === 0) {
+    return (
+      <div className="flex h-40 w-full items-center justify-center text-sm font-semibold text-dashboard-muted">
+        No data available
+      </div>
+    );
+  }
 
   const linePath = points.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ");
   const areaPath = `
@@ -147,6 +147,7 @@ function LineChart({
           <span
             key={i}
             className="text-[10px] sm:text-xs font-mono font-semibold text-dashboard-muted text-center w-12 truncate"
+            title={label}
           >
             {label}
           </span>
@@ -159,9 +160,18 @@ function LineChart({
 // ------------------------------------------------------------------
 // Rating chart data processor
 // ------------------------------------------------------------------
-function RatingChartContent() {
-  const minRating = 1300;
-  const maxRating = 2050;
+function RatingChartContent({ contestData }: { contestData: ContestRatingPoint[] }) {
+  if (contestData.length === 0) {
+    return <div className="flex h-40 items-center justify-center text-sm font-semibold text-dashboard-muted">Unrated</div>;
+  }
+
+  const ratings = contestData.map((d) => d.rating);
+  const maxDataRating = Math.max(...ratings);
+  const minDataRating = Math.min(...ratings);
+  
+  const minRating = Math.max(0, minDataRating - 100);
+  const maxRating = maxDataRating + 100;
+  
   const chartHeight = 160;
   const chartWidth = 460;
   const paddingLeft = 40;
@@ -172,14 +182,15 @@ function RatingChartContent() {
   const height = chartHeight - paddingTop - paddingBottom;
 
   const points = contestData.map((d, i) => ({
-    x: paddingLeft + (i / (contestData.length - 1)) * width,
-    y: paddingTop + height - ((d.rating - minRating) / (maxRating - minRating)) * height,
+    x: paddingLeft + (i / (contestData.length > 1 ? contestData.length - 1 : 1)) * width,
+    y: paddingTop + height - ((d.rating - minRating) / ((maxRating - minRating) || 1)) * height,
   }));
 
-  const gridValues = [1400, 1600, 1800, 2000];
+  const midRating = Math.round((minRating + maxRating) / 2);
+  const gridValues = [minRating, midRating, maxRating];
   const yLabels = gridValues.map((val) => ({
     value: val,
-    y: paddingTop + height - ((val - minRating) / (maxRating - minRating)) * height,
+    y: paddingTop + height - ((val - minRating) / ((maxRating - minRating) || 1)) * height,
   }));
 
   return (
@@ -242,8 +253,40 @@ function DailySolvedChartContent() {
 // ------------------------------------------------------------------
 // Main component with toggle
 // ------------------------------------------------------------------
-export function RatingProgressChart() {
+export function RatingProgressChart({ codeforcesHandle }: { codeforcesHandle?: string }) {
   const [mode, setMode] = useState<ChartMode>("rating");
+  const [contestData, setContestData] = useState<ContestRatingPoint[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!codeforcesHandle) return;
+    let isMounted = true;
+    
+    async function fetchRating() {
+      setLoading(true);
+      try {
+        const res = await fetch(`https://codeforces.com/api/user.rating?handle=${codeforcesHandle}`);
+        const json = await res.json();
+        if (json.status === "OK" && isMounted) {
+          // Take the last 5 contests
+          const last5 = json.result.slice(-5).map((r: any) => ({
+            contestName: r.contestName.replace("Codeforces Round ", "CR "),
+            rating: r.newRating,
+          }));
+          setContestData(last5);
+        }
+      } catch (err) {
+        console.error("Failed to fetch CF rating", err);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    }
+    fetchRating();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [codeforcesHandle]);
 
   return (
     <div className="glass-panel p-6 flex flex-col justify-between hover:border-dashboard-primary/30 transition-all duration-300">
@@ -284,7 +327,13 @@ export function RatingProgressChart() {
 
       {/* Chart area — smooth swap */}
       <div className="transition-all duration-300">
-        {mode === "rating" ? <RatingChartContent /> : <DailySolvedChartContent />}
+        {loading ? (
+           <div className="flex h-40 w-full items-center justify-center text-sm font-semibold text-dashboard-muted">Loading...</div>
+        ) : mode === "rating" ? (
+           <RatingChartContent contestData={contestData} />
+        ) : (
+           <DailySolvedChartContent />
+        )}
       </div>
     </div>
   );

@@ -8,9 +8,11 @@ interface ProfileCardProps {
   bio: string;
   maxRank?: string;
   maxRate?: number;
+  rate?: number;
+  rank?: string;
 }
 
-export function ProfileCard({ username, avatarUrl, title, streak, bio, maxRank, maxRate }: ProfileCardProps) {
+export function ProfileCard({ username, avatarUrl, title, streak, bio, maxRank, maxRate, rate, rank }: ProfileCardProps) {
   return (
     <div className="glass-panel p-4 sm:p-6 flex flex-col sm:flex-row gap-4 sm:gap-6 items-start sm:items-center h-full">
       <img
@@ -39,13 +41,17 @@ export function ProfileCard({ username, avatarUrl, title, streak, bio, maxRank, 
 
         <div className="flex items-center gap-6 pt-4 border-t border-dashboard-border/30">
           <div className="flex flex-col">
-            <span className="text-[10px] font-bold text-dashboard-muted uppercase tracking-widest mb-0.5">Max Rank</span>
-            <span className="text-sm font-bold text-dashboard-text/90 bg-dashboard-primary/10 px-2 py-0.5 rounded border border-dashboard-primary/10">{maxRank || 'N/A'}</span>
+            <span className="text-[10px] font-bold text-dashboard-muted uppercase tracking-widest mb-0.5">Rank</span>
+            <span className="text-sm font-bold text-dashboard-text/90 bg-dashboard-primary/10 px-2 py-0.5 rounded border border-dashboard-primary/10">
+              {rank || 'Unrated'} {maxRank ? `(Max: ${maxRank})` : ''}
+            </span>
           </div>
           <div className="h-8 w-px bg-dashboard-border/30" />
           <div className="flex flex-col">
-            <span className="text-[10px] font-bold text-dashboard-muted uppercase tracking-widest mb-0.5">Max Rate</span>
-            <span className="text-sm font-bold text-dashboard-primary">{maxRate ? `${maxRate} max` : 'N/A'}</span>
+            <span className="text-[10px] font-bold text-dashboard-muted uppercase tracking-widest mb-0.5">Rating</span>
+            <span className="text-sm font-bold text-dashboard-primary">
+              {rate || 0} {maxRate ? `(Max: ${maxRate})` : ''}
+            </span>
           </div>
         </div>
       </div>

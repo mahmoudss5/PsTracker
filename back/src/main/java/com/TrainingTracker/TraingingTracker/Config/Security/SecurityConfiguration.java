@@ -34,12 +34,6 @@ public class SecurityConfiguration {
                                 .requestMatchers("/actuator/**").permitAll()
                                 .requestMatchers("/ws/**").permitAll()
                                 .requestMatchers("/api/auth/**").permitAll()
-                                .requestMatchers("/api/feedbacks/recent").permitAll()
-                                .requestMatchers("/api/courses/popular").permitAll()
-                                .requestMatchers("/api/departments/all").permitAll()
-                                .requestMatchers("/api/courses/popular").permitAll()
-                                .requestMatchers("/api/audit-logs/**").hasAuthority("Admin")
-                                .requestMatchers("/api/permissions/**").hasAuthority("Admin")
                                 .requestMatchers("/api/v1/auth/**",
                                         "/v2/api-docs",
                                         "/v3/api-docs",

@@ -1,8 +1,21 @@
-export function RecentVerdictsChart() {
-  // Percentages matching the screenshot
-  const acPercent = 62;
-  const waPercent = 24;
-  const tlePercent = 14;
+interface RecentVerdictsChartProps {
+  ac: number;
+  wa: number;
+  tle: number;
+  mle: number;
+  re: number;
+  total: number;
+}
+
+export function RecentVerdictsChart({ ac, wa, tle, mle, re, total }: RecentVerdictsChartProps) {
+  // Calculate percentages
+  const getPercent = (val: number) => (total > 0 ? Math.round((val / total) * 100) : 0);
+  
+  const acPercent = getPercent(ac);
+  const waPercent = getPercent(wa);
+  const tlePercent = getPercent(tle);
+  const mlePercent = getPercent(mle);
+  const rePercent = getPercent(re);
 
   const radius = 50;
   const strokeWidth = 12;
@@ -12,10 +25,14 @@ export function RecentVerdictsChart() {
   const acDash = (acPercent / 100) * circumference;
   const waDash = (waPercent / 100) * circumference;
   const tleDash = (tlePercent / 100) * circumference;
+  const mleDash = (mlePercent / 100) * circumference;
+  const reDash = (rePercent / 100) * circumference;
 
   const acOffset = 0;
   const waOffset = -acDash;
   const tleOffset = -(acDash + waDash);
+  const mleOffset = -(acDash + waDash + tleDash);
+  const reOffset = -(acDash + waDash + tleDash + mleDash);
 
   return (
     <div className="glass-panel p-6 flex flex-col justify-between hover:border-dashboard-primary/30 transition-all duration-300">
@@ -82,7 +99,33 @@ export function RecentVerdictsChart() {
               className="transition-all duration-500 hover:opacity-80 cursor-pointer"
             />
 
-
+            {/* MLE Segment */}
+            <circle
+              cx="60"
+              cy="60"
+              r={radius}
+              fill="transparent"
+              stroke="#6b7280" // gray
+              strokeWidth={strokeWidth}
+              strokeDasharray={`${mleDash} ${circumference}`}
+              strokeDashoffset={mleOffset}
+              strokeLinecap="round"
+              className="transition-all duration-500 hover:opacity-80 cursor-pointer"
+            />
+            
+            {/* RE Segment */}
+            <circle
+              cx="60"
+              cy="60"
+              r={radius}
+              fill="transparent"
+              stroke="#3b82f6" // blue
+              strokeWidth={strokeWidth}
+              strokeDasharray={`${reDash} ${circumference}`}
+              strokeDashoffset={reOffset}
+              strokeLinecap="round"
+              className="transition-all duration-500 hover:opacity-80 cursor-pointer"
+            />
           </svg>
 
           {/* Central absolute stats overlay */}
@@ -98,16 +141,15 @@ export function RecentVerdictsChart() {
       </div>
 
       {/* Legend below matching user designs */}
-      <div className="space-y-2 mt-4">
+      <div className="space-y-2 mt-4 grid grid-cols-2 gap-2">
         {/* AC Item */}
-        <div className="flex items-center justify-between rounded bg-dashboard-bg/30 px-3 py-1.5 text-xs border border-dashboard-border/30 hover:border-dashboard-primary/20 transition-all">
+        <div className="flex items-center justify-between rounded bg-dashboard-bg/30 px-3 py-1.5 text-xs border border-dashboard-border/30 hover:border-dashboard-primary/20 transition-all col-span-2">
           <div className="flex items-center gap-2">
             <span className="h-2.5 w-2.5 rounded-full bg-dashboard-primary" />
             <span className="font-semibold text-dashboard-text">AC</span>
           </div>
           <span className="font-mono text-dashboard-muted font-bold">{acPercent}%</span>
         </div>
-
 
         {/* WA Item */}
         <div className="flex items-center justify-between rounded bg-dashboard-bg/30 px-3 py-1.5 text-xs border border-dashboard-border/30 hover:border-red-500/20 transition-all">
@@ -118,7 +160,6 @@ export function RecentVerdictsChart() {
           <span className="font-mono text-dashboard-muted font-bold">{waPercent}%</span>
         </div>
 
-
         {/* TLE Item */}
         <div className="flex items-center justify-between rounded bg-dashboard-bg/30 px-3 py-1.5 text-xs border border-dashboard-border/30 hover:border-orange-500/20 transition-all">
           <div className="flex items-center gap-2">
@@ -127,24 +168,25 @@ export function RecentVerdictsChart() {
           </div>
           <span className="font-mono text-dashboard-muted font-bold">{tlePercent}%</span>
         </div>
-      </div>
 
-      <div className="flex items-center justify-between rounded bg-dashboard-bg/30 px-3 py-1.5 text-xs border border-dashboard-border/30 hover:border-red-500/20 transition-all">
-        <div className="flex items-center gap-2">
-          <span className="h-2.5 w-2.5 rounded-full bg-blue-500" />
-          <span className="font-semibold text-dashboard-text">RE</span>
+        {/* RE Item */}
+        <div className="flex items-center justify-between rounded bg-dashboard-bg/30 px-3 py-1.5 text-xs border border-dashboard-border/30 hover:border-blue-500/20 transition-all">
+          <div className="flex items-center gap-2">
+            <span className="h-2.5 w-2.5 rounded-full bg-blue-500" />
+            <span className="font-semibold text-dashboard-text">RE</span>
+          </div>
+          <span className="font-mono text-dashboard-muted font-bold">{rePercent}%</span>
         </div>
-        <span className="font-mono text-dashboard-muted font-bold">{waPercent}%</span>
-      </div>
 
-      <div className="flex items-center justify-between rounded bg-dashboard-bg/30 px-3 py-1.5 text-xs border border-dashboard-border/30 hover:border-red-500/20 transition-all">
-        <div className="flex items-center gap-2">
-          <span className="h-2.5 w-2.5 rounded-full bg-gray-500" />
-          <span className="font-semibold text-dashboard-text">ME</span>
+        {/* MLE Item */}
+        <div className="flex items-center justify-between rounded bg-dashboard-bg/30 px-3 py-1.5 text-xs border border-dashboard-border/30 hover:border-gray-500/20 transition-all">
+          <div className="flex items-center gap-2">
+            <span className="h-2.5 w-2.5 rounded-full bg-gray-500" />
+            <span className="font-semibold text-dashboard-text">MLE</span>
+          </div>
+          <span className="font-mono text-dashboard-muted font-bold">{mlePercent}%</span>
         </div>
-        <span className="font-mono text-dashboard-muted font-bold">{waPercent}%</span>
       </div>
-
     </div>
 
   );

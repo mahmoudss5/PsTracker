@@ -451,6 +451,7 @@ baseURL: "http://localhost:8000/api"
 - [ ] Problem recommendation engine based on weak tags
 - [ ] Notification bell with real-time push (WebSocket)
 - [ ] Export submissions data to CSV
+- [ ] Add contest's analytics (e.g., Codeforces rounds, AtCoder contests)
 
 ---
 

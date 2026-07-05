@@ -1,14 +1,45 @@
+import type { SubmissionEntry } from '../../types/dashboard.types';
+
 interface ConsistencyHeatmapProps {
-  data: number[]; // Array of heat levels (0-4)
+  submissions: SubmissionEntry[];
   totalSolved?: number;
   submissionsToday?: number;
 }
 
-export function ConsistencyHeatmap({ data, totalSolved, submissionsToday }: ConsistencyHeatmapProps) {
+export function ConsistencyHeatmap({ submissions, totalSolved, submissionsToday }: ConsistencyHeatmapProps) {
+  // Generate last 365 days of data
+  const days = 365;
+  const heatmapData = new Array(days).fill(0);
+  
+  // Count submissions per day string (YYYY-MM-DD)
+  const submissionCounts: Record<string, number> = {};
+  submissions.forEach(sub => {
+    const dateStr = new Date(sub.date).toDateString();
+    submissionCounts[dateStr] = (submissionCounts[dateStr] || 0) + 1;
+  });
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // Map to heat levels
+  for (let i = 0; i < days; i++) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - (days - 1 - i));
+    const count = submissionCounts[d.toDateString()] || 0;
+    
+    let level = 0;
+    if (count > 0 && count <= 2) level = 1;
+    else if (count > 2 && count <= 4) level = 2;
+    else if (count > 4 && count <= 7) level = 3;
+    else if (count > 7) level = 4;
+    
+    heatmapData[i] = level;
+  }
+
   // Pad data to a multiple of 7 so every column is full
   const ROWS = 7;
-  const totalCells = Math.ceil(data.length / ROWS) * ROWS;
-  const padded = [...data];
+  const totalCells = Math.ceil(heatmapData.length / ROWS) * ROWS;
+  const padded = [...heatmapData];
   while (padded.length < totalCells) padded.push(-1); // -1 = empty padding
 
   const numCols = totalCells / ROWS;

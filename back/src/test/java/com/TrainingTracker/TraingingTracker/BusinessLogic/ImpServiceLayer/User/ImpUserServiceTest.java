@@ -83,7 +83,22 @@ class ImpUserServiceTest {
         Long userId = 1L;
         User user = createTestUser(userId, "bob", "bob@example.com");
         TraineResponse expectedResponse = new TraineResponse(
-                userId, "bob", "Trainee", "bob@example.com", "Team A", 42L
+                userId,
+                "bob",
+                "Trainee",
+                "bob@example.com",
+                7L,
+                "Team A",
+                42L,
+                84L,
+                3L,
+                2L,
+                1L,
+                "bob_cf",
+                1200L,
+                1400L,
+                "Newbie",
+                "Pupil"
         );
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
@@ -105,7 +120,22 @@ class ImpUserServiceTest {
         Long userId = 42L;
         User user = createTestUser(userId, "charlie", "charlie@example.com");
         TraineResponse expectedResponse = new TraineResponse(
-                userId, "charlie", "Trainee", "charlie@example.com", "Team B", 100L
+                userId,
+                "charlie",
+                "Trainee",
+                "charlie@example.com",
+                null,
+                "Team B",
+                100L,
+                200L,
+                5L,
+                4L,
+                3L,
+                "killerPs",
+                239L,
+                2344L,
+                "pupil",
+                "pupil"
         );
 
         try (MockedStatic<SecuiryUserUtil> securityUtilMockedStatic = mockStatic(SecuiryUserUtil.class)) {
@@ -131,8 +161,14 @@ class ImpUserServiceTest {
     void testGetAllUsers_Success() {
         User user1 = createTestUser(1L, "user1", "user1@example.com");
         User user2 = createTestUser(2L, "user2", "user2@example.com");
-        TraineResponse resp1 = new TraineResponse(1L, "user1", "Trainee", "user1@example.com", "Team A", 10L);
-        TraineResponse resp2 = new TraineResponse(2L, "user2", "Trainee", "user2@example.com", "Team B", 20L);
+        TraineResponse resp1 = new TraineResponse(
+                1L, "user1", "Trainee", "user1@example.com", 11L, "Team A",
+                10L, 20L, 1L, 0L, 2L, "user1_cf", 1200L, 1400L, "Newbie", "Pupil"
+        );
+        TraineResponse resp2 = new TraineResponse(
+                2L, "user2", "Trainee", "user2@example.com", 12L, "Team B",
+                20L, 30L, 2L, 1L, 3L, "user2_cf", 1200L, 1400L, "Newbie", "Pupil"
+        );
 
         when(userRepository.findAll()).thenReturn(List.of(user1, user2));
         when(userMapper.toTraineResponse(user1)).thenReturn(resp1);
@@ -160,8 +196,14 @@ class ImpUserServiceTest {
                 .trainees(List.of(trainee1, trainee2))
                 .build();
 
-        TraineResponse resp1 = new TraineResponse(1L, "trainee1", "Trainee", "t1@example.com", "Alpha Team", 5L);
-        TraineResponse resp2 = new TraineResponse(2L, "trainee2", "Trainee", "t2@example.com", "Alpha Team", 15L);
+        TraineResponse resp1 = new TraineResponse(
+                1L, "trainee1", "Trainee", "t1@example.com", 100L, "Alpha Team",
+                5L, 15L, 0L, 1L, 0L, "trainee1_cf", 1200L, 1400L, "Newbie", "Pupil"
+        );
+        TraineResponse resp2 = new TraineResponse(
+                2L, "trainee2", "Trainee", "t2@example.com", 100L, "Alpha Team",
+                15L, 25L, 1L, 1L, 0L, "trainee2_cf", 1200L, 1400L, "Newbie", "Pupil"
+        );
 
         when(teamRepository.findById(teamId)).thenReturn(Optional.of(team));
         when(userMapper.toTraineResponse(trainee1)).thenReturn(resp1);

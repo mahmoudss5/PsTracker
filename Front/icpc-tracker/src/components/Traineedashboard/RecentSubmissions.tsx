@@ -1,7 +1,7 @@
-import type { Submission } from '../../data/mockProfile';
+import type { SubmissionEntry } from '../../types/dashboard.types';
 
 interface RecentSubmissionsProps {
-  submissions: Submission[];
+  submissions: SubmissionEntry[];
 }
 
 export function RecentSubmissions({ submissions }: RecentSubmissionsProps) {
@@ -20,8 +20,8 @@ export function RecentSubmissions({ submissions }: RecentSubmissionsProps) {
             <tr className="border-b border-dashboard-border text-dashboard-muted">
               <th className="px-3 sm:px-6 py-3 sm:py-4 font-semibold uppercase tracking-wider">Problem</th>
               <th className="px-3 sm:px-6 py-3 sm:py-4 font-semibold uppercase tracking-wider">Verdict</th>
-              <th className="hidden sm:table-cell px-6 py-4 font-semibold uppercase tracking-wider text-center">Attempts</th>
-              <th className="hidden sm:table-cell px-6 py-4 font-semibold uppercase tracking-wider text-right">Total Time</th>
+              <th className="hidden sm:table-cell px-6 py-4 font-semibold uppercase tracking-wider text-center">Time (ms)</th>
+              <th className="hidden sm:table-cell px-6 py-4 font-semibold uppercase tracking-wider text-right">Memory (KB)</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-dashboard-border/50 text-dashboard-text font-mono">
@@ -31,25 +31,20 @@ export function RecentSubmissions({ submissions }: RecentSubmissionsProps) {
                 <td className="px-3 sm:px-6 py-3 sm:py-4">
                   <span
                     className={`inline-flex rounded px-2 py-1 text-xs font-semibold tracking-wide whitespace-nowrap ${
-                      sub.verdict === 'Accepted'
+                      sub.verdict === 'AC'
                         ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
-                        : sub.verdict === 'Time Limit Exceeded'
+                        : sub.verdict === 'TLE'
+                        ? 'bg-orange-500/10 text-orange-500 border border-orange-500/20'
+                        : sub.verdict === 'WA'
                         ? 'bg-red-500/10 text-red-500 border border-red-500/20'
-                        : 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20'
+                        : 'bg-gray-500/10 text-gray-500 border border-gray-500/20'
                     }`}
                   >
-                    {/* Full text on sm+, abbreviated on xs */}
-                    <span className="hidden sm:inline">{sub.verdict}</span>
-                    <span className="sm:hidden">
-                      {sub.verdict === 'Accepted' ? 'AC'
-                        : sub.verdict === 'Time Limit Exceeded' ? 'TLE'
-                        : sub.verdict === 'Wrong Answer' ? 'WA'
-                        : 'RE'}
-                    </span>
+                    {sub.verdict}
                   </span>
                 </td>
-                <td className="hidden sm:table-cell px-6 py-4 text-center text-dashboard-muted">{sub.attempts}</td>
-                <td className="hidden sm:table-cell px-6 py-4 text-right text-dashboard-muted">{sub.totalTime}</td>
+                <td className="hidden sm:table-cell px-6 py-4 text-center text-dashboard-muted">{sub.runtimeMs}</td>
+                <td className="hidden sm:table-cell px-6 py-4 text-right text-dashboard-muted">{sub.memoryKB}</td>
               </tr>
             ))}
           </tbody>

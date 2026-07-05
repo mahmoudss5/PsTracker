@@ -98,14 +98,14 @@ class ImpAnnouncmentServiceTest {
         AnnouncementResponseDto responseDto = new AnnouncementResponseDto(10L, "INFO", "Msg", 2L, userId, LocalDateTime.now());
 
         when(announcmentUserRepository.findByUserId(userId)).thenReturn(List.of(annUser));
-        when(announcmentMapper.toUserDto(ann, userId)).thenReturn(responseDto);
+        when(announcmentMapper.toAnnouncmentResponseDto(ann, userId)).thenReturn(responseDto);
 
         List<AnnouncementResponseDto> results = announcmentService.getAllAnnouncmentsForUser(userId);
 
         assertEquals(1, results.size());
         assertEquals("Msg", results.get(0).content());
         verify(announcmentUserRepository).findByUserId(userId);
-        verify(announcmentMapper).toUserDto(ann, userId);
+        verify(announcmentMapper).toAnnouncmentResponseDto(ann, userId);
     }
 
     @Test
@@ -116,13 +116,13 @@ class ImpAnnouncmentServiceTest {
         AnnouncementResponseDto responseDto = new AnnouncementResponseDto(10L, "INFO", "Msg Team", 2L, teamId, LocalDateTime.now());
 
         when(announcmentTeamRepository.findByTeamId(teamId)).thenReturn(List.of(annTeam));
-        when(announcmentMapper.toTeamDto(ann, teamId)).thenReturn(responseDto);
+        when(announcmentMapper.toAnnouncmentResponseDto(ann, teamId)).thenReturn(responseDto);
 
         List<AnnouncementResponseDto> results = announcmentService.getAllAnnouncmentsForTeam(teamId);
 
         assertEquals(1, results.size());
         assertEquals("Msg Team", results.get(0).content());
         verify(announcmentTeamRepository).findByTeamId(teamId);
-        verify(announcmentMapper).toTeamDto(ann, teamId);
+        verify(announcmentMapper).toAnnouncmentResponseDto(ann, teamId);
     }
 }

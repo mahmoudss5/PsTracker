@@ -369,8 +369,8 @@ function TeamDetail({ team, isCoach }: { team: TeamResponse; isCoach: boolean })
 
       <div className="flex-1 overflow-hidden">
         {activeTab === "chat" && <TeamChatPanel />}
-        {activeTab === "announcements" && <AnnouncementsPanel />}
-        {activeTab === "materials" && <MaterialsPanel />}
+        {activeTab === "announcements" && <AnnouncementsPanel teamId={team.id} />}
+        {activeTab === "materials" && <MaterialsPanel teamId={team.id} />}
       </div>
     </div>
   );
