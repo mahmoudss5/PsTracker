@@ -8,6 +8,8 @@ import {
 } from "lucide-react";
 import { RiTeamFill } from "react-icons/ri";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
+import { useAuth } from "../../contextes/AuthContext";
+import { getIsCoach } from "../../services/AuthService";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -17,8 +19,9 @@ interface SidebarProps {
 export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
   const location = useLocation();
   const { user } = useCurrentUser();
+  const { logout } = useAuth();
   
-  const isCoach = user?.role === 'COACH' || user?.role === 'coach';
+  const isCoach = getIsCoach() || user?.role?.toUpperCase() === 'COACH';
 
   const navItems = [
     { path: isCoach ? "/dashboard/coach" : "/dashboard/trainee", label: "Dashboard", icon: Home },
@@ -87,7 +90,17 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
           </div>
 
           <div className="mt-auto pt-2 border-t border-dashboard-border">
-            <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 transition-colors text-red-500 hover:bg-dashboard-elevated hover:text-red-400">
+            <button 
+              onClick={async () => {
+                try {
+                  await logout();
+                  window.location.href = '/auth';
+                } catch (err) {
+                  console.error('Logout failed:', err);
+                }
+              }}
+              className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 transition-colors text-red-500 hover:bg-dashboard-elevated hover:text-red-400"
+            >
               <LogOutIcon size={22} className="shrink-0" />
               <span className="text-sm font-medium whitespace-nowrap transition-all duration-300 md:w-0 md:opacity-0 md:overflow-hidden md:group-hover:w-auto md:group-hover:opacity-100">
                 Logout

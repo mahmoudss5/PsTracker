@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
 import { AlertCircle, Home } from "lucide-react";
-
+import { isAuthenticated } from "../../services/AuthService";
 export function InvalidUrl() {
+   const authed=isAuthenticated()
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-dashboard px-4 text-dashboard-text">
       {/* Ambient background blur blobs */}
@@ -29,13 +30,21 @@ export function InvalidUrl() {
         </p>
 
         {/* Action Button */}
-        <Link
+
+        {authed ? <Link
           to="/dashboard"
           className="primary-action w-full flex items-center justify-center gap-2 group transition-all duration-300 transform active:scale-95"
         >
           <Home size={18} className="transition-transform group-hover:scale-110" />
           <span>Return to Dashboard</span>
+        </Link>:<Link
+          to="/auth"
+          className="primary-action w-full flex items-center justify-center gap-2 group transition-all duration-300 transform active:scale-95"
+        >
+          <Home size={18} className="transition-transform group-hover:scale-110" />
+          <span>Login</span>
         </Link>
+        }
       </div>
     </div>
   );

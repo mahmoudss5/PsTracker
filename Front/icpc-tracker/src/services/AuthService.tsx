@@ -52,12 +52,14 @@ export function removeUser(){
 export async function login(credentials:LoginCredentials){
     try {
         const response = await apiClient.post('/auth/login', credentials);
-        storeUserId(response.data.user.id)
-        storeUserNmae(response.data.user.userName)
-        storeToken(response.data.user.token)
-        storeIsCoach(response.data.user.isCoach)
+        // Backend AuthResponse is flat: { token, RefershToken, userId, userName, isCoach }
+        storeUserId(response.data.userId)
+        storeUserNmae(response.data.userName)
+        storeToken(response.data.token)
+        storeIsCoach(response.data.isCoach)
     } catch (error) {
-      throw normalizeApiError(error,"Failed to login")
+        console.log(error)
+        throw normalizeApiError(error,"Failed to login")
     }
 }
 
@@ -65,12 +67,13 @@ export async function login(credentials:LoginCredentials){
 export async function register(credentials:RegisterCredentials){
     try {
         const response = await apiClient.post('/auth/register', credentials);
-        storeUserId(response.data.user.id)
-        storeUserNmae(response.data.user.userName)
-        storeToken(response.data.user.token)
-        storeIsCoach(response.data.user.isCoach)
+        // Backend AuthResponse is flat: { token, RefershToken, userId, userName, isCoach }
+        storeUserId(response.data.userId)
+        storeUserNmae(response.data.userName)
+        storeToken(response.data.token)
+        storeIsCoach(response.data.isCoach)
     } catch (error) {
-      throw normalizeApiError(error,"Failed to register")
+        throw normalizeApiError(error,"Failed to register")
     }
 }
 export async function logout(){

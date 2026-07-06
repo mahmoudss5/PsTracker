@@ -1,8 +1,11 @@
 import { useCallback, useState} from 'react';
 import type { FormEvent } from "react";
+import { useNavigate } from "react-router-dom";
 import type { RegisterCredentials, UserRole } from '../../types/auth.types';
 import { toast } from 'sonner';
-import {useAuth} from "../../contextes/AuthContext";
+import { useAuth } from "../../contextes/AuthContext";
+import { getIsCoach } from "../../services/AuthService.tsx";
+
 const INITIAL_CREDENTIALS: Omit<RegisterCredentials, 'isCoach'> = {
   username:'',
   email: '',
@@ -16,7 +19,8 @@ export function useRegister() {
   const [error, setError] = useState<string | null>(null);
   const [selectedRole, setSelectedRole] = useState<UserRole | null>('trainee');
   const [isSubmitting, setIsSubmitting] = useState(false);
-const {register}=useAuth();
+  const { register } = useAuth();
+  const navigate = useNavigate();
 
 
 
@@ -71,7 +75,11 @@ const {register}=useAuth();
         await register(finalCredentials);
         toast.success('Successfully signed up!');
         console.log('Sign up:', { ...credentials, role: selectedRole==='coach'});
-      }catch (error) {
+        
+        const currentIsCoach = getIsCoach();
+        if(currentIsCoach) navigate("/dashboard/coach");
+        else navigate("/dashboard/trainee");
+      } catch (error) {
          const message=error instanceof Error?error.message:String(error);
          setError(message);
          toast.error(message);

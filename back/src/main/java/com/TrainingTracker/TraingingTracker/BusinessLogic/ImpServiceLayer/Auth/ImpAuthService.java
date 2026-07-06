@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -49,7 +50,7 @@ public class ImpAuthService implements AuthService {
             );
         } catch (AuthenticationException exception) {
             log.warn("Failed sign-in attempt for email {}", signDto.email());
-            throw exception;
+            throw new BadCredentialsException("Invalid email or password");
         }
 
         User user = userRepository.findByEmail(signDto.email())
@@ -95,12 +96,17 @@ public class ImpAuthService implements AuthService {
     @Transactional
     public void logout() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new IllegalStateException("Authentication required");
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
+            log.info("Logout called without active authentication (token expired or missing). Proceeding to clear cookies.");
+            return;
         }
 
         User user = userRepository.findByEmail(authentication.getName())
-                .orElseThrow(() -> new IllegalStateException("Authenticated user was not found"));
+                .orElse(null);
+        
+        if (user == null) {
+            return;
+        }
 
         refershTokenRepositroy.deleteByUserId(user.getId());
         SecurityContextHolder.clearContext();

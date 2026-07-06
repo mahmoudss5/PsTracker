@@ -61,7 +61,7 @@ public class AuthController {
   public void logout(   @CookieValue(name = "refreshToken", required = false) String refreshToken,
                         HttpServletResponse response) {
       authService.logout();
-      ResponseCookie deleteCookie=ResponseCookie.from("refreshToken",refreshToken)
+      ResponseCookie deleteCookie=ResponseCookie.from("refreshToken", "")
               .httpOnly(true)
               .secure(true)
               .path("/api/auth")

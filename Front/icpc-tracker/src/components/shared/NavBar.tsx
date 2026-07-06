@@ -1,6 +1,7 @@
 import { Menu, Sun, Moon, User } from 'lucide-react';
 import type { Theme } from '../../hooks/theme/useTheme';
 import { NotificationBell } from './NotificationBell';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
 
 interface NavBarProps {
   onOpenMenu: () => void;
@@ -9,6 +10,9 @@ interface NavBarProps {
 }
 
 export function NavBar({ onOpenMenu, theme, onToggleTheme }: NavBarProps) {
+  const { user } = useCurrentUser();
+  const userName = user?.userName || user?.codeforcesHandle;
+
   return (
     <header className="sticky top-0 z-30 border-b border-dashboard-border bg-dashboard/80 backdrop-blur">
       {/* Main bar */}
@@ -38,8 +42,11 @@ export function NavBar({ onOpenMenu, theme, onToggleTheme }: NavBarProps) {
             <NotificationBell />
           </div>
 
-          <div className="ml-1 sm:ml-2 flex items-center gap-2 border-l border-dashboard-border pl-2 sm:pl-4">
-            <div className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-dashboard-primary/20 text-dashboard-primary hover:bg-dashboard-primary/30 transition">
+          <div className="ml-1 sm:ml-2 flex items-center gap-3 border-l border-dashboard-border pl-2 sm:pl-4">
+            <span className="text-sm font-bold text-dashboard-text hidden sm:block">
+              {userName || 'User'}
+            </span>
+            <div className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-dashboard-primary/20 text-dashboard-primary hover:bg-dashboard-primary/30 transition shadow-sm">
               <User size={18} />
             </div>
           </div>

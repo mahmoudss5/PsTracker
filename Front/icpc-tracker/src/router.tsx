@@ -22,8 +22,14 @@ function DashboardIndexRedirect() {
 
 export const router = createBrowserRouter([
   {
-    path: '/',
+    path: '/auth',
+    index:true,
     element: <AuthPage />,
+    errorElement: <ErrorPage />,
+  },
+  {
+    path: '/',
+    element: <Navigate to="auth" replace />,
     errorElement: <ErrorPage />,
   },
   {

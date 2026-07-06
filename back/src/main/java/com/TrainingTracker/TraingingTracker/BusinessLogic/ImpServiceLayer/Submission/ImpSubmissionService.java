@@ -12,6 +12,7 @@ import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.User;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Repositories.SubmissionRepository;
 import com.TrainingTracker.TraingingTracker.Util.SecuiryUserUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +25,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ImpSubmissionService implements SubmissionService {
 
     private final SubmissionRepository submissionRepository;
@@ -104,7 +106,8 @@ public class ImpSubmissionService implements SubmissionService {
     @Transactional(readOnly = true)
     @Cacheable(value = "userSubmissions", key = "#userId")
     public List<SubmissionResponseDto> getSubmissionsByUserId(Long userId) {
-        userService.getUserById(userId);
+        log.info("fetching submissions for user:" + userId);
+        User user=userService.getUserById(userId);
         return submissionRepository.findByUserIdOrderByCreatedAtDesc(userId)
                 .stream()
                 .map(submissionMapper::toDto)

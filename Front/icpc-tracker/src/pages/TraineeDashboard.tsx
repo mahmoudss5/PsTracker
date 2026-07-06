@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { ProfileCard } from '../components/Traineedashboard/ProfileCard';
 import { RankCard } from '../components/Traineedashboard/RankCard';
 import { ConsistencyHeatmap } from '../components/Traineedashboard/ConsistencyHeatmap';
@@ -15,6 +16,21 @@ export function TraineeDashboard() {
   const { submissions } = useSubmissions(
     user ? { userId: user.id } : {}
   );
+
+  const [cfAvatar, setCfAvatar] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user?.codeforcesHandle) return;
+    
+    fetch(`https://codeforces.com/api/user.info?handles=${user.codeforcesHandle}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === 'OK' && data.result?.length > 0) {
+          setCfAvatar(data.result[0].titlePhoto);
+        }
+      })
+      .catch(console.error);
+  }, [user?.codeforcesHandle]);
 
   if (userLoading) {
     return (
@@ -58,10 +74,10 @@ export function TraineeDashboard() {
         <div className="md:col-span-2">
           <ProfileCard
             username={user.userName}
-            avatarUrl={`https://codeforces.org/s/0/1/avatar.png`} // We don't have avatar URL in backend
+            avatarUrl={cfAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.codeforcesHandle || user.userName}&backgroundColor=transparent`}
             title={user.role}
             streak={0} // Backend doesn't have streak
-            bio={`Codeforces Handle: ${user.codeforcesHandle}`}
+            codeforcesHandle={user.codeforcesHandle}
             maxRank={user.maxRank || "Unrated"}
             maxRate={user.maxRate || 0}
             rate={user.rate || 0}

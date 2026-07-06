@@ -50,8 +50,13 @@ public class ImpCfService implements CfService {
     private void syncCodforcesSubmissionData() {
         log.info("Starting Codeforces submission data synchronization...");
         List<User>userList=userService.getAllUserEntites();
+        if(userList.isEmpty()){
+            log.error("No users found in the database");
+            return;
+        }
         for(User user:userList) {
-           log.info("Fetching submissions for user: {}", user.getUsername());
+            String username = user.getUsername();
+           log.info("Fetching submissions for user: {}", username);
             try {
                 codeforcesSubmissionDto response = restClient.get()
                         .uri("/user.status?handle={handle}&from=1&count=10", getUserCodeforecesHandle(user.getId()))

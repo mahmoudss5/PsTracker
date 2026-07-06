@@ -42,7 +42,13 @@ apiClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if ((error.response?.status === 401 || error.response?.status === 403) && !originalRequest._retry) {
+      // If the original request was login or register, just pass the 401 error through
+      // so the form can display the "bad credentials" error instead of trying to refresh.
+      if (originalRequest.url === "/auth/login" || originalRequest.url === "/auth/register") {
+        return Promise.reject(error);
+      }
+
       if (originalRequest.url === "/auth/refresh") {
         localStorage.clear();
         return Promise.reject(error);
@@ -64,7 +70,7 @@ apiClient.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const response = await apiClient.post("/auth/refresh");
+        const response = await apiClient.get("/auth/refresh");
 
         const { token: newAccessToken } = response.data;
 
@@ -79,7 +85,7 @@ apiClient.interceptors.response.use(
         processQueue(refreshError, null);
 
         localStorage.clear();
-        window.location.href = "/login";
+        window.location.href = "/auth";
 
         return Promise.reject(refreshError);
       } finally {

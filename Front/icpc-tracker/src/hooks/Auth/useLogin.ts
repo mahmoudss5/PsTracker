@@ -35,11 +35,13 @@ export function useLogin() {
       setIsSubmitting(true);
 
       try {
-        await  login(credentials);
+        await login(credentials);
         toast.success('Successfully signed in!');
         console.log('Sign in:', credentials);
-        if(isCoach) navigate("/coachDashboard");
-        else navigate("/traineeDashboard");
+        
+        const currentIsCoach = getIsCoach();
+        if(currentIsCoach) navigate("/dashboard/coach");
+        else navigate("/dashboard/trainee");
       }
       catch (error) {
          const message=error instanceof Error?error.message:String(error);
