@@ -65,6 +65,7 @@ export async function login(credentials:LoginCredentials){
 
 
 export async function register(credentials:RegisterCredentials){
+     console.log("register user with data : ",credentials)
     try {
         const response = await apiClient.post('/auth/register', credentials);
         // Backend AuthResponse is flat: { token, RefershToken, userId, userName, isCoach }

@@ -73,11 +73,22 @@ public class ProblemMapper {
                 .toList();
         Problem problemEntity = Problem.builder()
                 .name(problem.getName())
-                .rating(Integer.parseInt(problem.getRating()))
+                .rating(parseNullableInteger(problem.getRating()))
                 .tags(tags)
                 .build();
 
         return problemEntity;
+    }
+    private Integer parseNullableInteger(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
 }

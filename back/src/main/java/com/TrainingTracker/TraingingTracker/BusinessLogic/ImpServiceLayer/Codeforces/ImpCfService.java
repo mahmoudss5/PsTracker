@@ -139,4 +139,6 @@ public class ImpCfService implements CfService {
     private String getUserCodeforecesHandle(Long userId) {
         return userService.getUserById(userId).getCodeforcesHandle();
     }
+
+
 }

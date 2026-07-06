@@ -66,9 +66,11 @@ public class ImpAuthService implements AuthService {
     @Transactional
     @CacheEvict(value = "trainees",allEntries = true,condition = "#dto.isCoach() == false")
     public AuthResponse signUp(SignUpDto dto) {
+
         if (userRepository.findByEmail(dto.email()).isPresent()) {
             throw new IllegalArgumentException("Email is already registered");
         }
+
         if(!cfService.checkIfUserCfAccountExist(dto.codeforcesHandle())){
             throw new IllegalArgumentException("Codeforces account does not exist");
         }

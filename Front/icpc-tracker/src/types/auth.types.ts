@@ -6,7 +6,7 @@ export interface LoginCredentials {
 }
 
 export interface RegisterCredentials {
-  username: string;
+  userName: string;
   email: string;
   password: string;
   codeforcesHandle: string;

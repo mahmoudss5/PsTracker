@@ -102,7 +102,7 @@ public class JwtService {
     public String generateToken(UserDetails userDetails) {
 
         User user =userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found with username: " + userDetails.getUsername()));
+                .orElseThrow(() -> new RuntimeException("User not found with userName: " + userDetails.getUsername()));
         return generateToken(getExtraClaims(user), userDetails);
     }
 

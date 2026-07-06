@@ -7,7 +7,7 @@ import { useAuth } from "../../contextes/AuthContext";
 import { getIsCoach } from "../../services/AuthService.tsx";
 
 const INITIAL_CREDENTIALS: Omit<RegisterCredentials, 'isCoach'> = {
-  username:'',
+  userName:'',
   email: '',
   password: '',
   codeforcesHandle: '',
@@ -25,7 +25,7 @@ export function useRegister() {
 
 
   const setUserName=useCallback((name:string)=>{
-    setCredentials((prev)=>({...prev,username:name}))
+    setCredentials((prev)=>({...prev,userName:name}))
   },[])
 
   const setEmail = useCallback((email: string) => {
@@ -56,7 +56,7 @@ export function useRegister() {
         setError('Passwords do not match');
         return;
       }
-      if(credentials.username.length<5){
+      if(credentials.userName.length<5){
         setError("Username must be at least 5 characters long");
         return;
       }
@@ -70,7 +70,7 @@ export function useRegister() {
       };
 
       setIsSubmitting(true);
-
+      console.log("final credentials",finalCredentials)
       try {
         await register(finalCredentials);
         toast.success('Successfully signed up!');
@@ -95,7 +95,7 @@ export function useRegister() {
     email: credentials.email,
     password: credentials.password,
     confirmPassword,
-    username:credentials.username,
+    username:credentials.userName,
     codeforcesHandle: credentials.codeforcesHandle,
     selectedRole,
     error,

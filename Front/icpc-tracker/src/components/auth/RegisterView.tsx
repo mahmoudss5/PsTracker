@@ -11,7 +11,7 @@ export function RegisterView({ onSwitchToLogin }: RegisterViewProps) {
     email,
     password,
     confirmPassword,
-
+    error,
     username,
     codeforcesHandle,
     selectedRole,
@@ -43,6 +43,7 @@ export function RegisterView({ onSwitchToLogin }: RegisterViewProps) {
           onSubmit={handleSignUp}
           onSwitchToLogin={onSwitchToLogin}
         />
+        {error && <p className="text-red-500 text-center mt-2 mb-4 pb-4">{error}</p>}
       </div>
       <div className="hidden w-px shrink-0 bg-accent/20 md:block" />
       <div className="flex-1 border-t border-accent/20 md:border-t-0">
