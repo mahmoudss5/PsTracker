@@ -1,129 +1,206 @@
 import { useState } from 'react';
-import { Search, Filter, MoreVertical, ArrowUp, ArrowDown } from 'lucide-react';
-import type { TraineeOverview } from '../../data/mockCoach';
+import { ArrowUpDown, ChevronDown, ChevronUp, TrendingUp, Users } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import type { TraineeResponse } from '../../types/api.types';
 
 interface TraineesTableProps {
-  trainees: TraineeOverview[];
+  trainees: TraineeResponse[];
   totalTrainees: number;
 }
 
+type SortKey = 'userName' | 'rate' | 'numberOfSolveProblems' | 'totalSumbissions';
+type SortDir = 'asc' | 'desc';
+
+const RANK_COLOR: Record<string, string> = {
+  'Legendary Grandmaster': 'text-red-400',
+  'International Grandmaster': 'text-red-400',
+  'Grandmaster': 'text-red-400',
+  'International Master': 'text-orange-400',
+  'Master': 'text-orange-400',
+  'Candidate Master': 'text-purple-400',
+  'Expert': 'text-blue-400',
+  'Specialist': 'text-cyan-400',
+  'Pupil': 'text-emerald-400',
+  'Newbie': 'text-dashboard-muted',
+};
+
+function rankColor(rank: string): string {
+  return RANK_COLOR[rank] ?? 'text-dashboard-muted';
+}
+
+function initials(name: string): string {
+  return name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase())
+    .join('') || '?';
+}
+
+function SortIcon({ col, active, dir }: { col: string; active: boolean; dir: SortDir }) {
+  if (!active) return <ArrowUpDown size={12} className="text-dashboard-muted opacity-50" />;
+  return dir === 'asc'
+    ? <ChevronUp size={12} className="text-dashboard-primary" />
+    : <ChevronDown size={12} className="text-dashboard-primary" />;
+}
+
 export function TraineesTable({ trainees, totalTrainees }: TraineesTableProps) {
-  const [searchTerm, setSearchTerm] = useState('');
-  
-  const filteredTrainees = trainees.filter(t => 
-    t.handle.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const [sortKey, setSortKey] = useState<SortKey>('rate');
+  const [sortDir, setSortDir] = useState<SortDir>('desc');
+  const [search, setSearch] = useState('');
+
+  const toggleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortKey(key);
+      setSortDir('desc');
+    }
+  };
+
+  const filtered = trainees
+    .filter((t) => {
+      const q = search.toLowerCase();
+      return (
+        t.userName.toLowerCase().includes(q) ||
+        (t.codeforcesHandle ?? '').toLowerCase().includes(q) ||
+        (t.rank ?? '').toLowerCase().includes(q)
+      );
+    })
+    .sort((a, b) => {
+      const mul = sortDir === 'asc' ? 1 : -1;
+      if (sortKey === 'userName') return mul * a.userName.localeCompare(b.userName);
+      return mul * ((a[sortKey] as number) - (b[sortKey] as number));
+    });
 
   return (
-    <div className="glass-panel flex flex-col h-full overflow-hidden">
-      {/* Table Header / Controls */}
-      <div className="p-5 border-b border-dashboard-border/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <h3 className="text-base font-bold text-dashboard-text">Trainees Overview</h3>
-        
+    <div className="glass-panel p-5">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
         <div className="flex items-center gap-2">
-          <div className="relative">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-dashboard-muted" />
-            <input 
-              type="text" 
-              placeholder="Search handle..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="bg-dashboard-background border border-dashboard-border/50 rounded-md py-1.5 pl-8 pr-3 text-sm text-dashboard-text focus:outline-none focus:border-dashboard-primary/50 focus:ring-1 focus:ring-dashboard-primary/50 transition-all w-full sm:w-48"
-            />
-          </div>
-          <button className="p-1.5 border border-dashboard-border/50 rounded-md bg-dashboard-background text-dashboard-muted hover:text-dashboard-text hover:border-dashboard-primary/50 transition-colors">
-            <Filter size={16} />
-          </button>
+          <Users size={16} className="text-dashboard-primary" />
+          <h3 className="text-sm font-bold text-dashboard-text">Trainees</h3>
+          <span className="text-xs text-dashboard-muted">
+            {filtered.length} / {totalTrainees}
+          </span>
         </div>
+
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search by name, handle, rank…"
+          className="flex-1 min-w-40 max-w-xs bg-dashboard-elevated border border-dashboard-border rounded-lg px-3 py-1.5 text-xs text-dashboard-text placeholder:text-dashboard-muted focus:outline-none focus:border-dashboard-primary transition-colors"
+        />
       </div>
 
-      {/* Table Content */}
-      <div className="flex-1 overflow-x-auto">
-        <table className="w-full text-left text-sm whitespace-nowrap min-w-[500px]">
-          <thead className="bg-dashboard-background/30 text-[10px] uppercase tracking-wider text-dashboard-muted border-b border-dashboard-border/50 font-bold">
-            <tr>
-              <th className="px-5 py-3 font-bold">Handle</th>
-              <th className="px-5 py-3 font-bold">Rating</th>
-              <th className="px-5 py-3 font-bold">Solved (7D)</th>
-              <th className="px-5 py-3 font-bold">Status</th>
-              <th className="px-5 py-3 text-right"></th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-dashboard-border/30">
-            {filteredTrainees.map((trainee) => (
-              <tr key={trainee.id} className="hover:bg-dashboard-panel/50 transition-colors group">
-                <td className="px-5 py-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-sm bg-dashboard-primary/10 flex items-center justify-center text-dashboard-text font-bold text-xs border border-dashboard-primary/20">
-                      {trainee.handle.substring(0, 2).toUpperCase()}
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="font-bold text-dashboard-text text-[13px]">{trainee.handle}</span>
-                      <span className="text-[11px] text-dashboard-muted">{trainee.ratingRank}</span>
-                    </div>
-                  </div>
-                </td>
-                <td className="px-5 py-4">
-                  <span className="font-bold text-orange-400">{trainee.rating}</span>
-                </td>
-                <td className="px-5 py-4">
-                  <div className="flex items-center gap-2 font-bold text-dashboard-text">
-                    {trainee.solved7d}
-                    {trainee.solved7dTrend > 0 ? (
-                      <span className="flex items-center text-[11px] text-emerald-400 bg-emerald-400/10 px-1 py-0.5 rounded">
-                        <ArrowUp size={10} className="mr-0.5" />
-                        {trainee.solved7dTrend}%
-                      </span>
-                    ) : (
-                      <span className="flex items-center text-[11px] text-red-400 bg-red-400/10 px-1 py-0.5 rounded">
-                        <ArrowDown size={10} className="mr-0.5" />
-                        {Math.abs(trainee.solved7dTrend)}%
-                      </span>
-                    )}
-                  </div>
-                </td>
-                <td className="px-5 py-4">
-                  <span className={`text-[10px] font-bold px-2 py-1 rounded-sm border ${
-                    trainee.status === 'ACTIVE' 
-                      ? 'text-emerald-400 border-emerald-400/30 bg-emerald-400/5' 
-                      : trainee.status === 'IN CONTEST'
-                      ? 'text-orange-400 border-orange-400/30 bg-orange-400/5'
-                      : 'text-dashboard-muted border-dashboard-border/50 bg-dashboard-background'
-                  }`}>
-                    {trainee.status}
-                  </span>
-                </td>
-                <td className="px-5 py-4 text-right">
-                  <button className="text-dashboard-muted hover:text-dashboard-text p-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <MoreVertical size={16} />
+      {/* Empty */}
+      {trainees.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-12 text-dashboard-muted">
+          <TrendingUp size={24} className="mb-2 opacity-40" />
+          <p className="text-sm font-semibold">No trainees yet</p>
+          <p className="text-xs mt-1">Share a team code with your trainees to get started.</p>
+        </div>
+      )}
+
+      {/* Table */}
+      {trainees.length > 0 && (
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-dashboard-border text-[10px] uppercase tracking-wider text-dashboard-muted">
+                <th className="pb-2 text-left font-semibold">
+                  <button
+                    onClick={() => toggleSort('userName')}
+                    className="flex items-center gap-1 hover:text-dashboard-text transition-colors"
+                  >
+                    Trainee <SortIcon col="userName" active={sortKey === 'userName'} dir={sortDir} />
                   </button>
-                </td>
+                </th>
+                <th className="pb-2 text-right font-semibold">
+                  <button
+                    onClick={() => toggleSort('rate')}
+                    className="flex items-center gap-1 ml-auto hover:text-dashboard-text transition-colors"
+                  >
+                    Rating <SortIcon col="rate" active={sortKey === 'rate'} dir={sortDir} />
+                  </button>
+                </th>
+                <th className="pb-2 text-right font-semibold">
+                  <button
+                    onClick={() => toggleSort('numberOfSolveProblems')}
+                    className="flex items-center gap-1 ml-auto hover:text-dashboard-text transition-colors"
+                  >
+                    Solved <SortIcon col="numberOfSolveProblems" active={sortKey === 'numberOfSolveProblems'} dir={sortDir} />
+                  </button>
+                </th>
+                <th className="pb-2 text-right font-semibold">
+                  <button
+                    onClick={() => toggleSort('totalSumbissions')}
+                    className="flex items-center gap-1 ml-auto hover:text-dashboard-text transition-colors"
+                  >
+                    Submissions <SortIcon col="totalSumbissions" active={sortKey === 'totalSumbissions'} dir={sortDir} />
+                  </button>
+                </th>
+                <th className="pb-2 text-right font-semibold">Submissions</th>
               </tr>
-            ))}
-            
-            {filteredTrainees.length === 0 && (
-              <tr>
-                <td colSpan={5} className="px-5 py-8 text-center text-dashboard-muted text-sm">
-                  No trainees found matching "{searchTerm}"
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody className="divide-y divide-dashboard-border/40">
+              {filtered.map((t) => (
+                <tr key={t.id} className="hover:bg-dashboard-primary/5 transition-colors group">
+                  {/* Name + handle */}
+                  <td className="py-3 pr-4">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-dashboard-elevated border border-dashboard-border text-xs font-bold text-dashboard-muted group-hover:border-dashboard-primary/40 transition-colors">
+                        {initials(t.userName)}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-dashboard-text leading-tight">{t.userName}</p>
+                        {t.codeforcesHandle && (
+                          <p className="text-[10px] text-dashboard-muted">@{t.codeforcesHandle}</p>
+                        )}
+                      </div>
+                    </div>
+                  </td>
 
-      {/* Pagination Footer */}
-      <div className="p-4 border-t border-dashboard-border/50 flex items-center justify-between text-xs">
-        <span className="text-dashboard-muted">
-          Showing 1-{Math.min(filteredTrainees.length, 5)} of {totalTrainees} trainees
-        </span>
-        <div className="flex items-center gap-1">
-          <button className="px-2.5 py-1 text-dashboard-muted hover:text-dashboard-text transition-colors">Previous</button>
-          <button className="w-6 h-6 flex items-center justify-center bg-dashboard-primary text-dashboard-primary-contrast rounded font-bold">1</button>
-          <button className="w-6 h-6 flex items-center justify-center bg-dashboard-background text-dashboard-muted hover:text-dashboard-text hover:bg-dashboard-panel border border-dashboard-border/50 rounded font-bold transition-colors">2</button>
-          <button className="px-2.5 py-1 text-dashboard-muted hover:text-dashboard-text transition-colors">Next</button>
+                  {/* Rating */}
+                  <td className="py-3 text-right">
+                    <div>
+                      <p className="font-bold text-dashboard-text tabular-nums">{t.rate.toLocaleString()}</p>
+                      {t.rank && (
+                        <p className={`text-[10px] font-semibold ${rankColor(t.rank)}`}>{t.rank}</p>
+                      )}
+                    </div>
+                  </td>
+
+                  {/* Solved problems (all-time) */}
+                  <td className="py-3 text-right">
+                    <span className="font-bold text-emerald-400 tabular-nums">
+                      {t.numberOfSolveProblems.toLocaleString()}
+                    </span>
+                  </td>
+
+                  {/* Total submissions */}
+                  <td className="py-3 text-right">
+                    <span className="tabular-nums text-dashboard-muted">
+                      {t.totalSumbissions.toLocaleString()}
+                    </span>
+                  </td>
+
+                  {/* Link to submissions page */}
+                  <td className="py-3 text-right">
+                    <Link
+                      to={`/dashboard/submissions/${t.id}`}
+                      className="text-xs font-semibold text-dashboard-primary hover:text-dashboard-primary/80 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      View →
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-      </div>
+      )}
     </div>
   );
 }

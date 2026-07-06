@@ -18,8 +18,8 @@ import {
 import { PiCrownSimpleFill } from "react-icons/pi";
 import { toast } from "sonner";
 import { MaterialsPanel } from "../components/shared/MaterialsPanel";
-import { MOCK_ANNOUNCEMENTS } from "../data/mockProfile";
 import { AnnouncementsPanel } from "../components/shared/AnnouncementsPanel";
+import { useTeamAnnouncements } from "../hooks/useTeamAnnouncements";
 import { TeamChatPanel } from "../components/shared/TeamChatPane";
 import { useCurrentUser } from "../hooks/useCurrentUser";
 import { useCoachTeams, useTeam } from "../hooks/useTeam";
@@ -263,8 +263,12 @@ function ErrorBlock({ message, onRetry }: { message: string; onRetry: () => void
 
 function TeamDetail({ team, isCoach }: { team: TeamResponse; isCoach: boolean }) {
   const [activeTab, setActiveTab] = useState<Tab>("chat");
+  // Use the live STOMP-backed hook so the badge stays current in real time.
+  // We only need the count here; AnnouncementsPanel has its own hook instance.
+  const { announcements: liveAnnouncements, newIds: annNewIds } = useTeamAnnouncements(team.id);
+  const urgentCount = liveAnnouncements.filter((a) => a.type === "URGENT").length;
   const badgeCount: Partial<Record<Tab, number>> = {
-    announcements: MOCK_ANNOUNCEMENTS.filter((announcement) => announcement.type === "URGENT").length,
+    announcements: urgentCount + annNewIds.size,
   };
 
   const copyInviteCode = async () => {
@@ -368,7 +372,7 @@ function TeamDetail({ team, isCoach }: { team: TeamResponse; isCoach: boolean })
       </div>
 
       <div className="flex-1 overflow-hidden">
-        {activeTab === "chat" && <TeamChatPanel />}
+        {activeTab === "chat" && <TeamChatPanel teamId={team.id} coachUsername={team.coachUsername} />}
         {activeTab === "announcements" && <AnnouncementsPanel teamId={team.id} />}
         {activeTab === "materials" && <MaterialsPanel teamId={team.id} />}
       </div>

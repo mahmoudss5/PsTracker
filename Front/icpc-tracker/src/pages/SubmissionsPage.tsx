@@ -6,9 +6,9 @@ import { SubmissionStatsBar } from '../components/Submissions/SubmissionStatsBar
 import { SubmissionVerdictsChart } from '../components/Submissions/SubmissionVerdictsChart';
 import { SubmissionActivityChart } from '../components/Submissions/SubmissionActivityChart';
 import { SubmissionTable } from '../components/Submissions/SubmissionTable';
-import { MOCK_TRAINEES } from '../data/mockProfile';
 import { useSubmissions } from '../hooks/useSubmissions';
 import { useSubmissionsStats } from '../hooks/useSubmissionsStats';
+import { useUserById } from '../hooks/useUserById';
 import type { TimePeriod, CustomRange } from '../types/dashboard.types';
 
 export function SubmissionsPage() {
@@ -22,29 +22,27 @@ export function SubmissionsPage() {
     setCustomRange(range);
   };
 
-  // Resolve trainee display info (name / initials) from handle
-  const trainee = handle
-    ? MOCK_TRAINEES.find((t) => t.handle === handle)
-    : null;
+  // The handle segment in the URL is always a numeric user ID when navigating
+  // from the TraineesTable (which links to /dashboard/submissions/{id}).
   const numericUserId = handle && /^\d+$/.test(handle) ? Number(handle) : undefined;
   const isViewingUser = Boolean(handle);
 
-  // Derive a numeric userId from the trainee handle.
-  // TODO: once the backend returns userId on the profile or a handle→id lookup
-  // endpoint is available, replace this index-based heuristic.
-  const MOCK_USER_IDS: Record<string, number> = {
-    tourist_wannabe: 1,
-    ahmed_sayed: 2,
-    jana_cp: 3,
-    ahmed_mohsed: 4,
-  };
-  const targetUserId = numericUserId ?? (handle ? (MOCK_USER_IDS[handle] ?? undefined) : undefined);
+  // Fetch real user profile to display name / initials
+  const { user: targetUser } = useUserById(numericUserId ?? null);
 
   const { submissions, isLoading, error, refetch } = useSubmissions(
-    targetUserId !== undefined ? { userId: targetUserId } : {},
+    numericUserId !== undefined ? { userId: numericUserId } : {},
   );
 
   const { filtered, stats } = useSubmissionsStats(submissions, period, customRange);
+
+  // Derived display values (fall back to ID if user hasn't loaded yet)
+  const displayName = targetUser?.userName ?? (numericUserId ? `User #${numericUserId}` : 'My');
+  const avatarInitials = targetUser
+    ? targetUser.userName.slice(0, 2).toUpperCase()
+    : numericUserId
+      ? 'U'
+      : '';
 
   return (
     <div className="space-y-5 sm:space-y-6">
@@ -62,19 +60,19 @@ export function SubmissionsPage() {
           )}
 
           <div className="flex items-center gap-3">
-            {isViewingUser && (
+            {isViewingUser && avatarInitials && (
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-dashboard-primary text-dashboard-primary-contrast font-bold text-sm">
-                {trainee?.avatarInitials ?? "U"}
+                {avatarInitials}
               </div>
             )}
             <div>
               <h1 className="text-2xl font-extrabold tracking-tight text-dashboard-text flex items-center gap-2">
                 <BarChart2 size={22} className="text-dashboard-primary shrink-0" />
-                {isViewingUser ? `${trainee?.name ?? `User #${targetUserId ?? handle}`}'s Submissions` : 'My Submissions'}
+                {isViewingUser ? `${displayName}'s Submissions` : 'My Submissions'}
               </h1>
               <p className="text-sm text-dashboard-muted mt-0.5">
                 {isViewingUser
-                  ? `Viewing submission history for ${trainee ? `@${trainee.handle}` : `user ${targetUserId ?? handle}`}`
+                  ? `Viewing submission history for ${targetUser ? `@${targetUser.codeforcesHandle || targetUser.userName}` : `user ${numericUserId}`}`
                   : 'Your complete submission history and performance analytics.'}
               </p>
             </div>
@@ -117,13 +115,11 @@ export function SubmissionsPage() {
         </div>
       )}
 
-      {/* ── Data views (shown even while loading with stale data) ────────────── */}
+      {/* ── Data views ────────────────────────────────────────────────────────── */}
       {!isLoading && !error && (
         <>
-          {/* ── Stats Bar ────────────────────────────────────────────────────── */}
           <SubmissionStatsBar stats={stats} />
 
-          {/* ── Charts row ───────────────────────────────────────────────────── */}
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-5">
             <div className="lg:col-span-3">
               <SubmissionVerdictsChart stats={stats} />
@@ -133,7 +129,6 @@ export function SubmissionsPage() {
             </div>
           </div>
 
-          {/* ── Full submissions table ────────────────────────────────────────── */}
           <SubmissionTable submissions={filtered} />
         </>
       )}

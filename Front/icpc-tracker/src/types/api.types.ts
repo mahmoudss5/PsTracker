@@ -157,3 +157,35 @@ export interface TagCreateRequest {
 export interface TagUpdateRequest {
   tagName: string;
 }
+
+// ── Team Chat ─────────────────────────────────────────────────────────────────
+
+/** Maps to Java record `TeamMessageResponseDto` */
+export interface ChatMessage {
+  id: number;
+  content: string;
+  createdAt: string;   // ISO date-time string
+  teamId: number;
+  senderId: number;
+  senderUsername: string;
+}
+
+/** Payload for POST /api/team-messages/team/{teamId} and STOMP /app/teams/{teamId}/messages */
+export interface ChatMessageCreateRequest {
+  content: string;
+}
+
+// ── Notifications ─────────────────────────────────────────────────────────────
+
+/** Maps to Java record `NotificationResponseDto` */
+export interface NotificationResponse {
+  id: number;
+  userId: number;
+  title: string;
+  message: string;
+  type: string;          // e.g. "SYSTEM" | "ANNOUNCEMENT" etc.
+  isRead: boolean;
+  createdAt: string;     // ISO date-time
+  updatedAt: string;     // ISO date-time
+}
+

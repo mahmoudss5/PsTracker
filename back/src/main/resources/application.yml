@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/postgres
+    url: jdbc:postgresql://localhost:5432/pstracker
     username: pstracker_user
     password: 123456
     driver-class-name: org.postgresql.Driver
@@ -20,8 +20,9 @@ spring:
 
   flyway:
     enabled: true
-    baseline-on-migrate: true
+    clean-disabled: false
     locations: classpath:dbMigration
+
 
 jwt:
   secret: THIS_IS_A_VERY_LONG_SECRET_KEY_MINIMUM_32_CHARS

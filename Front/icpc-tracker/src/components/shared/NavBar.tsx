@@ -1,5 +1,6 @@
-import { Menu, Sun, Moon, Bell, User } from 'lucide-react';
+import { Menu, Sun, Moon, User } from 'lucide-react';
 import type { Theme } from '../../hooks/theme/useTheme';
+import { NotificationBell } from './NotificationBell';
 
 interface NavBarProps {
   onOpenMenu: () => void;
@@ -25,19 +26,17 @@ export function NavBar({ onOpenMenu, theme, onToggleTheme }: NavBarProps) {
             </span>
             <span className="text-lg font-bold text-dashboard-text">PsTracker</span>
           </div>
-
-       
         </div>
 
         <div className="flex items-center gap-1 sm:gap-2">
-        
           <button onClick={onToggleTheme} className="icon-button" title="Toggle theme">
             {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
           </button>
 
-          <button className="icon-button hidden sm:inline-flex" title="Notifications">
-            <Bell size={20} />
-          </button>
+          {/* Live notification bell */}
+          <div className="hidden sm:block">
+            <NotificationBell />
+          </div>
 
           <div className="ml-1 sm:ml-2 flex items-center gap-2 border-l border-dashboard-border pl-2 sm:pl-4">
             <div className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-dashboard-primary/20 text-dashboard-primary hover:bg-dashboard-primary/30 transition">
@@ -46,8 +45,6 @@ export function NavBar({ onOpenMenu, theme, onToggleTheme }: NavBarProps) {
           </div>
         </div>
       </div>
-
-    
     </header>
   );
 }
