@@ -2,7 +2,7 @@ package com.TrainingTracker.TraingingTracker.BusinessLogic.ImpServiceLayer.Codef
 import com.TrainingTracker.TraingingTracker.BusinessLogic.ImpServiceLayer.Problem.ProblemMapper;
 import com.TrainingTracker.TraingingTracker.BusinessLogic.ImpServiceLayer.Submission.SubmissionMapper;
 import com.TrainingTracker.TraingingTracker.BusinessLogic.InterfacesServiceLayer.CfService;
-import com.TrainingTracker.TraingingTracker.BusinessLogic.InterfacesServiceLayer.UserService;
+import com.TrainingTracker.TraingingTracker.DataAccessLayer.Repositories.UserRepository;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Codeforces.Submission.codeforcesSubmissionDto;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Codeforces.Submission.result.CodeforcesSubmissionResult;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.Problem;
@@ -32,7 +32,7 @@ import java.util.concurrent.TimeUnit;
 public class ImpCfService implements CfService {
 
     private final RestClient restClient;
-    private final UserService userService;
+    private final UserRepository userRepository;
     private final ProblemMapper problemMapper;
     private final SubmissionMapper submissionMapper;
     private final ProblemRepository problemRepository;
@@ -49,7 +49,7 @@ public class ImpCfService implements CfService {
     @Scheduled(fixedDelay = 2, timeUnit = TimeUnit.MINUTES)
     private void syncCodforcesSubmissionData() {
         log.info("Starting Codeforces submission data synchronization...");
-        List<User>userList=userService.getAllUserEntites();
+        List<User>userList=userRepository.findAll();
         if(userList.isEmpty()){
             log.error("No users found in the database");
             return;
@@ -137,7 +137,7 @@ public class ImpCfService implements CfService {
          }
     }
     private String getUserCodeforecesHandle(Long userId) {
-        return userService.getUserById(userId).getCodeforcesHandle();
+        return userRepository.findById(userId).orElseThrow().getCodeforcesHandle();
     }
 
 

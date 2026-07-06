@@ -7,8 +7,11 @@ import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.User;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Repositories.TeamRepository;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Repositories.UserRepository;
 import com.TrainingTracker.TraingingTracker.Util.SecuiryUserUtil;
-
-
+import com.TrainingTracker.TraingingTracker.BusinessLogic.InterfacesServiceLayer.CfService;
+import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.User.UpdateProfileDto;
+import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.User.UpdatePasswordDto;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.cache.annotation.CacheEvict;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
@@ -25,6 +28,8 @@ public class ImpUserService implements UserService {
     private final UserRepository userRepository;
     private final TeamRepository teamRepository;
     private final UserServiceMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
+    private final CfService cfService;
 
     @Override
     @Transactional(readOnly = true)
@@ -73,6 +78,47 @@ public class ImpUserService implements UserService {
     @Transactional(readOnly = true)
     public List<User> getAllUserEntites() {
         return userRepository.findAll();
+    }
+
+    @Override
+    @Transactional
+    @CacheEvict(value = {"trainees", "allTrainees", "teamTrainees"}, allEntries = true)
+    public TraineResponse updateProfile(UpdateProfileDto dto) {
+        Long currentUserId = SecuiryUserUtil.getCurrntUserId();
+        User user = getUserById(currentUserId);
+        
+        if (dto.userName() != null && !dto.userName().isBlank()) {
+            user.setUsername(dto.userName());
+        }
+        
+        if (dto.codeforcesHandle() != null && !dto.codeforcesHandle().isBlank() && !dto.codeforcesHandle().equals(user.getCodeforcesHandle())) {
+            if (!cfService.checkIfUserCfAccountExist(dto.codeforcesHandle())) {
+                throw new IllegalArgumentException("Codeforces account does not exist");
+            }
+            Long rating = cfService.getUserRating(dto.codeforcesHandle());
+            user.setCodeforcesHandle(dto.codeforcesHandle());
+            user.setRate(rating);
+            if (rating != null && (user.getMaxRate() == null || rating > user.getMaxRate())) {
+                user.setMaxRate(rating);
+            }
+        }
+        
+        userRepository.save(user);
+        return userMapper.toTraineResponse(user);
+    }
+
+    @Override
+    @Transactional
+    public void updatePassword(UpdatePasswordDto dto) {
+        Long currentUserId = SecuiryUserUtil.getCurrntUserId();
+        User user = getUserById(currentUserId);
+        
+        if (!passwordEncoder.matches(dto.oldPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("Incorrect old password");
+        }
+        
+        user.setPassword(passwordEncoder.encode(dto.newPassword()));
+        userRepository.save(user);
     }
 
 }

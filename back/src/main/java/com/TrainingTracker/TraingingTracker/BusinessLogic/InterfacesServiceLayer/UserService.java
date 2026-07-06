@@ -14,5 +14,6 @@ public interface UserService {
     List<TraineResponse> getAllUserByTeamId(Long teamId);
     List<User>getAllUserEntites();
     
-    
+    TraineResponse updateProfile(com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.User.UpdateProfileDto dto);
+    void updatePassword(com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.User.UpdatePasswordDto dto);
 }

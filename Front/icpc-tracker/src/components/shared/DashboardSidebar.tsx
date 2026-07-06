@@ -27,7 +27,7 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
     { path: isCoach ? "/dashboard/coach" : "/dashboard/trainee", label: "Dashboard", icon: Home },
     { path: "/dashboard/submissions", label: "Submissions", icon: ListTodo },
     { path: "/dashboard/team", label: "Team", icon: RiTeamFill },
-    { path: "/settings", label: "Settings", icon: Settings },
+    { path: "/dashboard/settings", label: "Settings", icon: Settings },
   ];
 
   return (

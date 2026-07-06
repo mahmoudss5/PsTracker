@@ -7,6 +7,7 @@ import { CoachDashboard } from './pages/CoachDashboard';
 import { InvalidUrl } from './components/shared/InvalidUrl';
 import { TeamPage } from './pages/TeamPage';
 import { SubmissionsPage } from './pages/SubmissionsPage';
+import { SettingsPage } from './pages/SettingsPage';
 import { useCurrentUser } from './hooks/useCurrentUser';
 
 function DashboardIndexRedirect() {
@@ -64,6 +65,10 @@ export const router = createBrowserRouter([
       {
         path: 'submissions/:userId',
         element: <SubmissionsPage />,
+      },
+      {
+        path: 'settings',
+        element: <SettingsPage />,
       },
     ],
   },

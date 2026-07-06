@@ -54,6 +54,16 @@ export interface TraineeResponse {
   maxRank: string;
 }
 
+export interface UpdateProfileRequest {
+  userName: string;
+  codeforcesHandle: string;
+}
+
+export interface UpdatePasswordRequest {
+  oldPassword: string;
+  newPassword: string;
+}
+
 // ── Team ─────────────────────────────────────────────────────────────────────
 
 /** Maps to Java record `TeamResponseDto` */

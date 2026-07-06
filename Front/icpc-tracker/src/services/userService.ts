@@ -7,9 +7,9 @@
  * Response shape: TraineResponse (Java) → TraineeResponse (TypeScript)
  */
 
-import { apiClient } from '../config/api.tsx';
+import { apiClient } from '../config/api';
 import { normalizeApiError } from './ErrorService';
-import type { TraineeResponse } from '../types/api.types';
+import type { TraineeResponse, UpdateProfileRequest, UpdatePasswordRequest } from '../types/api.types';
 
 const BASE = '/users';
 
@@ -63,5 +63,22 @@ export async function getUserById(id: number): Promise<TraineeResponse> {
     return res.data;
   } catch (err) {
     throw normalizeApiError(err, `Failed to fetch user ${id}`);
+  }
+}
+
+export async function updateProfile(data: UpdateProfileRequest): Promise<TraineeResponse> {
+  try {
+    const response = await apiClient.put<TraineeResponse>(`${BASE}/me/profile`, data);
+    return response.data;
+  } catch (error) {
+    throw normalizeApiError(error, 'Failed to update profile');
+  }
+}
+
+export async function updatePassword(data: UpdatePasswordRequest): Promise<void> {
+  try {
+    await apiClient.put(`${BASE}/me/password`, data);
+  } catch (error) {
+    throw normalizeApiError(error, 'Failed to update password');
   }
 }

@@ -41,4 +41,17 @@ public class UserController {
     public ResponseEntity<TraineResponse> getUserById(@PathVariable Long id) {
         return ResponseEntity.ok(userService.getUserResponseById(id));
     }
+
+    @Operation(summary = "Update user profile (userName, codeforcesHandle)")
+    @org.springframework.web.bind.annotation.PutMapping("/me/profile")
+    public ResponseEntity<TraineResponse> updateProfile(@org.springframework.web.bind.annotation.RequestBody com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.User.UpdateProfileDto dto) {
+        return ResponseEntity.ok(userService.updateProfile(dto));
+    }
+
+    @Operation(summary = "Update user password")
+    @org.springframework.web.bind.annotation.PutMapping("/me/password")
+    public ResponseEntity<Void> updatePassword(@org.springframework.web.bind.annotation.RequestBody com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.User.UpdatePasswordDto dto) {
+        userService.updatePassword(dto);
+        return ResponseEntity.ok().build();
+    }
 }
