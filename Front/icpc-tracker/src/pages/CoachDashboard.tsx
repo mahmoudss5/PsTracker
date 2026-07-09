@@ -5,6 +5,8 @@ import { SubmissionTrends } from '../components/CoachDashboard/SubmissionTrends'
 import { ActiveTeamsList } from '../components/CoachDashboard/ActiveTeamsList';
 import { TraineesTable } from '../components/CoachDashboard/TraineesTable';
 import { useCoachDashboard } from '../hooks/useCoachDashboard';
+import { useCurrentUser } from '../hooks/useCurrentUser';
+import { useCfAvatar } from '../hooks/useCfAvatar';
 
 type Tab = 'analytics' | 'reports' | 'codeReview';
 
@@ -12,6 +14,9 @@ export function CoachDashboard() {
   const [activeTab, setActiveTab] = useState<Tab>('analytics');
   const { teams, allTrainees, totalTrainees, activeTeams, avgSolveRate, acceptanceRatio, isLoading, error, refetch } =
     useCoachDashboard();
+  const { user } = useCurrentUser();
+  const cfAvatar = useCfAvatar(user?.codeforcesHandle);
+  const avatarUrl = cfAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.userName || 'Coach'}&backgroundColor=transparent`;
 
   return (
     <div className="space-y-6">
@@ -51,7 +56,7 @@ export function CoachDashboard() {
             New Session
           </button>
           <div className="w-8 h-8 rounded bg-dashboard-primary/20 flex items-center justify-center text-dashboard-primary font-bold text-sm ml-2 overflow-hidden border border-dashboard-primary/30">
-            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Coach&backgroundColor=transparent" alt="Coach Avatar" className="w-full h-full object-cover" />
+            <img src={avatarUrl} alt="Coach Avatar" className="w-full h-full object-cover" />
           </div>
         </div>
       </div>

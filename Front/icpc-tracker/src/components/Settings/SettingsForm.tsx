@@ -3,6 +3,7 @@ import { updateProfile, updatePassword } from '../../services/userService';
 import { toast } from 'sonner';
 import { User, Globe, Lock, Key, ShieldAlert, ChevronDown, ChevronUp } from 'lucide-react';
 import type { TraineeResponse } from '../../types/api.types';
+import { useCfAvatar } from '../../hooks/useCfAvatar';
 
 interface SettingsFormProps {
   user: TraineeResponse | null;
@@ -68,9 +69,8 @@ export function SettingsForm({ user, onUpdated }: SettingsFormProps) {
     }
   };
 
-  const avatarUrl = user?.codeforcesHandle
-    ? `https://codeforces.com/userPhoto/${user.codeforcesHandle}?${Date.now()}` // Bypass cache
-    : `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.userName || 'User'}`;
+  const cfAvatar = useCfAvatar(user?.codeforcesHandle);
+  const avatarUrl = cfAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.userName || 'User'}`;
 
   const roleText = user?.role ? user.role.toUpperCase() : 'USER';
   const roleBadgeColor = roleText === 'COACH' 

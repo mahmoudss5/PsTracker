@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useCfAvatar } from '../hooks/useCfAvatar';
 import { ProfileCard } from '../components/Traineedashboard/ProfileCard';
 import { RankCard } from '../components/Traineedashboard/RankCard';
 import { ConsistencyHeatmap } from '../components/Traineedashboard/ConsistencyHeatmap';
@@ -17,20 +18,7 @@ export function TraineeDashboard() {
     user ? { userId: user.id } : {}
   );
 
-  const [cfAvatar, setCfAvatar] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!user?.codeforcesHandle) return;
-    
-    fetch(`https://codeforces.com/api/user.info?handles=${user.codeforcesHandle}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.status === 'OK' && data.result?.length > 0) {
-          setCfAvatar(data.result[0].titlePhoto);
-        }
-      })
-      .catch(console.error);
-  }, [user?.codeforcesHandle]);
+  const cfAvatar = useCfAvatar(user?.codeforcesHandle);
 
   if (userLoading) {
     return (

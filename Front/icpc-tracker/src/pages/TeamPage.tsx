@@ -383,7 +383,7 @@ function TeamDetail({ team, isCoach }: { team: TeamResponse; isCoach: boolean })
 function JoinTeamView({ onJoined }: { onJoined: () => void }) {
   const [teamCode, setTeamCode] = useState("");
   const [isJoining, setIsJoining] = useState(false);
-
+  const [TeamJoinError, setTeamJoinError] = useState("");
   const handleJoinTeam = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!teamCode.trim()) return;
@@ -394,6 +394,7 @@ function JoinTeamView({ onJoined }: { onJoined: () => void }) {
       onJoined();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to join team");
+      setTeamJoinError(error instanceof Error ? error.message : "Failed to join team");
     } finally {
       setIsJoining(false);
     }
@@ -412,9 +413,10 @@ function JoinTeamView({ onJoined }: { onJoined: () => void }) {
             value={teamCode}
             onChange={(event) => setTeamCode(event.target.value)}
             placeholder="Team invite code"
-            className="w-full rounded-lg border border-dashboard-border bg-dashboard-background px-4 py-2.5 text-dashboard-text outline-none transition focus:border-transparent focus:ring-2 focus:ring-dashboard-primary"
+            className="w-full rounded-lg border border-dashboard-border bg-dashboard-background px-4 py-2.5 text-black outline-none transition focus:border-transparent focus:ring-2 focus:ring-dashboard-primary"
             disabled={isJoining}
           />
+          {TeamJoinError && <p className="text-red-500">{TeamJoinError}</p>}
           <button
             type="submit"
             disabled={isJoining || !teamCode.trim()}

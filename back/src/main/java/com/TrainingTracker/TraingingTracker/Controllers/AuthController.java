@@ -8,6 +8,7 @@ import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Auth.SignUpDto;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -20,6 +21,7 @@ import java.time.Duration;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@Slf4j
 public class AuthController {
     private final AuthService authService;
 
@@ -72,7 +74,8 @@ public class AuthController {
   }
 
   @GetMapping("/refresh")
-  public ResponseEntity<String> refreshToken(@CookieValue(name = "refreshToken", required = false) String refreshToken, HttpServletResponse response) {
+  public ResponseEntity<java.util.Map<String, String>> refreshToken(@CookieValue(name = "refreshToken", required = false) String refreshToken, HttpServletResponse response) {
+      log.info("Refreshing token");
       if (refreshToken == null || refreshToken.isBlank()) {
         return ResponseEntity.badRequest().build();
       }
@@ -94,7 +97,7 @@ public class AuthController {
               .build();
       response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
-      return ResponseEntity.ok(accessToken);
+      return ResponseEntity.ok(java.util.Map.of("token", accessToken));
   }
 
 }

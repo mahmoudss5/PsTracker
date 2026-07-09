@@ -44,7 +44,8 @@ public class SecurityConfiguration {
                                         "/configuration/security",
                                         "/swagger-ui/**",
                                         "/webjars/**",
-                                        "/swagger-ui.html")
+                                        "/swagger-ui.html",
+                                        "/error")
                                 .permitAll()
                                 .anyRequest().authenticated())
                 .sessionManagement(session -> session

@@ -6,9 +6,11 @@ import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Team.TeamRespons
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.Team;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.User;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Repositories.TeamRepository;
+import com.TrainingTracker.TraingingTracker.ExceptionHandling.ErrosEntites.TeamError;
 import com.TrainingTracker.TraingingTracker.Util.SecuiryUserUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,9 +49,10 @@ public class ImpTeamService implements TeamsService {
     @Transactional
     @CacheEvict(value = {"teams", "trainees", "teamTrainees", "allTrainees"}, allEntries = true)
     public void JoinTeam(String teamCode) {
-        Team team = teamRepository.findByTeamCode(teamCode).orElseThrow(() -> new RuntimeException("Team not found with code: " + teamCode));
-        if (!team.getTeamCode().equals(teamCode)) throw new RuntimeException("Team code is not valid");
-        if (team.getTrainees().size() >= 4) throw new RuntimeException("Team is full");
+        Team team = teamRepository.findByTeamCode(teamCode)
+                .orElseThrow(() -> new TeamError("Team not found with code: " + teamCode));
+
+        if (team.getTrainees().size() >= 4) throw new TeamError("Team is full");
         Long traineeId = SecuiryUserUtil.getCurrntUserId();
         User trainee = userService.getUserById(traineeId);
         trainee.setTraineeTeam(team);
