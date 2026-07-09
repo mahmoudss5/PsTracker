@@ -1,5 +1,8 @@
-import { Filter, RefreshCw, AlertCircle, Megaphone, Wifi } from "lucide-react";
+import { useState } from "react";
+import { Filter, RefreshCw, AlertCircle, Megaphone, Wifi, Plus } from "lucide-react";
 import { useTeamAnnouncements } from "../../hooks/useTeamAnnouncements";
+import { useCurrentUser } from "../../hooks/useCurrentUser";
+import { NewAnnouncementModal } from "./NewAnnouncementModal";
 
 // Type → colour mappings aligned with the design system
 const typeColor: Record<string, string> = {
@@ -38,6 +41,9 @@ interface AnnouncementsPanelProps {
 export function AnnouncementsPanel({ teamId }: AnnouncementsPanelProps) {
   const { announcements, isLoading, error, refetch, newIds } =
     useTeamAnnouncements(teamId);
+  const { user } = useCurrentUser();
+  const isCoach = user?.role?.toLowerCase() === "coach";
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
     <div className="h-full overflow-y-auto px-4 py-4 md:px-8 space-y-4">
@@ -53,13 +59,24 @@ export function AnnouncementsPanel({ teamId }: AnnouncementsPanelProps) {
             <Wifi size={9} /> Live
           </span>
         </div>
-        <button
-          onClick={refetch}
-          className="flex items-center gap-1.5 rounded-lg border border-dashboard-border px-3 py-1.5 text-xs font-semibold text-dashboard-muted hover:border-dashboard-primary/40 hover:text-dashboard-text transition"
-        >
-          <Filter size={13} />
-          Filter
-        </button>
+        <div className="flex items-center gap-2">
+          {isCoach && (
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="flex items-center gap-1.5 rounded-lg bg-dashboard-primary px-3 py-1.5 text-xs font-semibold text-dashboard-primary-contrast hover:bg-dashboard-primary/90 transition"
+            >
+              <Plus size={13} />
+              New Announcement
+            </button>
+          )}
+          <button
+            onClick={refetch}
+            className="flex items-center gap-1.5 rounded-lg border border-dashboard-border px-3 py-1.5 text-xs font-semibold text-dashboard-muted hover:border-dashboard-primary/40 hover:text-dashboard-text transition"
+          >
+            <Filter size={13} />
+            Filter
+          </button>
+        </div>
       </div>
 
       {/* Loading */}
@@ -94,7 +111,9 @@ export function AnnouncementsPanel({ teamId }: AnnouncementsPanelProps) {
           <Megaphone size={28} className="text-dashboard-muted mb-3" />
           <p className="text-dashboard-text font-semibold">No announcements yet</p>
           <p className="text-xs text-dashboard-muted mt-1">
-            Check back later for updates from your coach.
+            {isCoach
+              ? "Click \"New Announcement\" to send one to your team."
+              : "Check back later for updates from your coach."}
           </p>
         </div>
       )}
@@ -148,6 +167,17 @@ export function AnnouncementsPanel({ teamId }: AnnouncementsPanelProps) {
             </div>
           );
         })}
+
+      {/* New Announcement Modal — only mounted when coach opens it */}
+      {isCoach && teamId !== undefined && user !== null && (
+        <NewAnnouncementModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          teamId={teamId}
+          senderId={user.id}
+          onSent={refetch}
+        />
+      )}
     </div>
   );
 }

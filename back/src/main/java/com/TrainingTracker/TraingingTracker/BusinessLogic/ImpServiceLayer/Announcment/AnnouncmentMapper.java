@@ -10,6 +10,8 @@ import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Announcment.Anno
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.User;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.Team;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.Types.AnnouncmentType;
+import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.CompositeKey.AnnouncmnentTeamId;
+import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.CompositeKey.AnnouncmentUserId;
 
 import java.time.LocalDateTime;
 
@@ -42,7 +44,15 @@ public class AnnouncmentMapper {
 
         announcmentRepository.save(announcment);
 
+        // Explicitly build and set the composite key so Hibernate does not have
+        // to resolve it via @MapsId reflection (which fails in Hibernate 7).
+        AnnouncmnentTeamId compositeKey = new AnnouncmnentTeamId(
+                announcment.getId(),
+                team.getId()
+        );
+
         AnnouncmentTeam announcmentTeam = AnnouncmentTeam.builder()
+                .announcmnetTeamId(compositeKey)
                 .announcment(announcment)
                 .team(team)
                 .build();
@@ -63,7 +73,14 @@ public class AnnouncmentMapper {
                 .build();
         announcmentRepository.save(announcment);
 
+        // Explicitly build and set the composite key.
+        AnnouncmentUserId compositeKey = new AnnouncmentUserId(
+                announcment.getId(),
+                user.getId()
+        );
+
         AnnouncmentUser announcmentUser = AnnouncmentUser.builder()
+                .announcmentUserId(compositeKey)
                 .announcment(announcment)
                 .user(user)
                 .build();

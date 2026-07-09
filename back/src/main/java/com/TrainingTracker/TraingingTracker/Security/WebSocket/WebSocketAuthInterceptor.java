@@ -5,6 +5,7 @@ import com.TrainingTracker.TraingingTracker.Security.jwt.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
@@ -67,6 +68,9 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
                         );
 
                 accessor.setUser(authentication);
+
+                // We must rebuild the message to apply the modified headers
+                return MessageBuilder.createMessage(message.getPayload(), accessor.getMessageHeaders());
 
             } catch (Exception e) {
                 throw  new org.springframework.security.access.AccessDeniedException("Invalid token");

@@ -5,6 +5,8 @@ import com.TrainingTracker.TraingingTracker.BusinessLogic.InterfacesServiceLayer
 import com.TrainingTracker.TraingingTracker.BusinessLogic.InterfacesServiceLayer.UserService;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Announcment.AnnouncementResponseDto;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Announcment.AnnouncmentCreateDto;
+import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Notification.NotificationCreateDto;
+import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Notification.NotificationResponseDto;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.Announcment;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.AnnouncmentTeam;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.AnnouncmentUser;
@@ -13,6 +15,7 @@ import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.User;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Repositories.AnnouncmentRepository;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Repositories.AnnouncmentTeamRepository;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Repositories.AnnouncmentUserRepository;
+import com.TrainingTracker.TraingingTracker.BusinessLogic.InterfacesServiceLayer.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -21,7 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Caching;
 import java.util.List;
 
 @Service
@@ -38,6 +40,7 @@ public class ImpAnnouncmentService implements AnnouncmentService {
     private final SimpMessagingTemplate broker;
     private final UserService userService;
     private final TeamsService teamsService;
+    private final NotificationService notificationService;
 
 
     @Override
@@ -55,12 +58,38 @@ public class ImpAnnouncmentService implements AnnouncmentService {
     }
 
     private void sendAnnouncmentToUser(Announcment announcment, User user) {
-        broker.convertAndSendToUser(user.getEmail(), "/queue/notifications", announcment);
+        AnnouncementResponseDto dto = announcmentMapper.toAnnouncmentResponseDto(announcment, user.getId());
+        broker.convertAndSendToUser(user.getEmail(), "/queue/notifications", dto);
     }
 
-
     private void sendAnnouncmentToTeam(Announcment announcment, Team team) {
-     broker.convertAndSend("/topic/teams/" + team.getId() + "/announcments", announcment);
+        // 1. Broadcast announcement to the team panel in real-time
+        AnnouncementResponseDto announcementDto = announcmentMapper.toAnnouncmentResponseDto(announcment, team.getId());
+        broker.convertAndSend("/topic/teams/" + team.getId() + "/announcments", announcementDto);
+
+        // 2. Create a Notification record for every trainee and push it to their
+        //    personal /user/queue/notifications so the bell badge updates instantly.
+        String title = "[" + announcment.getType().name() + "] " + team.getTeamName();
+        String message = announcment.getContent().length() > 120
+                ? announcment.getContent().substring(0, 120) + "…"
+                : announcment.getContent();
+
+        for (User trainee : team.getTrainees()) {
+            try {
+                NotificationCreateDto notifDto = new NotificationCreateDto(
+                        trainee.getId(),
+                        title,
+                        message,
+                        "ANNOUNCEMENT"
+                );
+                NotificationResponseDto savedNotif = notificationService.createNotification(notifDto);
+                // Push real-time to the trainee's personal notification queue
+                broker.convertAndSendToUser(trainee.getEmail(), "/queue/notifications", savedNotif);
+                log.debug("Pushed announcement notification to trainee {}", trainee.getEmail());
+            } catch (Exception ex) {
+                log.warn("Failed to push notification to trainee {}: {}", trainee.getEmail(), ex.getMessage());
+            }
+        }
     }
 
     @Override
@@ -91,3 +120,4 @@ public class ImpAnnouncmentService implements AnnouncmentService {
 
 
 }
+
