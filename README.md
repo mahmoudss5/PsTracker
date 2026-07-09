@@ -438,18 +438,19 @@ baseURL: "http://localhost:8000/api"
 | 1 | `ImpCfService.java` | Background sync thread uses `SecurityContextHolder` which is empty on scheduled threads → crashes every 2 min |
 | 2 | `SubmissionMapper.java` | Uses `SecurityContextHolder` inside a mapper called by the sync task → same crash |
 | 3 | `ImpCfService.java` | Transient `Problem` entity passed to submission save → potential Hibernate constraint violation |
+| 4 | `WebSocketAuthInterceptor` | Notification real-time push to `/user/queue/notifications` still fails to reach the frontend STOMP client despite message reconstruction. Notification bell badge only updates upon click. |
 
 ### ⚠️ Frontend — In Progress
-- [ ] Replace all `mockProfile.ts` usage with real API calls (hooks are wired, pages still consume mock data in some places)
-- [ ] Implement WebSocket client (`@stomp/stompjs` + `sockjs-client`) for real-time team chat
-- [ ] Connect `TeamPage` to real API (`useTeam`, `useTeamMembers`)
-- [ ] Coach dashboard page (currently a placeholder)
+- [x] Replace all `mockProfile.ts` usage with real API calls (hooks are wired, pages still consume mock data in some places)
+- [x] Implement WebSocket client (`@stomp/stompjs` + `sockjs-client`) for real-time team chat
+- [x] Connect `TeamPage` to real API (`useTeam`, `useTeamMembers`)
+- [x] Coach dashboard page (currently a placeholder)
 
 ### 🗺️ Planned Features
 - [ ] Leaderboard — team ranking by acceptance rate / problems solved
 - [ ] Contest scheduler & upcoming contest tracker
 - [ ] Problem recommendation engine based on weak tags
-- [ ] Notification bell with real-time push (WebSocket)
+- [x] Notification bell with real-time push (WebSocket)
 - [ ] Export submissions data to CSV
 - [ ] Add contest's analytics (e.g., Codeforces rounds, AtCoder contests)
 
