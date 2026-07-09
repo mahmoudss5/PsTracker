@@ -12,7 +12,7 @@ import { useUserById } from '../hooks/useUserById';
 import type { TimePeriod, CustomRange } from '../types/dashboard.types';
 
 export function SubmissionsPage() {
-  const { handle } = useParams<{ handle?: string }>();
+  const { userId } = useParams<{ userId?: string }>();
 
   const [period, setPeriod] = useState<TimePeriod>('30d');
   const [customRange, setCustomRange] = useState<CustomRange | undefined>(undefined);
@@ -22,10 +22,10 @@ export function SubmissionsPage() {
     setCustomRange(range);
   };
 
-  // The handle segment in the URL is always a numeric user ID when navigating
-  // from the TraineesTable (which links to /dashboard/submissions/{id}).
-  const numericUserId = handle && /^\d+$/.test(handle) ? Number(handle) : undefined;
-  const isViewingUser = Boolean(handle);
+  // The userId segment in the URL is always a numeric user ID when navigating
+  // from the TraineesTable or TeamPage (which links to /dashboard/submissions/{id}).
+  const numericUserId = userId && /^\d+$/.test(userId) ? Number(userId) : undefined;
+  const isViewingUser = Boolean(userId);
 
   // Fetch real user profile to display name / initials
   const { user: targetUser } = useUserById(numericUserId ?? null);

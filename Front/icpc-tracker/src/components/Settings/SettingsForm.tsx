@@ -113,7 +113,7 @@ export function SettingsForm({ user, onUpdated }: SettingsFormProps) {
                 type="text"
                 value={userName}
                 onChange={(e) => setUserName(e.target.value)}
-                className="w-full bg-dashboard-background/50 border border-dashboard-border rounded-xl pl-11 pr-4 py-3.5 text-dashboard-text placeholder-dashboard-muted/50 focus:outline-none focus:border-dashboard-primary focus:ring-2 focus:ring-dashboard-primary/20 transition-all shadow-inner"
+                className="w-full bg-white/30 border border-dashboard-border rounded-xl pl-11 pr-4 py-3.5 text-black placeholder-dashboard-muted/50 focus:outline-none focus:border-dashboard-primary focus:ring-2 focus:ring-dashboard-primary/20 transition-all shadow-inner"
                 placeholder="Enter username"
                 required
               />
@@ -132,7 +132,7 @@ export function SettingsForm({ user, onUpdated }: SettingsFormProps) {
                 type="text"
                 value={codeforcesHandle}
                 onChange={(e) => setCodeforcesHandle(e.target.value)}
-                className="w-full bg-dashboard-background/50 border border-dashboard-border rounded-xl pl-11 pr-4 py-3.5 text-dashboard-text placeholder-dashboard-muted/50 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all shadow-inner"
+                className="w-full bg-white/30 border border-dashboard-border rounded-xl pl-11 pr-4 py-3.5 text-black placeholder-dashboard-muted/50 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all shadow-inner"
                 placeholder="Enter Codeforces handle"
                 required
               />
@@ -164,7 +164,7 @@ export function SettingsForm({ user, onUpdated }: SettingsFormProps) {
                     type="password"
                     value={oldPassword}
                     onChange={(e) => setOldPassword(e.target.value)}
-                    className="w-full bg-dashboard-background/50 border border-dashboard-border rounded-xl pl-11 pr-4 py-3.5 text-dashboard-text placeholder-dashboard-muted/50 focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/20 transition-all shadow-inner"
+                    className="w-full bg-white/30 border border-dashboard-border rounded-xl pl-11 pr-4 py-3.5 text-black placeholder-dashboard-muted/50 focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/20 transition-all shadow-inner"
                     placeholder="Enter your current password"
                     required={showPasswordFields}
                   />
@@ -184,7 +184,7 @@ export function SettingsForm({ user, onUpdated }: SettingsFormProps) {
                       type="password"
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
-                      className="w-full bg-dashboard-background/50 border border-dashboard-border rounded-xl pl-11 pr-4 py-3.5 text-dashboard-text placeholder-dashboard-muted/50 focus:outline-none focus:border-dashboard-primary focus:ring-2 focus:ring-dashboard-primary/20 transition-all shadow-inner"
+                      className="w-full bg-white/30 border border-dashboard-border rounded-xl pl-11 pr-4 py-3.5 text-black placeholder-dashboard-muted/50 focus:outline-none focus:border-dashboard-primary focus:ring-2 focus:ring-dashboard-primary/20 transition-all shadow-inner"
                       placeholder="New password"
                       required={showPasswordFields}
                       minLength={6}
@@ -204,7 +204,7 @@ export function SettingsForm({ user, onUpdated }: SettingsFormProps) {
                       type="password"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="w-full bg-dashboard-background/50 border border-dashboard-border rounded-xl pl-11 pr-4 py-3.5 text-dashboard-text placeholder-dashboard-muted/50 focus:outline-none focus:border-dashboard-primary focus:ring-2 focus:ring-dashboard-primary/20 transition-all shadow-inner"
+                      className="w-full bg-white/30 border border-dashboard-border rounded-xl pl-11 pr-4 py-3.5 text-black placeholder-dashboard-muted/50 focus:outline-none focus:border-dashboard-primary focus:ring-2 focus:ring-dashboard-primary/20 transition-all shadow-inner"
                       placeholder="Confirm new password"
                       required={showPasswordFields}
                       minLength={6}

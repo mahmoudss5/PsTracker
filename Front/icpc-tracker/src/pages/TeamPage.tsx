@@ -206,6 +206,7 @@ function CoachOverview() {
 }
 
 function UserRow({ user }: { user: TraineeResponse }) {
+  const inTeam = Boolean(user.teamName);
   return (
     <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex min-w-0 items-center gap-3">
@@ -218,12 +219,23 @@ function UserRow({ user }: { user: TraineeResponse }) {
         </div>
       </div>
       <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-        <span className="rounded-full border border-dashboard-border px-2 py-1 text-xs font-semibold text-dashboard-muted">
-          {user.teamName ?? "No team"}
-        </span>
-        <span className="rounded-full border border-dashboard-border px-2 py-1 text-xs font-semibold text-dashboard-muted">
+        {/* Team membership badge */}
+        {inTeam ? (
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-xs font-semibold text-emerald-400">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+            {user.teamName}
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-dashboard-border bg-dashboard-elevated px-2.5 py-1 text-xs font-semibold text-dashboard-muted">
+            <span className="h-1.5 w-1.5 rounded-full bg-dashboard-muted/50" />
+            No team
+          </span>
+        )}
+        {/* Solved count */}
+        <span className="rounded-full border border-dashboard-border px-2.5 py-1 text-xs font-semibold text-dashboard-muted">
           {user.numberOfSolveProblems ?? 0} solved
         </span>
+        {/* Stats — navigates to that specific user's submissions */}
         <Link
           to={`/dashboard/submissions/${user.id}`}
           className="inline-flex items-center gap-1 rounded bg-dashboard-primary/10 px-2.5 py-1.5 text-xs font-semibold text-dashboard-primary transition hover:bg-dashboard-primary/20"
