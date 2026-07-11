@@ -59,7 +59,7 @@ public class ImpCfService implements CfService {
            log.info("Fetching submissions for user: {}", username);
             try {
                 codeforcesSubmissionDto response = restClient.get()
-                        .uri("/user.status?handle={handle}&from=1&count=10", getUserCodeforecesHandle(user.getId()))
+                        .uri("/user.status?handle={handle}&from=1&count=100", getUserCodeforecesHandle(user.getId()))
                         .retrieve()
                         .body(codeforcesSubmissionDto.class);
 

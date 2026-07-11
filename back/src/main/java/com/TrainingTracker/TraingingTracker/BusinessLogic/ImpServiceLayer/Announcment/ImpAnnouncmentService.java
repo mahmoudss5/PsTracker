@@ -42,24 +42,38 @@ public class ImpAnnouncmentService implements AnnouncmentService {
     private final TeamsService teamsService;
     private final NotificationService notificationService;
 
-
     @Override
     @Transactional
-    @CacheEvict(value = {"userAnnouncements", "teamAnnouncements"}, allEntries = true)
+    @CacheEvict(value = { "userAnnouncements", "teamAnnouncements" }, allEntries = true)
     public void sendAnnouncment(AnnouncmentCreateDto announcmentCreateDto) {
         Announcment announcment = announcmentMapper.toEntityWithSave(announcmentCreateDto);
-        if(announcmentCreateDto.isTeamAnnouncment()) {
+        if (announcmentCreateDto.isTeamAnnouncment()) {
             Team team = teamsService.getTeamById(announcmentCreateDto.receiverId());
             sendAnnouncmentToTeam(announcment, team);
-        }else{
+        } else {
             User user = userService.getUserById(announcmentCreateDto.receiverId());
             sendAnnouncmentToUser(announcment, user);
         }
     }
 
     private void sendAnnouncmentToUser(Announcment announcment, User user) {
-        AnnouncementResponseDto dto = announcmentMapper.toAnnouncmentResponseDto(announcment, user.getId());
-        broker.convertAndSendToUser(user.getEmail(), "/queue/notifications", dto);
+        String title = "[" + announcment.getType().name() + "] Personal Announcement";
+        String message = announcment.getContent().length() > 120
+                ? announcment.getContent().substring(0, 120) + "…"
+                : announcment.getContent();
+
+        try {
+            NotificationCreateDto notifDto = new NotificationCreateDto(
+                    user.getId(),
+                    title,
+                    message,
+                    "ANNOUNCEMENT"
+            );
+            notificationService.createNotification(notifDto);
+            log.debug("Created personal announcement notification for user {}", user.getEmail());
+        } catch (Exception ex) {
+            log.warn("Failed to create personal announcement notification for user {}: {}", user.getEmail(), ex.getMessage());
+        }
     }
 
     private void sendAnnouncmentToTeam(Announcment announcment, Team team) {
@@ -68,7 +82,7 @@ public class ImpAnnouncmentService implements AnnouncmentService {
         broker.convertAndSend("/topic/teams/" + team.getId() + "/announcments", announcementDto);
 
         // 2. Create a Notification record for every trainee and push it to their
-        //    personal /user/queue/notifications so the bell badge updates instantly.
+        // personal /user/queue/notifications so the bell badge updates instantly.
         String title = "[" + announcment.getType().name() + "] " + team.getTeamName();
         String message = announcment.getContent().length() > 120
                 ? announcment.getContent().substring(0, 120) + "…"
@@ -80,14 +94,11 @@ public class ImpAnnouncmentService implements AnnouncmentService {
                         trainee.getId(),
                         title,
                         message,
-                        "ANNOUNCEMENT"
-                );
-                NotificationResponseDto savedNotif = notificationService.createNotification(notifDto);
-                // Push real-time to the trainee's personal notification queue
-                broker.convertAndSendToUser(trainee.getEmail(), "/queue/notifications", savedNotif);
-                log.debug("Pushed announcement notification to trainee {}", trainee.getEmail());
+                        "ANNOUNCEMENT");
+                notificationService.createNotification(notifDto);
+                log.debug("Created announcement notification for trainee {}", trainee.getEmail());
             } catch (Exception ex) {
-                log.warn("Failed to push notification to trainee {}: {}", trainee.getEmail(), ex.getMessage());
+                log.warn("Failed to create notification for trainee {}: {}", trainee.getEmail(), ex.getMessage());
             }
         }
     }
@@ -96,28 +107,26 @@ public class ImpAnnouncmentService implements AnnouncmentService {
     @Transactional(readOnly = true)
     @Cacheable(value = "userAnnouncements", key = "#userId")
     public List<AnnouncementResponseDto> getAllAnnouncmentsForUser(Long userId) {
-       List<Announcment>announcments=announcmentUserRepository.findByUserId(userId)
+        List<Announcment> announcments = announcmentUserRepository.findByUserId(userId)
                 .stream()
                 .map(AnnouncmentUser::getAnnouncment)
                 .toList();
-       return announcments.stream()
-               .map(announcment -> announcmentMapper.toAnnouncmentResponseDto(announcment, userId))
-               .toList();
+        return announcments.stream()
+                .map(announcment -> announcmentMapper.toAnnouncmentResponseDto(announcment, userId))
+                .toList();
     }
 
     @Override
     @Transactional(readOnly = true)
     @Cacheable(value = "teamAnnouncements", key = "#teamId")
     public List<AnnouncementResponseDto> getAllAnnouncmentsForTeam(Long teamId) {
-      List<Announcment>announcments=announcmentTeamRepository.findByTeamId(teamId)
+        List<Announcment> announcments = announcmentTeamRepository.findByTeamId(teamId)
                 .stream()
                 .map(AnnouncmentTeam::getAnnouncment)
                 .toList();
-       return announcments.stream()
-               .map(announcment -> announcmentMapper.toAnnouncmentResponseDto(announcment, teamId))
-               .toList();
+        return announcments.stream()
+                .map(announcment -> announcmentMapper.toAnnouncmentResponseDto(announcment, teamId))
+                .toList();
     }
 
-
 }
-

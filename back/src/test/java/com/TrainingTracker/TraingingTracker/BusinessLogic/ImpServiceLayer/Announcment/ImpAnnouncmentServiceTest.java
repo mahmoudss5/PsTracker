@@ -8,6 +8,7 @@ import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.Announcment;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.AnnouncmentTeam;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.AnnouncmentUser;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.Team;
+import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.Types.AnnouncmentType;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.User;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Repositories.AnnouncmentRepository;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Repositories.AnnouncmentTeamRepository;
@@ -49,6 +50,9 @@ class ImpAnnouncmentServiceTest {
     @Mock
     private TeamsService teamsService;
 
+    @Mock
+    private com.TrainingTracker.TraingingTracker.BusinessLogic.InterfacesServiceLayer.NotificationService notificationService;
+
     @InjectMocks
     private ImpAnnouncmentService announcmentService;
 
@@ -57,8 +61,9 @@ class ImpAnnouncmentServiceTest {
         AnnouncmentCreateDto createDto = new AnnouncmentCreateDto(
                 "INFO", "Maintenance tomorrow", 1L, true, 100L
         );
-        Announcment announcment = Announcment.builder().id(10L).content("Maintenance tomorrow").build();
-        Team team = Team.builder().id(100L).teamName("Alpha").build();
+        Announcment announcment = Announcment.builder().id(10L).content("Maintenance tomorrow").type(AnnouncmentType.INFO).build();
+        User trainee = User.builder().id(300L).email("trainee@example.com").build();
+        Team team = Team.builder().id(100L).teamName("Alpha").trainees(java.util.List.of(trainee)).build();
 
         when(announcmentMapper.toEntityWithSave(createDto)).thenReturn(announcment);
         when(teamsService.getTeamById(100L)).thenReturn(team);
@@ -67,16 +72,17 @@ class ImpAnnouncmentServiceTest {
 
         verify(announcmentMapper).toEntityWithSave(createDto);
         verify(teamsService).getTeamById(100L);
-        verify(broker).convertAndSend("/topic/teams/100/announcments", announcment);
+        verify(broker).convertAndSend("/topic/teams/100/announcments", announcmentMapper.toAnnouncmentResponseDto(announcment, 100L));
+        verify(notificationService).createNotification(any(com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Notification.NotificationCreateDto.class));
         verifyNoInteractions(userService);
     }
 
     @Test
     void testSendAnnouncment_User() {
         AnnouncmentCreateDto createDto = new AnnouncmentCreateDto(
-                "WARNING", "Alert content", 1L, false, 200L
+                "INFO", "Alert content", 1L, false, 200L
         );
-        Announcment announcment = Announcment.builder().id(11L).content("Alert content").build();
+        Announcment announcment = Announcment.builder().id(11L).content("Alert content").type(AnnouncmentType.INFO).build();
         User user = User.builder().id(200L).email("user@example.com").build();
 
         when(announcmentMapper.toEntityWithSave(createDto)).thenReturn(announcment);
@@ -86,7 +92,7 @@ class ImpAnnouncmentServiceTest {
 
         verify(announcmentMapper).toEntityWithSave(createDto);
         verify(userService).getUserById(200L);
-        verify(broker).convertAndSendToUser("user@example.com", "/queue/notifications", announcment);
+        verify(notificationService).createNotification(any(com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Notification.NotificationCreateDto.class));
         verifyNoInteractions(teamsService);
     }
 

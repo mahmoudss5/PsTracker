@@ -9,6 +9,8 @@ import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.User;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Repositories.NotificationRepository;
 import com.TrainingTracker.TraingingTracker.Util.SecuiryUserUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,18 +19,29 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ImpNotificationService implements NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final UserService userService;
     private final NotificationMapper notificationMapper;
+    private final SimpMessagingTemplate broker;
 
     @Override
     @Transactional
     public NotificationResponseDto createNotification(NotificationCreateDto dto) {
         User user = userService.getUserById(dto.userId());
         Notification notification = notificationMapper.toEntity(dto, user);
-        return notificationMapper.toDto(notificationRepository.save(notification));
+        NotificationResponseDto responseDto = notificationMapper.toDto(notificationRepository.save(notification));
+        
+        try {
+            broker.convertAndSendToUser(user.getEmail(), "/queue/notifications", responseDto);
+            log.debug("Pushed notification to user {}", user.getEmail());
+        } catch (Exception ex) {
+            log.warn("Failed to push notification to user {}: {}", user.getEmail(), ex.getMessage());
+        }
+        
+        return responseDto;
     }
 
     @Override

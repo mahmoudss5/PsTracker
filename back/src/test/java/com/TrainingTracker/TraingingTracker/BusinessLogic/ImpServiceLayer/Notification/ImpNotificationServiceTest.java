@@ -13,6 +13,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -33,13 +34,16 @@ class ImpNotificationServiceTest {
     @Mock
     private NotificationMapper notificationMapper;
 
+    @Mock
+    private SimpMessagingTemplate broker;
+
     @InjectMocks
     private ImpNotificationService notificationService;
 
     @Test
     void testCreateNotification() {
         NotificationCreateDto createDto = new NotificationCreateDto(1L, "Title", "Msg", "INFO");
-        User user = User.builder().id(1L).build();
+        User user = User.builder().id(1L).email("test@example.com").build();
         Notification notification = Notification.builder().id(10L).title("Title").build();
         NotificationResponseDto responseDto = new NotificationResponseDto(
                 10L, 1L, "Title", "Msg", "INFO", false, LocalDateTime.now(), LocalDateTime.now()
@@ -58,6 +62,7 @@ class ImpNotificationServiceTest {
         verify(notificationMapper).toEntity(createDto, user);
         verify(notificationRepository).save(notification);
         verify(notificationMapper).toDto(notification);
+        verify(broker).convertAndSendToUser("test@example.com", "/queue/notifications", responseDto);
     }
 
     @Test
