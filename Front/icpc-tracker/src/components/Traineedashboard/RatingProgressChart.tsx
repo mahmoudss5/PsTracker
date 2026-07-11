@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useContests } from "../../hooks/useContests";
 
 // --- Rating Progress data ---
 interface ContestRatingPoint {
@@ -253,40 +254,17 @@ function DailySolvedChartContent() {
 // ------------------------------------------------------------------
 // Main component with toggle
 // ------------------------------------------------------------------
-export function RatingProgressChart({ codeforcesHandle }: { codeforcesHandle?: string }) {
+export function RatingProgressChart({ codeforcesHandle, userId }: { codeforcesHandle?: string, userId?: number }) {
   const [mode, setMode] = useState<ChartMode>("rating");
-  const [contestData, setContestData] = useState<ContestRatingPoint[]>([]);
-  const [loading, setLoading] = useState(false);
+  const { contests, isLoading: loading } = useContests(userId);
 
-  useEffect(() => {
-    if (!codeforcesHandle) return;
-    let isMounted = true;
-    
-    async function fetchRating() {
-      setLoading(true);
-      try {
-        const res = await fetch(`https://codeforces.com/api/user.rating?handle=${codeforcesHandle}`);
-        const json = await res.json();
-        if (json.status === "OK" && isMounted) {
-          // Take the last 5 contests
-          const last5 = json.result.slice(-5).map((r: any) => ({
-            contestName: r.contestName.replace("Codeforces Round ", "CR "),
-            rating: r.newRating,
-          }));
-          setContestData(last5);
-        }
-      } catch (err) {
-        console.error("Failed to fetch CF rating", err);
-      } finally {
-        if (isMounted) setLoading(false);
-      }
-    }
-    fetchRating();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [codeforcesHandle]);
+  // Take the last 5 contests from backend data
+  const contestData: ContestRatingPoint[] = contests
+    .slice(-5)
+    .map((c) => ({
+      contestName: c.contestName.replace("Codeforces Round ", "CR "),
+      rating: c.newRating,
+    }));
 
   return (
     <div className="glass-panel p-6 flex flex-col justify-between hover:border-dashboard-primary/30 transition-all duration-300">

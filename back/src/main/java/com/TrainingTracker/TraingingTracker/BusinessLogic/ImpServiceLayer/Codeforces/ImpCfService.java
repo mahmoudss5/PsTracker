@@ -37,12 +37,58 @@ public class ImpCfService implements CfService {
     private final SubmissionMapper submissionMapper;
     private final ProblemRepository problemRepository;
     private final SubmissionRepository submissionRepository;
+    private final com.TrainingTracker.TraingingTracker.DataAccessLayer.Repositories.ContestRepository contestRepository;
 
 
     @Scheduled(fixedDelay = 12, timeUnit = TimeUnit.HOURS)
     private void syncCodeforcesUserData() {
-       //TODO: we will sync user contest data from codeforces here
+        log.info("Starting Codeforces user contest data synchronization...");
+        List<User> userList = userRepository.findAll();
+        if (userList.isEmpty()) {
+            return;
+        }
 
+        for (User user : userList) {
+            if (user.getCodeforcesHandle() == null || user.getCodeforcesHandle().isEmpty()) {
+                continue;
+            }
+
+            try {
+                com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Codeforces.RatingChange.CodeforcesRatingChangeResponse response = restClient.get()
+                        .uri("/user.rating?handle={handle}", user.getCodeforcesHandle())
+                        .retrieve()
+                        .body(com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Codeforces.RatingChange.CodeforcesRatingChangeResponse.class);
+
+                if (response != null && "OK".equals(response.getStatus()) && response.getResult() != null) {
+                    for (com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Codeforces.RatingChange.CodeforcesRatingChangeResult result : response.getResult()) {
+                        if (!contestRepository.existsByUserIdAndContestId(user.getId(), result.getContestId())) {
+                            com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.Contest contest = com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.Contest.builder()
+                                    .contestId(result.getContestId())
+                                    .contestName(result.getContestName())
+                                    .rank(result.getRank())
+                                    .oldRating(result.getOldRating())
+                                    .newRating(result.getNewRating())
+                                    .ratingUpdateTime(java.time.LocalDateTime.ofEpochSecond(result.getRatingUpdateTimeSeconds(), 0, java.time.ZoneOffset.UTC))
+                                    .user(user)
+                                    .build();
+                            contestRepository.save(contest);
+                        }
+                    }
+                }
+            } catch (HttpClientErrorException e) {
+                log.error("User not found on Codeforces for contest sync: {}", e.getMessage());
+            } catch (HttpServerErrorException e) {
+                log.error("Couldn't connect to Codeforces for contest sync: {}", e.getMessage());
+            } catch (Exception e) {
+                log.error("Error during Codeforces contest sync: {}", e.getMessage(), e);
+            }
+
+            try {
+                Thread.sleep(2000); // codeforces rate limits
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
     }
 
 

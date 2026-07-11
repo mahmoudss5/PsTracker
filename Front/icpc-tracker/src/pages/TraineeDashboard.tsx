@@ -90,7 +90,7 @@ export function TraineeDashboard() {
       {/* Visual Graphs: Rating Progress and Recent Verdicts Breakdown */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
         <div className="md:col-span-2">
-          <RatingProgressChart codeforcesHandle={user.codeforcesHandle} />
+          <RatingProgressChart codeforcesHandle={user.codeforcesHandle} userId={user.id} />
         </div>
         <div className="md:col-span-1">
           <RecentVerdictsChart 
