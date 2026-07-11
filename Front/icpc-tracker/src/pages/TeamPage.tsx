@@ -26,6 +26,7 @@ import { useCoachTeams, useTeam } from "../hooks/useTeam";
 import { useUsers } from "../hooks/useUsers";
 import { createTeam, joinTeam } from "../services/teamService";
 import type { TeamResponse, TraineeResponse } from "../types/api.types";
+import { useCopyToClipboard } from "../hooks/useCopyToClipboard";
 
 type Tab = "chat" | "announcements" | "materials";
 
@@ -54,6 +55,26 @@ function EmptyState({ title, action }: { title: string; action?: React.ReactNode
       <UsersRound size={28} className="text-dashboard-muted" />
       <p className="mt-3 text-sm font-semibold text-dashboard-text">{title}</p>
       {action}
+    </div>
+  );
+}
+
+function CopyableTeamCode({ code }: { code: string }) {
+  const { copied, copy } = useCopyToClipboard();
+  
+  return (
+    <div className="flex items-center gap-2 mt-1">
+      <p 
+        className="font-mono text-xs text-dashboard-muted cursor-pointer hover:text-dashboard-text transition-colors"
+        title="Double-click to copy"
+        onDoubleClick={(e) => {
+          e.stopPropagation();
+          copy(code);
+        }}
+      >
+        {code}
+      </p>
+      {copied && <span className="text-[10px] text-emerald-500 font-bold">Copied!</span>}
     </div>
   );
 }
@@ -179,7 +200,7 @@ function CoachOverview() {
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="truncate text-sm font-bold text-dashboard-text">{team.teamName}</p>
-                      <p className="mt-1 font-mono text-xs text-dashboard-muted">{team.teamCode}</p>
+                      <CopyableTeamCode code={team.teamCode} />
                     </div>
                     <span className="rounded-full bg-dashboard-primary/10 px-2 py-1 text-xs font-semibold text-dashboard-primary">
                       {team.trainees.length}/4
@@ -283,14 +304,7 @@ function TeamDetail({ team, isCoach }: { team: TeamResponse; isCoach: boolean })
     announcements: urgentCount + annNewIds.size,
   };
 
-  const copyInviteCode = async () => {
-    try {
-      await navigator.clipboard.writeText(team.teamCode);
-      toast.success("Invite code copied");
-    } catch {
-      toast.error("Could not copy invite code");
-    }
-  };
+  const { copied, copy } = useCopyToClipboard();
 
   return (
     <div className="flex h-[calc(100vh-4rem)] flex-col -mx-4 -my-6 md:-mx-12 md:-my-8">
@@ -311,9 +325,16 @@ function TeamDetail({ team, isCoach }: { team: TeamResponse; isCoach: boolean })
 
           {isCoach && (
             <div className="flex flex-wrap gap-2">
-              <button onClick={copyInviteCode} className="team-action-button">
+              <button 
+                onClick={() => {
+                  copy(team.teamCode).then((success) => {
+                    if (success) toast.success("Invite code copied");
+                  });
+                }} 
+                className="team-action-button"
+              >
                 <Clipboard size={15} />
-                {team.teamCode}
+                {copied ? <span className="text-emerald-400 font-bold">Copied!</span> : team.teamCode}
               </button>
               <button className="team-action-button">
                 <Megaphone size={15} />

@@ -21,6 +21,9 @@ function avgRating(team: TeamResponse): number | null {
   return Math.round(sum / withRate.length);
 }
 
+import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
+import { toast } from 'sonner';
+
 export function ActiveTeamsList({ teams }: ActiveTeamsListProps) {
   if (teams.length === 0) {
     return (
@@ -31,6 +34,25 @@ export function ActiveTeamsList({ teams }: ActiveTeamsListProps) {
       </div>
     );
   }
+
+  const CopyableTeamCodeBadge = ({ code }: { code: string }) => {
+    const { copied, copy } = useCopyToClipboard();
+    return (
+      <div className="flex items-center gap-1">
+        <span 
+          className="shrink-0 font-mono text-[10px] text-dashboard-muted bg-dashboard-elevated border border-dashboard-border rounded px-1.5 py-0.5 cursor-pointer hover:text-dashboard-text transition-colors"
+          title="Double-click to copy"
+          onDoubleClick={(e) => {
+            e.stopPropagation();
+            copy(code);
+          }}
+        >
+          {code}
+        </span>
+        {copied && <span className="text-[9px] text-emerald-500 font-bold">Copied!</span>}
+      </div>
+    );
+  };
 
   return (
     <div className="glass-panel p-5 space-y-4">
@@ -50,9 +72,7 @@ export function ActiveTeamsList({ teams }: ActiveTeamsListProps) {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <p className="text-sm font-bold text-dashboard-text truncate">{team.teamName}</p>
-                  <span className="shrink-0 font-mono text-[10px] text-dashboard-muted bg-dashboard-elevated border border-dashboard-border rounded px-1.5 py-0.5">
-                    {team.teamCode}
-                  </span>
+                  <CopyableTeamCodeBadge code={team.teamCode} />
                 </div>
                 <div className="flex items-center gap-1.5 mt-1.5">
                   {/* Member avatar bubbles */}
