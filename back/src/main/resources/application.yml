@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/pstracker
-    username: pstracker_user
-    password: 123456
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/pstracker}
+    username: ${DB_USERNAME:pstracker_user}
+    password: ${DB_PASSWORD:123456}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -25,6 +25,6 @@ spring:
 
 
 jwt:
-  secret: THIS_IS_A_VERY_LONG_SECRET_KEY_MINIMUM_32_CHARS
+  secret: ${JWT_SECRET:THIS_IS_A_VERY_LONG_SECRET_KEY_MINIMUM_32_CHARS}
   access-expiration: 900000
   refresh-expiration: 604800000
