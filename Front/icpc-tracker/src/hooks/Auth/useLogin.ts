@@ -14,7 +14,6 @@ export function useLogin() {
   const [credentials, setCredentials] = useState<LoginCredentials>(INITIAL_CREDENTIALS);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const isCoach=getIsCoach();
  const navigate=useNavigate();
   const {login} = useAuth();
 

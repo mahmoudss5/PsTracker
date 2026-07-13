@@ -1,5 +1,6 @@
 import { Users } from 'lucide-react';
 import type { TeamResponse } from '../../types/api.types';
+import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 
 interface ActiveTeamsListProps {
   teams: TeamResponse[];
@@ -20,9 +21,6 @@ function avgRating(team: TeamResponse): number | null {
   const sum = withRate.reduce((s, t) => s + t.rate, 0);
   return Math.round(sum / withRate.length);
 }
-
-import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
-import { toast } from 'sonner';
 
 export function ActiveTeamsList({ teams }: ActiveTeamsListProps) {
   if (teams.length === 0) {

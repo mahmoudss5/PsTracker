@@ -1,4 +1,5 @@
 package com.TrainingTracker.TraingingTracker.Config.Security;
+import com.TrainingTracker.TraingingTracker.Config.AppProperties;
 import com.TrainingTracker.TraingingTracker.Security.User.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -16,6 +17,7 @@ import org.springframework.web.client.RestClient;
 public class AppConfig {
 
     private final CustomUserDetailsService userDetailsService;
+    private final AppProperties appProperties;
 
 
     @Bean
@@ -26,7 +28,7 @@ public class AppConfig {
     @Bean
     public RestClient restClient() {
         return RestClient.builder()
-                .baseUrl("https://codeforces.com/api")
+                .baseUrl(appProperties.codeforcesBaseUrl())
                 .build();
     }
 

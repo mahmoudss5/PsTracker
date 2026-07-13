@@ -13,6 +13,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
+import { webSocketUrl } from "../config/runtime";
 import { getToken } from "../services/AuthService";
 import { getTeamMessages } from "../services/chatService";
 import type { ChatMessage } from "../types/api.types";
@@ -60,7 +61,7 @@ export function useTeamChat(teamId: number | null): UseTeamChatReturn {
     const client = new Client({
       // SockJS factory — keeps the "/ws" path consistent with the backend
       webSocketFactory: () =>
-        new SockJS("http://localhost:8080/ws") as WebSocket,
+        new SockJS(webSocketUrl) as WebSocket,
 
       // Pass the JWT in the STOMP CONNECT frame headers so the
       // WebSocketAuthInterceptor can authenticate the user.

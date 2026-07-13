@@ -15,6 +15,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
+import { webSocketUrl } from "../config/runtime";
 import { toast } from "sonner";
 import { getToken } from "../services/AuthService";
 import { apiClient } from "../config/api";
@@ -86,7 +87,7 @@ export function useNotifications(): UseNotificationsResult {
     if (!token) return;
 
     const client = new Client({
-      webSocketFactory: () => new SockJS("http://localhost:8080/ws") as WebSocket,
+      webSocketFactory: () => new SockJS(webSocketUrl) as WebSocket,
       connectHeaders: { Authorization: `Bearer ${token}` },
       reconnectDelay: 5000,
 

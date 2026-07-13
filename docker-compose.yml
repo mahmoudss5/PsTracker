@@ -1,20 +1,69 @@
+version: '3.8'
 
 services:
-  redis-db:
+  postgres:
+    image: postgres:15-alpine
+    container_name: pstracker_db
+    environment:
+      POSTGRES_DB: pstracker
+      POSTGRES_USER: pstracker_user
+      POSTGRES_PASSWORD: 123456
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  redis:
     image: redis:7-alpine
-    container_name: redis-db
+    container_name: pstracker_redis
     ports:
       - "6379:6379"
     volumes:
-      - redis-data:/data
-    networks:
-      - icpc-network
-    restart: always
+      - redis_data:/data
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./back
+      dockerfile: Dockerfile.dev
+    container_name: pstracker_backend
+    ports:
+      - "8080:8080"
+      - "5005:5005" # For remote debugging if needed
+    environment:
+      - DB_URL=jdbc:postgresql://postgres:5432/pstracker
+      - DB_USERNAME=pstracker_user
+      - DB_PASSWORD=123456
+      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_PORT=6379
+      # You can put your actual JWT secret here or in a .env file
+      - JWT_SECRET=THIS_IS_A_VERY_LONG_SECRET_KEY_MINIMUM_32_CHARS
+    volumes:
+      - ./back:/app
+      - maven_cache:/root/.m2 # Cache maven dependencies to speed up restarts
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./Front/icpc-tracker
+      dockerfile: Dockerfile.dev
+    container_name: pstracker_frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:8080/api
+    volumes:
+      - ./Front/icpc-tracker:/app
+      - /app/node_modules # Prevent local node_modules from overwriting container's
+    depends_on:
+      - backend
+    restart: unless-stopped
 
 volumes:
-  redis-data:
-
-networks:
-  icpc-network:
-    driver: bridge
-    
+  postgres_data:
+  redis_data:
+  maven_cache:

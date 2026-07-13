@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, FormEvent } from "react";
+import { useState, useEffect, useRef, type FormEvent } from "react";
 import { X, Megaphone, AlertTriangle, Info, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { createTeamAnnouncement } from "../../services/announcementService";

@@ -11,6 +11,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
+import { webSocketUrl } from "../config/runtime";
 import { toast } from "sonner";
 import { getToken } from "../services/AuthService";
 import { getAnnouncementsForTeam, type AnnouncementResponseDto } from "../services/announcementService";
@@ -68,7 +69,7 @@ export function useTeamAnnouncements(
     const token = getToken();
 
     const client = new Client({
-      webSocketFactory: () => new SockJS("http://localhost:8080/ws") as WebSocket,
+      webSocketFactory: () => new SockJS(webSocketUrl) as WebSocket,
       connectHeaders: token ? { Authorization: `Bearer ${token}` } : {},
       reconnectDelay: 5000,
 

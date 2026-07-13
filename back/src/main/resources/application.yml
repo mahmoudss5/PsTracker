@@ -28,3 +28,15 @@ jwt:
   secret: ${JWT_SECRET:THIS_IS_A_VERY_LONG_SECRET_KEY_MINIMUM_32_CHARS}
   access-expiration: 900000
   refresh-expiration: 604800000
+
+server:
+  shutdown: graceful
+
+app:
+  codeforces-base-url: ${CODEFORCES_BASE_URL:https://codeforces.com/api}
+  swagger-server-url: ${SWAGGER_SERVER_URL:http://localhost:8080}
+  cors-allowed-origins:
+    - ${FRONTEND_ORIGIN_1:http://localhost:5173}
+    - ${FRONTEND_ORIGIN_2:http://localhost:5174}
+    - ${FRONTEND_ORIGIN_3:http://127.0.0.1:5173}
+    - ${FRONTEND_ORIGIN_4:http://127.0.0.1:5174}

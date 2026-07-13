@@ -37,7 +37,7 @@ function initials(name: string): string {
     .join('') || '?';
 }
 
-function SortIcon({ col, active, dir }: { col: string; active: boolean; dir: SortDir }) {
+function SortIcon({ active, dir }: { active: boolean; dir: SortDir }) {
   if (!active) return <ArrowUpDown size={12} className="text-dashboard-muted opacity-50" />;
   return dir === 'asc'
     ? <ChevronUp size={12} className="text-dashboard-primary" />
@@ -114,7 +114,7 @@ export function TraineesTable({ trainees, totalTrainees }: TraineesTableProps) {
                     onClick={() => toggleSort('userName')}
                     className="flex items-center gap-1 hover:text-dashboard-text transition-colors"
                   >
-                    Trainee <SortIcon col="userName" active={sortKey === 'userName'} dir={sortDir} />
+                    Trainee <SortIcon active={sortKey === 'userName'} dir={sortDir} />
                   </button>
                 </th>
                 <th className="pb-2 text-right font-semibold">
@@ -122,7 +122,7 @@ export function TraineesTable({ trainees, totalTrainees }: TraineesTableProps) {
                     onClick={() => toggleSort('rate')}
                     className="flex items-center gap-1 ml-auto hover:text-dashboard-text transition-colors"
                   >
-                    Rating <SortIcon col="rate" active={sortKey === 'rate'} dir={sortDir} />
+                    Rating <SortIcon active={sortKey === 'rate'} dir={sortDir} />
                   </button>
                 </th>
                 <th className="pb-2 text-right font-semibold">
@@ -130,7 +130,7 @@ export function TraineesTable({ trainees, totalTrainees }: TraineesTableProps) {
                     onClick={() => toggleSort('numberOfSolveProblems')}
                     className="flex items-center gap-1 ml-auto hover:text-dashboard-text transition-colors"
                   >
-                    Solved <SortIcon col="numberOfSolveProblems" active={sortKey === 'numberOfSolveProblems'} dir={sortDir} />
+                    Solved <SortIcon active={sortKey === 'numberOfSolveProblems'} dir={sortDir} />
                   </button>
                 </th>
                 <th className="pb-2 text-right font-semibold">
@@ -138,7 +138,7 @@ export function TraineesTable({ trainees, totalTrainees }: TraineesTableProps) {
                     onClick={() => toggleSort('totalSumbissions')}
                     className="flex items-center gap-1 ml-auto hover:text-dashboard-text transition-colors"
                   >
-                    Submissions <SortIcon col="totalSumbissions" active={sortKey === 'totalSumbissions'} dir={sortDir} />
+                    Submissions <SortIcon active={sortKey === 'totalSumbissions'} dir={sortDir} />
                   </button>
                 </th>
                 <th className="pb-2 text-right font-semibold">Submissions</th>

@@ -9,5 +9,13 @@ export default defineConfig({
     // doesn't exist in the browser. Vite's `define` replaces it at build time.
     global: 'globalThis',
   },
+  server: {
+    watch: {
+      usePolling: true,
+    },
+    host: true,
+    strictPort: true,
+    port: 5173,
+  }
 })
 

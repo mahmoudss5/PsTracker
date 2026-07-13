@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import { useCfAvatar } from '../hooks/useCfAvatar';
 import { ProfileCard } from '../components/Traineedashboard/ProfileCard';
 import { RankCard } from '../components/Traineedashboard/RankCard';

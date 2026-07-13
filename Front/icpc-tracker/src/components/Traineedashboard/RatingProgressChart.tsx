@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useContests } from "../../hooks/useContests";
 
 // --- Rating Progress data ---
@@ -254,7 +254,7 @@ function DailySolvedChartContent() {
 // ------------------------------------------------------------------
 // Main component with toggle
 // ------------------------------------------------------------------
-export function RatingProgressChart({ codeforcesHandle, userId }: { codeforcesHandle?: string, userId?: number }) {
+export function RatingProgressChart({ userId }: { codeforcesHandle?: string, userId?: number }) {
   const [mode, setMode] = useState<ChartMode>("rating");
   const { contests, isLoading: loading } = useContests(userId);
 
