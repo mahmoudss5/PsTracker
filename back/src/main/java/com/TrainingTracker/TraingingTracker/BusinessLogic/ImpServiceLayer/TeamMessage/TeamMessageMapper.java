@@ -4,6 +4,8 @@ import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.TeamMessage.Team
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.TeamMessage;
 import org.springframework.stereotype.Component;
 
+import java.time.ZoneId;
+
 @Component
 public class TeamMessageMapper {
 
@@ -11,7 +13,7 @@ public class TeamMessageMapper {
         return new TeamMessageResponseDto(
                 message.getId(),
                 message.getContent(),
-                message.getCreatedAt(),
+                message.getCreatedAt().atZone(ZoneId.of("Africa/Cairo")).toOffsetDateTime(),
                 message.getTeam().getId(),
                 message.getSender().getId(),
                 message.getSender().getUsername()

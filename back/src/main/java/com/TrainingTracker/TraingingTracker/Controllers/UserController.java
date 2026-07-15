@@ -42,7 +42,7 @@ public class UserController {
         return ResponseEntity.ok(userService.getUserResponseById(id));
     }
 
-    @Operation(summary = "Update user profile (userName, codeforcesHandle)")
+    @Operation(summary = "Update user profile (userName only)")
     @org.springframework.web.bind.annotation.PutMapping("/me/profile")
     public ResponseEntity<TraineResponse> updateProfile(@org.springframework.web.bind.annotation.RequestBody com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.User.UpdateProfileDto dto) {
         return ResponseEntity.ok(userService.updateProfile(dto));

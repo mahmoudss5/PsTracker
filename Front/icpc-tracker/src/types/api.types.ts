@@ -56,7 +56,6 @@ export interface TraineeResponse {
 
 export interface UpdateProfileRequest {
   userName: string;
-  codeforcesHandle: string;
 }
 
 export interface UpdatePasswordRequest {

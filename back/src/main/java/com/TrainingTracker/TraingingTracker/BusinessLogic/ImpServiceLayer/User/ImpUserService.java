@@ -7,7 +7,6 @@ import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.User;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Repositories.TeamRepository;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Repositories.UserRepository;
 import com.TrainingTracker.TraingingTracker.Util.SecuiryUserUtil;
-import com.TrainingTracker.TraingingTracker.BusinessLogic.InterfacesServiceLayer.CfService;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.User.UpdateProfileDto;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.User.UpdatePasswordDto;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,7 +28,6 @@ public class ImpUserService implements UserService {
     private final TeamRepository teamRepository;
     private final UserServiceMapper userMapper;
     private final PasswordEncoder passwordEncoder;
-    private final CfService cfService;
 
     @Override
     @Transactional(readOnly = true)
@@ -89,20 +87,6 @@ public class ImpUserService implements UserService {
         
         if (dto.userName() != null && !dto.userName().isBlank()) {
             user.setUsername(dto.userName());
-        }
-        
-        if (dto.codeforcesHandle() != null && !dto.codeforcesHandle().isBlank() && !dto.codeforcesHandle().equals(user.getCodeforcesHandle())) {
-            if (!cfService.checkIfUserCfAccountExist(dto.codeforcesHandle())) {
-                throw new IllegalArgumentException("Codeforces account does not exist");
-            }
-            com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Codeforces.CodeforcesUserInfo info = cfService.getUserInfo(dto.codeforcesHandle());
-            user.setCodeforcesHandle(dto.codeforcesHandle());
-            if (info != null) {
-                if (info.rating() != null) user.setRate(info.rating());
-                if (info.maxRate() != null && (user.getMaxRate() == null || info.maxRate() > user.getMaxRate())) user.setMaxRate(info.maxRate());
-                if (info.rank() != null) user.setRank(info.rank());
-                if (info.maxRank() != null) user.setMaxRank(info.maxRank());
-            }
         }
         
         userRepository.save(user);

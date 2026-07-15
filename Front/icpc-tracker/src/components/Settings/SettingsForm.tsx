@@ -1,7 +1,7 @@
 import { useState, useEffect, type FormEvent } from 'react';
 import { updateProfile, updatePassword } from '../../services/userService';
 import { toast } from 'sonner';
-import { User, Globe, Lock, Key, ShieldAlert, ChevronDown, ChevronUp } from 'lucide-react';
+import { User, Lock, Key, ShieldAlert, ChevronDown, ChevronUp } from 'lucide-react';
 import type { TraineeResponse } from '../../types/api.types';
 import { useCfAvatar } from '../../hooks/useCfAvatar';
 
@@ -12,8 +12,7 @@ interface SettingsFormProps {
 
 export function SettingsForm({ user, onUpdated }: SettingsFormProps) {
   const [userName, setUserName] = useState('');
-  const [codeforcesHandle, setCodeforcesHandle] = useState('');
-  
+
   const [showPasswordFields, setShowPasswordFields] = useState(false);
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -25,7 +24,6 @@ export function SettingsForm({ user, onUpdated }: SettingsFormProps) {
   useEffect(() => {
     if (user) {
       setUserName(user.userName || '');
-      setCodeforcesHandle(user.codeforcesHandle || '');
     }
   }, [user]);
 
@@ -36,11 +34,11 @@ export function SettingsForm({ user, onUpdated }: SettingsFormProps) {
 
     try {
       // 1. Update Profile if changed
-      if (userName !== user?.userName || codeforcesHandle !== user?.codeforcesHandle) {
-        if (!userName.trim() || !codeforcesHandle.trim()) {
-            throw new Error('Username and Codeforces Handle cannot be empty.');
+      if (userName !== user?.userName) {
+        if (!userName.trim()) {
+          throw new Error('Username cannot be empty.');
         }
-        await updateProfile({ userName, codeforcesHandle });
+        await updateProfile({ userName });
         toast.success('Profile updated successfully!');
         onUpdated();
       }
@@ -117,25 +115,6 @@ export function SettingsForm({ user, onUpdated }: SettingsFormProps) {
                 placeholder="Enter username"
                 required
                 minLength={6}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            <label className="text-sm font-semibold text-dashboard-text/90 flex items-center gap-2">
-               Codeforces Handle
-            </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <Globe size={18} className="text-purple-500" />
-              </div>
-              <input
-                type="text"
-                value={codeforcesHandle}
-                onChange={(e) => setCodeforcesHandle(e.target.value)}
-                className="w-full bg-white/30 border border-dashboard-border rounded-xl pl-11 pr-4 py-3.5 text-black placeholder-dashboard-muted/50 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all shadow-inner"
-                placeholder="Enter Codeforces handle"
-                required
               />
             </div>
           </div>
@@ -219,7 +198,7 @@ export function SettingsForm({ user, onUpdated }: SettingsFormProps) {
           <div className="pt-8 mt-4 border-t border-dashboard-border/50 flex justify-end">
             <button
               type="submit"
-              disabled={isSubmitting || (userName.trim().length < 6 || !codeforcesHandle.trim())}
+              disabled={isSubmitting || userName.trim().length < 6}
               className="w-full sm:w-auto px-10 py-4 bg-gradient-to-r from-dashboard-primary to-purple-600 hover:from-dashboard-primary-hover hover:to-purple-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-dashboard-primary/25 disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5 active:translate-y-0"
             >
               {isSubmitting ? 'Saving Changes...' : 'Save Changes'}

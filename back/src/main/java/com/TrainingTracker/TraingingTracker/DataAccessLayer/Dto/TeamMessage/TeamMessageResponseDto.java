@@ -1,11 +1,11 @@
 package com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.TeamMessage;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 public record TeamMessageResponseDto(
         Long id,
         String content,
-        LocalDateTime createdAt,
+        OffsetDateTime createdAt,
         Long teamId,
         Long senderId,
         String senderUsername) {
