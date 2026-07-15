@@ -11,9 +11,16 @@ services:
     ports:
       - "5433:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ./postgres-data:/var/lib/postgresql/data
     restart: unless-stopped
-
+    
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pstracker_user -d pstracker"]
+      interval: 5s  # Check every 5 seconds
+      timeout: 5s   # Wait up to 5 seconds for a response
+      retries: 5    # If it fails 5 times in a row, consider it unhealthy
+      start_period: 5s # Give Postgres 5 seconds of grace time to boot up initially
+  
   redis:
     image: redis:7-alpine
     container_name: pstracker_redis
@@ -37,7 +44,6 @@ services:
       - DB_PASSWORD=123456
       - SPRING_DATA_REDIS_HOST=redis
       - SPRING_DATA_REDIS_PORT=6379
-      # You can put your actual JWT secret here or in a .env file
       - JWT_SECRET=THIS_IS_A_VERY_LONG_SECRET_KEY_MINIMUM_32_CHARS
     volumes:
       - ./back:/app
@@ -53,7 +59,7 @@ services:
       dockerfile: Dockerfile.dev
     container_name: pstracker_frontend
     ports:
-      - "5173:5173"
+      - "5173:80"
     environment:
       - VITE_API_URL=http://localhost:8080/api
     volumes:
@@ -64,6 +70,6 @@ services:
     restart: unless-stopped
 
 volumes:
-  postgres_data:
   redis_data:
   maven_cache:
+  

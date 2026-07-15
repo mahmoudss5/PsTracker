@@ -95,11 +95,13 @@ public class ImpUserService implements UserService {
             if (!cfService.checkIfUserCfAccountExist(dto.codeforcesHandle())) {
                 throw new IllegalArgumentException("Codeforces account does not exist");
             }
-            Long rating = cfService.getUserRating(dto.codeforcesHandle());
+            com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Codeforces.CodeforcesUserInfo info = cfService.getUserInfo(dto.codeforcesHandle());
             user.setCodeforcesHandle(dto.codeforcesHandle());
-            user.setRate(rating);
-            if (rating != null && (user.getMaxRate() == null || rating > user.getMaxRate())) {
-                user.setMaxRate(rating);
+            if (info != null) {
+                if (info.rating() != null) user.setRate(info.rating());
+                if (info.maxRate() != null && (user.getMaxRate() == null || info.maxRate() > user.getMaxRate())) user.setMaxRate(info.maxRate());
+                if (info.rank() != null) user.setRank(info.rank());
+                if (info.maxRank() != null) user.setMaxRank(info.maxRank());
             }
         }
         

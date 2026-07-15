@@ -75,17 +75,24 @@ public class ImpAuthService implements AuthService {
             throw new IllegalArgumentException("Codeforces account does not exist");
         }
 
-        Long rating = cfService.getUserRating(dto.codeforcesHandle());
+        com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Codeforces.CodeforcesUserInfo info = cfService.getUserInfo(dto.codeforcesHandle());
 
-        User user = User.builder()
-                .username(dto.userName())
-                .email(dto.email())
-                .password(passwordEncoder.encode(dto.password()))
-                .role(dto.isCoach() ? Role.Coach : Role.Trainee)
-                .rate(rating)
-                .codeforcesHandle(dto.codeforcesHandle())
-                .createdAt(LocalDateTime.now())
-                .build();
+        User.UserBuilder userBuilder = User.builder()
+            .username(dto.userName())
+            .email(dto.email())
+            .password(passwordEncoder.encode(dto.password()))
+            .role(dto.isCoach() ? Role.Coach : Role.Trainee)
+            .codeforcesHandle(dto.codeforcesHandle())
+            .createdAt(LocalDateTime.now());
+
+        if (info != null) {
+            if (info.rating() != null) userBuilder.rate(info.rating());
+            if (info.maxRate() != null) userBuilder.maxRate(info.maxRate());
+            if (info.rank() != null) userBuilder.rank(info.rank());
+            if (info.maxRank() != null) userBuilder.maxRank(info.maxRank());
+        }
+
+        User user = userBuilder.build();
 
         User savedUser = userRepository.save(user);
 

@@ -161,8 +161,8 @@ public class ImpCfService implements CfService {
     }
 
     @Override
-    public Long getUserRating(String userHandle) {
-         try {
+    public com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Codeforces.CodeforcesUserInfo getUserInfo(String userHandle) {
+        try {
             ResponseEntity<JsonNode> response = restClient.get()
                     .uri("/user.info?handles={handle}&checkHistoricHandles=false", userHandle)
                     .retrieve()
@@ -170,20 +170,36 @@ public class ImpCfService implements CfService {
 
             if (response.getStatusCode().is2xxSuccessful() && "OK".equals(response.getBody().get("status").asText())) {
                 JsonNode userInfo = response.getBody().get("result").get(0);
-                return userInfo.has("rating") ? userInfo.get("rating").asLong() : 0L;
+                Long rating = userInfo.has("rating") ? userInfo.get("rating").asLong() : null;
+                Long maxRate = userInfo.has("maxRating") ? userInfo.get("maxRating").asLong() : null;
+                String rank = userInfo.has("rank") ? userInfo.get("rank").asText() : null;
+                String maxRank = userInfo.has("maxRank") ? userInfo.get("maxRank").asText() : null;
+
+                return new com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Codeforces.CodeforcesUserInfo(
+                        rating,
+                        maxRate,
+                        rank,
+                        maxRank
+                );
             } else {
-                throw new RuntimeException("Failed to fetch user rating from Codeforces");
+                throw new RuntimeException("Failed to fetch user info from Codeforces");
             }
-         }catch (HttpClientErrorException e) {
-             log.error("User not found on Codeforces: {}", e.getMessage());
+        } catch (HttpClientErrorException e) {
+            log.error("User not found on Codeforces: {}", e.getMessage());
             throw new RuntimeException("User not found on Codeforces");
         } catch (HttpServerErrorException e) {
-             log.error("Couldn't connect to Codeforces: {}", e.getMessage());
-             throw new RuntimeException("couldn't connect to codeforces");
-         }
+            log.error("Couldn't connect to Codeforces: {}", e.getMessage());
+            throw new RuntimeException("couldn't connect to codeforces");
+        }
     }
     private String getUserCodeforecesHandle(Long userId) {
         return userRepository.findById(userId).orElseThrow().getCodeforcesHandle();
+    }
+
+    @Override
+    public Long getUserRating(String userHandle) {
+        com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Codeforces.CodeforcesUserInfo info = getUserInfo(userHandle);
+        return info == null ? null : info.rating();
     }
 
 

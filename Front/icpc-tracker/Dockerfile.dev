@@ -1,15 +1,13 @@
-# Use Node 20 as base image
-FROM node:20-alpine
-
-# Set working directory
+FROM node:20-alpine AS build
 WORKDIR /app
 
-# Copy package.json and package-lock.json
 COPY package*.json ./
+RUN npm ci
 
-# Install dependencies
-RUN npm install
+COPY . .
+RUN npm run build
 
-# The source code will be mounted as a volume in docker-compose.yml
-# Start the Vite development server and expose it
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+FROM nginx:alpine
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/dist /usr/share/nginx/html
+EXPOSE 80
