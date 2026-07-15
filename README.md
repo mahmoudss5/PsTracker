@@ -420,6 +420,9 @@ Open `http://localhost:5173` in your browser.
 | `app.jwt.secret` | 256-bit JWT signing secret | `myVeryLongSecretKey...` |
 | `app.jwt.expiration-ms` | Access token TTL (ms) | `900000` (15 min) |
 | `app.jwt.refresh-expiration-ms` | Refresh token TTL (ms) | `604800000` (7 days) |
+| `FRONTEND_ORIGIN_1..4` | Allowed CORS origins passed into the backend from docker compose | `http://localhost:5173` |
+
+The backend CORS list is resolved from `app.cors-allowed-origins`, and the compose file supplies local defaults for `FRONTEND_ORIGIN_1` through `FRONTEND_ORIGIN_4`. Override them in your environment for production domains.
 
 ### Frontend
 The API base URL is configured in [`src/config/api.tsx`](Front/icpc-tracker/src/config/api.tsx):
@@ -447,6 +450,10 @@ baseURL: "http://localhost:8000/api"
 - [x] Coach dashboard page (currently a placeholder)
 
 ### 🗺️ Planned Features
+- [ ] Move chat and announcement read-time tracking to the frontend
+- [ ] Prevent users from changing their Codeforces handle after it is set
+- [ ] Require username changes to be longer than 5 characters
+- [ ] Pass CORS allowed origins through docker compose environment variables
 - [ ] Leaderboard — team ranking by acceptance rate / problems solved
 - [ ] Contest scheduler & upcoming contest tracker
 - [ ] Problem recommendation engine based on weak tags

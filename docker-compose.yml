@@ -45,6 +45,10 @@ services:
       - SPRING_DATA_REDIS_HOST=redis
       - SPRING_DATA_REDIS_PORT=6379
       - JWT_SECRET=THIS_IS_A_VERY_LONG_SECRET_KEY_MINIMUM_32_CHARS
+      - FRONTEND_ORIGIN_1=${FRONTEND_ORIGIN_1:-http://localhost:5173}
+      - FRONTEND_ORIGIN_2=${FRONTEND_ORIGIN_2:-http://localhost:5174}
+      - FRONTEND_ORIGIN_3=${FRONTEND_ORIGIN_3:-http://127.0.0.1:5173}
+      - FRONTEND_ORIGIN_4=${FRONTEND_ORIGIN_4:-http://127.0.0.1:5174}
     volumes:
       - ./back:/app
       - maven_cache:/root/.m2 # Cache maven dependencies to speed up restarts

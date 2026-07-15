@@ -49,6 +49,7 @@ export function RegisterCredentialsForm({
           onChange={(e) => onUsernameChange(e.target.value)}
           autoComplete="username"
           required
+          minLength={6}
         />
       
         <Input

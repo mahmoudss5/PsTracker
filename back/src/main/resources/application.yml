@@ -40,5 +40,4 @@ app:
     - ${FRONTEND_ORIGIN_2:http://localhost:5174}
     - ${FRONTEND_ORIGIN_3:http://127.0.0.1:5173}
     - ${FRONTEND_ORIGIN_4:http://127.0.0.1:5174}
-    - ${FRONTEND_ORIGIN_5:http://20.215.209.195:5175}
-    
+    - ${FRONTEND_ORIGIN_5:http://20.215.209.195:5173}

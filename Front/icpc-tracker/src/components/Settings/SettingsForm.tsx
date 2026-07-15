@@ -116,6 +116,7 @@ export function SettingsForm({ user, onUpdated }: SettingsFormProps) {
                 className="w-full bg-white/30 border border-dashboard-border rounded-xl pl-11 pr-4 py-3.5 text-black placeholder-dashboard-muted/50 focus:outline-none focus:border-dashboard-primary focus:ring-2 focus:ring-dashboard-primary/20 transition-all shadow-inner"
                 placeholder="Enter username"
                 required
+                minLength={6}
               />
             </div>
           </div>
@@ -218,7 +219,7 @@ export function SettingsForm({ user, onUpdated }: SettingsFormProps) {
           <div className="pt-8 mt-4 border-t border-dashboard-border/50 flex justify-end">
             <button
               type="submit"
-              disabled={isSubmitting || (!userName.trim() || !codeforcesHandle.trim())}
+              disabled={isSubmitting || (userName.trim().length < 6 || !codeforcesHandle.trim())}
               className="w-full sm:w-auto px-10 py-4 bg-gradient-to-r from-dashboard-primary to-purple-600 hover:from-dashboard-primary-hover hover:to-purple-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-dashboard-primary/25 disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5 active:translate-y-0"
             >
               {isSubmitting ? 'Saving Changes...' : 'Save Changes'}

@@ -56,8 +56,8 @@ export function useRegister() {
         setError('Passwords do not match');
         return;
       }
-      if(credentials.userName.length<5){
-        setError("Username must be at least 5 characters long");
+      if(credentials.userName.length < 6){
+        setError("Username must be longer than 5 characters");
         return;
       }
       if(credentials.email.length<5 || !credentials.email.includes("@")){
