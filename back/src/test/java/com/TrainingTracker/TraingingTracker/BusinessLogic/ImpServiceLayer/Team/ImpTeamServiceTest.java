@@ -74,7 +74,7 @@ class ImpTeamServiceTest {
 
             teamService.JoinTeam(teamCode);
 
-            assertTrue(team.getTrainees().contains(trainee));
+            assertEquals(true, team.getTrainees().contains(trainee));
             verify(teamRepository).save(team);
         }
     }
@@ -116,6 +116,9 @@ class ImpTeamServiceTest {
                 .trainees(traineesList)
                 .build();
 
+        // Reflect real-world state: a user in a team has traineeTeam set
+        user.setTraineeTeam(team);
+
         try (MockedStatic<SecuiryUserUtil> securityUtilMockedStatic = mockStatic(SecuiryUserUtil.class)) {
             securityUtilMockedStatic.when(SecuiryUserUtil::getCurrntUserId).thenReturn(userId);
             when(userService.getUserById(userId)).thenReturn(user);
@@ -124,6 +127,7 @@ class ImpTeamServiceTest {
             teamService.leaveTeam(teamId);
 
             assertFalse(team.getTrainees().contains(user));
+            assertNull(user.getTraineeTeam());
             verify(teamRepository).save(team);
         }
     }

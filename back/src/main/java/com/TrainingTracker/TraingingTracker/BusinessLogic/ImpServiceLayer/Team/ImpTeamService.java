@@ -56,7 +56,7 @@ public class ImpTeamService implements TeamsService {
         Long traineeId = SecuiryUserUtil.getCurrntUserId();
         User trainee = userService.getUserById(traineeId);
         trainee.setTraineeTeam(team);
-        team.getTrainees().add(trainee);
+        team.getTrainees().add(trainee);   // keep both sides in sync
         teamRepository.save(team);
     }
 
@@ -67,10 +67,10 @@ public class ImpTeamService implements TeamsService {
         Long userId = SecuiryUserUtil.getCurrntUserId();
         User user = userService.getUserById(userId);
         Team team = teamRepository.findById(teamId)
-                .orElseThrow(()-> new RuntimeException("Team not found with id: "+teamId));
+                .orElseThrow(()->new RuntimeException("Team not found with id: "+teamId));
         if (user.getTraineeTeam() != null && user.getTraineeTeam().getId().equals(team.getId())) {
             user.setTraineeTeam(null);
-            team.getTrainees().remove(user);
+            team.getTrainees().remove(user);   // keep both sides in sync
         }
         teamRepository.save(team);
     }
