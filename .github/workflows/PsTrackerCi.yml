@@ -13,6 +13,9 @@ on:
 jobs:
   buildAndTest:
     runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      pull-requests: write
     steps:
       - name: CheckoutCode
         uses: actions/checkout@v4
@@ -20,7 +23,7 @@ jobs:
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: '21'
           distribution: temurin
 
       - name: Build With Maven
@@ -34,6 +37,7 @@ jobs:
       - name: Publish Test Report
         uses: EnricoMi/publish-unit-test-result-action@v2
         if: always()
+        continue-on-error: true
         with:
           files: back/target/surefire-reports/*.xml
           check_name: Unit Test Results
