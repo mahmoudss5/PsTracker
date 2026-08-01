@@ -24,8 +24,15 @@ import { TeamChatPanel } from "../components/shared/TeamChatPane";
 import { useCurrentUser } from "../hooks/useCurrentUser";
 import { useCoachTeams, useTeam } from "../hooks/useTeam";
 import { useUsers } from "../hooks/useUsers";
+import { usePresence } from "../hooks/UsePresence";
 import { createTeam, joinTeam } from "../services/teamService";
 import type { TeamResponse, TraineeResponse } from "../types/api.types";
+
+// Helper to check if a user is online
+function isOnline(presence: any[], userId: number | undefined) {
+  if (!presence || !Array.isArray(presence) || !userId) return false;
+  return presence.some((p) => p === userId || p?.userId === userId || p?.id === userId);
+}
 import { useCopyToClipboard } from "../hooks/useCopyToClipboard";
 
 type Tab = "chat" | "announcements" | "materials";
@@ -79,7 +86,7 @@ function CopyableTeamCode({ code }: { code: string }) {
   );
 }
 
-function CoachOverview() {
+function CoachOverview({ presence }: { presence: any[] }) {
   const navigate = useNavigate();
   const [teamName, setTeamName] = useState("");
   const [query, setQuery] = useState("");
@@ -171,7 +178,7 @@ function CoachOverview() {
           ) : (
             <div className="divide-y divide-dashboard-border">
               {trainees.map((user) => (
-                <UserRow key={user.id} user={user} />
+                <UserRow key={user.id} user={user} presence={presence} />
               ))}
             </div>
           )}
@@ -226,13 +233,18 @@ function CoachOverview() {
   );
 }
 
-function UserRow({ user }: { user: TraineeResponse }) {
+function UserRow({ user, presence }: { user: TraineeResponse; presence: any[] }) {
   const inTeam = Boolean(user.teamName);
+  const online = isOnline(presence, user.id);
+  
   return (
     <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex min-w-0 items-center gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-dashboard-primary text-sm font-bold text-dashboard-primary-contrast">
+        <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-dashboard-primary text-sm font-bold text-dashboard-primary-contrast">
           {initials(user.userName)}
+          {online && (
+            <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-dashboard-background bg-emerald-500" title="Online" />
+          )}
         </div>
         <div className="min-w-0">
           <p className="truncate text-sm font-bold text-dashboard-text">{user.userName}</p>
@@ -294,7 +306,7 @@ function ErrorBlock({ message, onRetry }: { message: string; onRetry: () => void
   );
 }
 
-function TeamDetail({ team, isCoach }: { team: TeamResponse; isCoach: boolean }) {
+function TeamDetail({ team, isCoach, presence }: { team: TeamResponse; isCoach: boolean; presence: any[] }) {
   const [activeTab, setActiveTab] = useState<Tab>("chat");
   // Use the live STOMP-backed hook so the badge stays current in real time.
   // We only need the count here; AnnouncementsPanel has its own hook instance.
@@ -358,10 +370,15 @@ function TeamDetail({ team, isCoach }: { team: TeamResponse; isCoach: boolean })
               <span className="text-sm font-bold text-dashboard-text">{team.coachUsername}</span>
               <PiCrownSimpleFill className="text-amber-400" />
             </li>
-            {team.trainees.map((member) => (
+            {team.trainees.map((member) => {
+              const online = isOnline(presence, member.id);
+              return (
               <li key={member.id} className="flex shrink-0 items-center gap-2 rounded-lg border border-dashboard-border bg-dashboard-elevated px-3 py-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-dashboard-primary text-xs font-bold text-dashboard-primary-contrast">
+                <div className="relative flex h-8 w-8 items-center justify-center rounded-full bg-dashboard-primary text-xs font-bold text-dashboard-primary-contrast">
                   {initials(member.userName)}
+                  {online && (
+                    <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-dashboard-elevated bg-emerald-500" title="Online" />
+                  )}
                 </div>
                 <span className="text-sm font-bold text-dashboard-text">{member.userName}</span>
                 {isCoach && (
@@ -374,7 +391,8 @@ function TeamDetail({ team, isCoach }: { team: TeamResponse; isCoach: boolean })
                   </Link>
                 )}
               </li>
-            ))}
+              );
+            })}
           </ul>
         </div>
 
@@ -468,6 +486,7 @@ export function TeamPage() {
   const { teamId: routeTeamId } = useParams<{ teamId?: string }>();
   const parsedRouteTeamId = routeTeamId ? Number(routeTeamId) : null;
   const { user, isLoading: userLoading, error: userError, refetch: refetchUser } = useCurrentUser();
+  const { presence } = usePresence(user?.id);
   const isCoach = isCoachRole(user?.role);
   const selectedTeamId = parsedRouteTeamId ?? user?.teamId ?? null;
   const shouldLoadTeam = selectedTeamId !== null && Number.isFinite(selectedTeamId);
@@ -484,7 +503,7 @@ export function TeamPage() {
   }
 
   if (isCoach && parsedRouteTeamId === null) {
-    return <CoachOverview />;
+    return <CoachOverview presence={presence} />;
   }
 
   if (!isCoach && !user?.teamId) {
@@ -514,5 +533,5 @@ export function TeamPage() {
     );
   }
 
-  return <TeamDetail team={team} isCoach={isCoach} />;
+  return <TeamDetail team={team} isCoach={isCoach} presence={presence} />;
 }
