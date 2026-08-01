@@ -62,6 +62,7 @@ Submissions are **automatically synced** from the Codeforces API on a background
 - Dark / light mode with smooth transitions
 - Fully responsive — mobile through desktop
 - Real-time WebSocket team chat (STOMP over SockJS)
+- **Real-time presence indicator** — green dot shows online teammates; powered by Redis TTL heartbeats and scheduled STOMP broadcasts
 - Swagger / OpenAPI docs at `/swagger-ui.html`
 
 ---
@@ -296,7 +297,15 @@ Interactive docs: `http://localhost:8000/swagger-ui.html`
 | `GET` | `/announcment-teams/team/:teamId` | All team announcements |
 | `POST` | `/announcment-teams` | Send announcement to team |
 
-> **WebSocket** (STOMP): connect to `ws://localhost:8000/ws` with JWT header for real-time team chat.
+> **WebSocket** (STOMP): connect to `ws://localhost:8080/ws` with `Authorization: Bearer <token>` header.
+> Topics:
+> - `/topic/teams/{teamId}/messages` — real-time team chat
+> - `/topic/presence` — broadcasted every 10 s (and immediately on heartbeat) with `[{ userId: number }]`
+> - `/user/queue/notifications` — per-user notification push
+>
+> App destinations (publish to):
+> - `/app/teams/{teamId}/messages` — send a chat message
+> - `/app/presence.update` — heartbeat `{ userId }` to mark yourself online (Redis TTL: 1 min)
 
 ---
 
@@ -352,12 +361,25 @@ RefreshToken
 - Docker & Docker Compose (for Redis)
 - PostgreSQL (running locally or via Docker)
 
-### 1 — Start infrastructure
+### 1 — Start all services with Docker Compose
 
 ```bash
-# Start Redis (required for token management)
-docker-compose up -d
+# Starts PostgreSQL, Redis, Spring Boot backend, and Vite frontend
+docker compose up -d --build
 ```
+
+Services:
+| Container | URL |
+|---|---|
+| Frontend (Vite HMR) | http://localhost:5173 |
+| Backend (Spring Boot) | http://localhost:8080/api |
+| Swagger UI | http://localhost:8080/swagger-ui.html |
+| PostgreSQL | localhost:5433 |
+| Redis | localhost:6379 |
+
+The frontend `Dockerfile.dev` runs the **Vite dev server** (hot-module replacement enabled). File changes in `Front/icpc-tracker/src/` are reflected in the browser instantly without rebuilding the container.
+
+The backend `Dockerfile.dev` runs `mvn spring-boot:run` with Spring DevTools. File changes trigger an automatic backend restart.
 
 ### 2 — Configure the backend
 
@@ -386,18 +408,16 @@ app.jwt.refresh-expiration-ms=604800000
 server.port=8000
 ```
 
-### 3 — Run the backend
 
+### Running locally (without Docker)
+
+#### Backend
 ```bash
 cd back
 ./mvnw spring-boot:run
 ```
 
-The API will be available at `http://localhost:8000/api`.  
-Swagger UI: `http://localhost:8000/swagger-ui.html`
-
-### 4 — Run the frontend
-
+#### Frontend
 ```bash
 cd Front/icpc-tracker
 npm install
@@ -405,6 +425,9 @@ npm run dev
 ```
 
 Open `http://localhost:5173` in your browser.
+
+> **Note:** When running outside Docker, ensure `VITE_API_URL` is set to `http://localhost:8080/api`.  
+> The WebSocket URL is automatically derived as `http://localhost:8080/ws` (by replacing `/api` → `/ws`), so `VITE_WS_URL` is optional.
 
 ---
 
@@ -424,11 +447,13 @@ Open `http://localhost:5173` in your browser.
 
 The backend CORS list is resolved from `app.cors-allowed-origins`, and the compose file supplies local defaults for `FRONTEND_ORIGIN_1` through `FRONTEND_ORIGIN_4`. Override them in your environment for production domains.
 
-### Frontend
-The API base URL is configured in [`src/config/api.tsx`](Front/icpc-tracker/src/config/api.tsx):
-```ts
-baseURL: "http://localhost:8000/api"
-```
+### Frontend (`src/config/runtime.ts`)
+| Variable | Description | Default |
+|---|---|---|
+| `VITE_API_URL` | Backend API base URL | `http://localhost:8080/api` |
+| `VITE_WS_URL` | WebSocket base URL | Auto-derived from `VITE_API_URL` (replaces `/api` → `/ws`) |
+
+Set in `docker-compose.yml` under the `frontend` service environment, or in a `.env` file at `Front/icpc-tracker/.env`.
 
 ---
 
@@ -448,6 +473,9 @@ baseURL: "http://localhost:8000/api"
 - [x] Implement WebSocket client (`@stomp/stompjs` + `sockjs-client`) for real-time team chat
 - [x] Connect `TeamPage` to real API (`useTeam`, `useTeamMembers`)
 - [x] Coach dashboard page (currently a placeholder)
+- [x] **Real-time presence** — green online dot on trainees/teammates via Redis heartbeat + STOMP broadcast
+- [x] **Frontend Dockerfile.dev** now runs Vite dev server (HMR) instead of a static Nginx build
+- [x] **WebSocket URL** auto-derived from `VITE_API_URL` when `VITE_WS_URL` is not set
 
 ### 🗺️ Planned Features
 - [ ] Move chat and announcement read-time tracking to the frontend

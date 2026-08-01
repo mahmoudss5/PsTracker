@@ -243,7 +243,7 @@ function UserRow({ user, presence }: { user: TraineeResponse; presence: any[] })
         <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-dashboard-primary text-sm font-bold text-dashboard-primary-contrast">
           {initials(user.userName)}
           {online && (
-            <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-dashboard-background bg-emerald-500" title="Online" />
+            <span className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full border-2 border-dashboard-background bg-emerald-500" title="Online" />
           )}
         </div>
         <div className="min-w-0">
@@ -377,7 +377,7 @@ function TeamDetail({ team, isCoach, presence }: { team: TeamResponse; isCoach: 
                 <div className="relative flex h-8 w-8 items-center justify-center rounded-full bg-dashboard-primary text-xs font-bold text-dashboard-primary-contrast">
                   {initials(member.userName)}
                   {online && (
-                    <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-dashboard-elevated bg-emerald-500" title="Online" />
+                    <span className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full border-2 border-dashboard-elevated bg-emerald-500" title="Online" />
                   )}
                 </div>
                 <span className="text-sm font-bold text-dashboard-text">{member.userName}</span>

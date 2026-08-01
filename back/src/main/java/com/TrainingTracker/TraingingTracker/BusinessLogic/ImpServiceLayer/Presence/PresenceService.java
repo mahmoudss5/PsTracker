@@ -2,6 +2,7 @@ package com.TrainingTracker.TraingingTracker.BusinessLogic.ImpServiceLayer.Prese
 
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.User.UserPresence;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -17,6 +18,7 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PresenceService {
 
     private final StringRedisTemplate redisTemplate;
@@ -28,6 +30,8 @@ public class PresenceService {
     public void refreshUserPresence(UserPresence userPresence) {
         String key = PRESENCE_KEY_PREFIX + userPresence.userId();
         redisTemplate.opsForValue().set(key, "online", PRESENCE_TTL);
+        // Immediately push the updated list so subscribers don't wait up to 10 s.
+        SendCurrentPresence();
     }
 
     public List<Long> getAllOnlineUserIds() {
@@ -51,6 +55,7 @@ public class PresenceService {
         for (Long userId : onlineUserIds) {
             userPresences.add(new UserPresence(userId));
         }
+        log.info("Sending presence update: {}", userPresences);
         simpMessagingTemplate.convertAndSend("/topic/presence", userPresences);
     }
 
