@@ -1,0 +1,15 @@
+env
+back/.env
+.idea/
+.vscode/
+.codex/
+.agents/
+.redis_data/
+.postgres_data/
+.build/
+.dist/
+.nb-gradle/
+.nbproject/
+.nbbuild/
+.nbdist/
+.nbdist/
