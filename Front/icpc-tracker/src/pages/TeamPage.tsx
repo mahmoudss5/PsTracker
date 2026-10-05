@@ -308,6 +308,7 @@ function ErrorBlock({ message, onRetry }: { message: string; onRetry: () => void
 
 function TeamDetail({ team, isCoach, presence }: { team: TeamResponse; isCoach: boolean; presence: any[] }) {
   const [activeTab, setActiveTab] = useState<Tab>("chat");
+  const [isMaterialUploadOpen, setIsMaterialUploadOpen] = useState(false);
   // Use the live STOMP-backed hook so the badge stays current in real time.
   // We only need the count here; AnnouncementsPanel has its own hook instance.
   const { announcements: liveAnnouncements, newIds: annNewIds } = useTeamAnnouncements(team.id);
@@ -352,7 +353,14 @@ function TeamDetail({ team, isCoach, presence }: { team: TeamResponse; isCoach: 
                 <Megaphone size={15} />
                 Announcement
               </button>
-              <button className="team-action-button">
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab("materials");
+                  setIsMaterialUploadOpen(true);
+                }}
+                className="team-action-button"
+              >
                 <Upload size={15} />
                 Material
               </button>
@@ -402,7 +410,10 @@ function TeamDetail({ team, isCoach, presence }: { team: TeamResponse; isCoach: 
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => {
+                  setActiveTab(tab.id);
+                  if (tab.id !== "materials") setIsMaterialUploadOpen(false);
+                }}
                 className={`relative flex shrink-0 items-center gap-2 border-b-2 px-5 py-3 text-sm font-semibold transition-colors ${
                   isActive
                     ? "border-dashboard-primary text-dashboard-primary"
@@ -425,7 +436,14 @@ function TeamDetail({ team, isCoach, presence }: { team: TeamResponse; isCoach: 
       <div className="flex-1 overflow-hidden">
         {activeTab === "chat" && <TeamChatPanel teamId={team.id} coachUsername={team.coachUsername} />}
         {activeTab === "announcements" && <AnnouncementsPanel teamId={team.id} />}
-        {activeTab === "materials" && <MaterialsPanel teamId={team.id} />}
+        {activeTab === "materials" && (
+          <MaterialsPanel
+            teamId={team.id}
+            canUpload={isCoach}
+            uploadOpen={isMaterialUploadOpen}
+            onUploadOpenChange={setIsMaterialUploadOpen}
+          />
+        )}
       </div>
     </div>
   );

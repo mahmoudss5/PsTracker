@@ -1,8 +1,9 @@
 package com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Material;
 
 public record MaterialCreateDto(
-        String kind,
+        String fileType,
         String title,
         String subtitle,
-        String size
+        String fileSize,
+        String s3Key
 ) {}

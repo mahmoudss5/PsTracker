@@ -18,15 +18,20 @@ public class Material {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String kind; // e.g. "link", "pdf", "image"
-
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String title;
 
+    @Column(nullable = true)
     private String subtitle;
 
-    private String size;
+    @Column(nullable = false)
+    private String fileType;
+
+    @Column(name = "s3_key", nullable = false)
+    private String s3Key;
+
+    @Column(name = "file_size", nullable = false)
+    private String fileSize;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "team_id", nullable = false)

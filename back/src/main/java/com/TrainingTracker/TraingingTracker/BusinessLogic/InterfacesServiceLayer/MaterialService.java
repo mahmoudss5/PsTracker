@@ -8,4 +8,6 @@ import java.util.List;
 public interface MaterialService {
     List<MaterialResponseDto> getTeamMaterials(Long teamId);
     MaterialResponseDto addMaterial(Long teamId, MaterialCreateDto dto);
+    void deleteMaterial(Long teamId, String s3Key);
+    void deleteByS3Key(String s3Key);
 }

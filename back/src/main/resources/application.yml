@@ -41,3 +41,8 @@ app:
     - ${FRONTEND_ORIGIN_3:http://127.0.0.1:5173}
     - ${FRONTEND_ORIGIN_4:http://127.0.0.1:5174}
     - ${FRONTEND_ORIGIN_5:http://20.215.209.195:5173}
+aws:
+  access-key-id: ${AWS_ACCESS_KEY_ID:AKIA4A57V42Z63755456}
+  secret-access-key: ${AWS_SECRET_ACCESS_KEY:1234567890}
+  region: ${AWS_REGION:us-east-1}
+  bucket-name: ${AWS_BUCKET_NAME:training-tracker-bucket}

@@ -1,5 +1,7 @@
-version: '3.8'
-
+volumes:
+  postgres_data:
+  redis_data:
+  maven_cache:
 services:
   postgres:
     image: postgres:16-alpine
@@ -11,7 +13,7 @@ services:
     ports:
       - "5433:5432"
     volumes:
-      - ./postgres-data:/var/lib/postgresql/data
+     - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
     
     healthcheck:
@@ -45,6 +47,10 @@ services:
       - SPRING_DATA_REDIS_HOST=redis
       - SPRING_DATA_REDIS_PORT=6379
       - JWT_SECRET=THIS_IS_A_VERY_LONG_SECRET_KEY_MINIMUM_32_CHARS
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION=${AWS_REGION}
+      - AWS_BUCKET_NAME=${AWS_BUCKET_NAME}
     volumes:
       - ./back:/app
       - maven_cache:/root/.m2 # Cache maven dependencies to speed up restarts
@@ -52,6 +58,7 @@ services:
       - postgres
       - redis
     restart: unless-stopped
+    
 
   frontend:
     build:
@@ -59,7 +66,7 @@ services:
       dockerfile: Dockerfile.dev
     container_name: pstracker_frontend
     ports:
-      - "5173:5173"
+      - "5173:80"
     environment:
       - VITE_API_URL=http://localhost:8080/api
     volumes:
@@ -68,8 +75,4 @@ services:
     depends_on:
       - backend
     restart: unless-stopped
-
-volumes:
-  redis_data:
-  maven_cache:
   

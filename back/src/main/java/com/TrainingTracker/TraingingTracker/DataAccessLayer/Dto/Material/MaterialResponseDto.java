@@ -4,9 +4,10 @@ import java.time.LocalDateTime;
 
 public record MaterialResponseDto(
         Long id,
-        String kind,
+        String fileType,
         String title,
         String subtitle,
-        String size,
+        String fileSize,
+        String s3Key,
         LocalDateTime createdAt
 ) {}

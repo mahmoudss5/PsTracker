@@ -2,6 +2,11 @@ package com.TrainingTracker.TraingingTracker.BusinessLogic.ImpServiceLayer.Codef
 import com.TrainingTracker.TraingingTracker.BusinessLogic.ImpServiceLayer.Problem.ProblemMapper;
 import com.TrainingTracker.TraingingTracker.BusinessLogic.ImpServiceLayer.Submission.SubmissionMapper;
 import com.TrainingTracker.TraingingTracker.BusinessLogic.InterfacesServiceLayer.CfService;
+import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Codeforces.CodeforcesUserInfo;
+import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Codeforces.RatingChange.CodeforcesRatingChangeResponse;
+import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Codeforces.RatingChange.CodeforcesRatingChangeResult;
+import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.Contest;
+import com.TrainingTracker.TraingingTracker.DataAccessLayer.Repositories.ContestRepository;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Repositories.UserRepository;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Codeforces.Submission.codeforcesSubmissionDto;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Codeforces.Submission.result.CodeforcesSubmissionResult;
@@ -23,6 +28,7 @@ import org.springframework.web.client.RestClient;
 import tools.jackson.databind.JsonNode;
 
 import java.lang.reflect.ParameterizedType;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -37,7 +43,9 @@ public class ImpCfService implements CfService {
     private final SubmissionMapper submissionMapper;
     private final ProblemRepository problemRepository;
     private final SubmissionRepository submissionRepository;
-    private final com.TrainingTracker.TraingingTracker.DataAccessLayer.Repositories.ContestRepository contestRepository;
+    private final ContestRepository contestRepository;
+
+
 
 
     @Scheduled(fixedDelay = 12, timeUnit = TimeUnit.HOURS)
@@ -54,23 +62,15 @@ public class ImpCfService implements CfService {
             }
 
             try {
-                com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Codeforces.RatingChange.CodeforcesRatingChangeResponse response = restClient.get()
+                CodeforcesRatingChangeResponse response = restClient.get()
                         .uri("/user.rating?handle={handle}", user.getCodeforcesHandle())
                         .retrieve()
                         .body(com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Codeforces.RatingChange.CodeforcesRatingChangeResponse.class);
 
                 if (response != null && "OK".equals(response.getStatus()) && response.getResult() != null) {
-                    for (com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Codeforces.RatingChange.CodeforcesRatingChangeResult result : response.getResult()) {
+                    for (CodeforcesRatingChangeResult result : response.getResult()) {
                         if (!contestRepository.existsByUserIdAndContestId(user.getId(), result.getContestId())) {
-                            com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.Contest contest = com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.Contest.builder()
-                                    .contestId(result.getContestId())
-                                    .contestName(result.getContestName())
-                                    .rank(result.getRank())
-                                    .oldRating(result.getOldRating())
-                                    .newRating(result.getNewRating())
-                                    .ratingUpdateTime(java.time.LocalDateTime.ofEpochSecond(result.getRatingUpdateTimeSeconds(), 0, java.time.ZoneOffset.UTC))
-                                    .user(user)
-                                    .build();
+                           Contest contest =genreateContest(result, user);
                             contestRepository.save(contest);
                         }
                     }
@@ -161,7 +161,7 @@ public class ImpCfService implements CfService {
     }
 
     @Override
-    public com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Codeforces.CodeforcesUserInfo getUserInfo(String userHandle) {
+    public CodeforcesUserInfo getUserInfo(String userHandle) {
         try {
             ResponseEntity<JsonNode> response = restClient.get()
                     .uri("/user.info?handles={handle}&checkHistoricHandles=false", userHandle)
@@ -175,7 +175,7 @@ public class ImpCfService implements CfService {
                 String rank = userInfo.has("rank") ? userInfo.get("rank").asText() : null;
                 String maxRank = userInfo.has("maxRank") ? userInfo.get("maxRank").asText() : null;
 
-                return new com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Codeforces.CodeforcesUserInfo(
+                return new CodeforcesUserInfo(
                         rating,
                         maxRate,
                         rank,
@@ -198,9 +198,22 @@ public class ImpCfService implements CfService {
 
     @Override
     public Long getUserRating(String userHandle) {
-        com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Codeforces.CodeforcesUserInfo info = getUserInfo(userHandle);
+        CodeforcesUserInfo info = getUserInfo(userHandle);
         return info == null ? null : info.rating();
     }
 
+
+    private Contest genreateContest(CodeforcesRatingChangeResult result, User user){
+        Contest contest = Contest.builder()
+                .contestId(result.getContestId())
+                .contestName(result.getContestName())
+                .rank(result.getRank())
+                .oldRating(result.getOldRating())
+                .newRating(result.getNewRating())
+                .ratingUpdateTime(LocalDateTime.ofEpochSecond(result.getRatingUpdateTimeSeconds(), 0, java.time.ZoneOffset.UTC))
+                .user(user)
+                .build();
+        return contest;
+    }
 
 }

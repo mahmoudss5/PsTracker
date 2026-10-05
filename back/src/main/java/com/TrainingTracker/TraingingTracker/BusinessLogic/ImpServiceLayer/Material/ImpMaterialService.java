@@ -11,7 +11,6 @@ import com.TrainingTracker.TraingingTracker.ExceptionHandling.ErrosEntites.AppEx
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,10 +34,11 @@ public class ImpMaterialService implements MaterialService {
                 .orElseThrow(() -> new AppException("Team not found", HttpStatus.NOT_FOUND));
 
         Material material = Material.builder()
-                .kind(dto.kind())
+                .s3Key(dto.s3Key())
+                .fileType(dto.fileType())
                 .title(dto.title())
                 .subtitle(dto.subtitle())
-                .size(dto.size())
+                .fileSize(dto.fileSize())
                 .team(team)
                 .build();
 
@@ -46,14 +46,29 @@ public class ImpMaterialService implements MaterialService {
         return toDto(saved);
     }
 
+    @Override
+    public void deleteMaterial(Long teamId, String s3Key) {
+        Material material = materialRepository.findByS3KeyAndTeamId(s3Key, teamId)
+                .orElseThrow(() -> new AppException("material not found", HttpStatus.NOT_FOUND));
+        materialRepository.deleteById(material.getId());
+    }
+
+    @Override
+    public void deleteByS3Key(String s3Key) {
+        Material material = materialRepository.findByS3Key(s3Key)
+                .orElseThrow(() -> new AppException("Team not found", HttpStatus.NOT_FOUND));
+
+        materialRepository.deleteById(material.getId());
+    }
+
     private MaterialResponseDto toDto(Material material) {
         return new MaterialResponseDto(
                 material.getId(),
-                material.getKind(),
+                material.getFileType(),
                 material.getTitle(),
                 material.getSubtitle(),
-                material.getSize(),
-                material.getCreatedAt()
-        );
+                material.getFileSize(),
+                material.getS3Key(),
+                material.getCreatedAt());
     }
 }
