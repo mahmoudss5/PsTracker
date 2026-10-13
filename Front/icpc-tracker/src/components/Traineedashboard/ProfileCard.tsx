@@ -1,4 +1,5 @@
 import { Flame } from 'lucide-react';
+import { getFallbackAvatar, handleAvatarError } from '../../utils/avatar';
 
 interface ProfileCardProps {
   username: string;
@@ -20,6 +21,7 @@ export function ProfileCard({ username, avatarUrl, title, streak, bio, codeforce
         src={avatarUrl}
         alt={username}
         className="h-32 w-32 sm:h-48 sm:w-48 shrink-0 rounded-2xl border-2 border-dashboard-border object-cover bg-dashboard-elevated shadow-xl"
+        onError={(event) => handleAvatarError(event, getFallbackAvatar(username))}
       />
       <div className="flex-1 min-w-0 w-full">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">

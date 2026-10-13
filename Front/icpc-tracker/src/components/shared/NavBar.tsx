@@ -3,6 +3,7 @@ import type { Theme } from '../../hooks/theme/useTheme';
 import { NotificationBell } from './NotificationBell';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
 import { useCfAvatar } from '../../hooks/useCfAvatar';
+import { getFallbackAvatar, handleAvatarError } from '../../utils/avatar';
 
 interface NavBarProps {
   onOpenMenu: () => void;
@@ -49,7 +50,12 @@ export function NavBar({ onOpenMenu, theme, onToggleTheme }: NavBarProps) {
               {userName || 'User'}
             </span>
             {cfAvatar ? (
-              <img src={cfAvatar} alt={userName || 'User'} className="h-8 w-8 rounded-full shadow-sm object-cover cursor-pointer" />
+              <img
+                src={cfAvatar}
+                alt={userName || 'User'}
+                className="h-8 w-8 rounded-full shadow-sm object-cover cursor-pointer"
+                onError={(event) => handleAvatarError(event, getFallbackAvatar(userName))}
+              />
             ) : (
               <div className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-dashboard-primary/20 text-dashboard-primary hover:bg-dashboard-primary/30 transition shadow-sm">
                 <User size={18} />

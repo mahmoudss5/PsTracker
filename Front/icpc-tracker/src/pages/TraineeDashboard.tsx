@@ -9,6 +9,7 @@ import { RecentVerdictsChart } from '../components/Traineedashboard/RecentVerdic
 import { useCurrentUser } from '../hooks/useCurrentUser';
 import { useSubmissions } from '../hooks/useSubmissions';
 import { AlertCircle, RefreshCw } from 'lucide-react';
+import { getFallbackAvatar } from '../utils/avatar';
 
 export function TraineeDashboard() {
   const { user, isLoading: userLoading, error: userError } = useCurrentUser();
@@ -61,7 +62,7 @@ export function TraineeDashboard() {
         <div className="md:col-span-2">
           <ProfileCard
             username={user.userName}
-            avatarUrl={cfAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.codeforcesHandle || user.userName}&backgroundColor=transparent`}
+            avatarUrl={cfAvatar || getFallbackAvatar(user.codeforcesHandle || user.userName)}
             title={user.role}
             streak={0} // Backend doesn't have streak
             codeforcesHandle={user.codeforcesHandle}
@@ -113,5 +114,4 @@ export function TraineeDashboard() {
     </div>
   );
 }
-
 

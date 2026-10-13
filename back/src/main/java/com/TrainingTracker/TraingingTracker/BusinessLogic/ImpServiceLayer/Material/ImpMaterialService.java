@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +23,7 @@ public class ImpMaterialService implements MaterialService {
     private final TeamRepository teamRepository;
 
     @Override
+    @WithSpan
     public List<MaterialResponseDto> getTeamMaterials(Long teamId) {
         return materialRepository.findByTeamIdOrderByCreatedAtDesc(teamId).stream()
                 .map(this::toDto)
@@ -29,6 +31,7 @@ public class ImpMaterialService implements MaterialService {
     }
 
     @Override
+    @WithSpan
     public MaterialResponseDto addMaterial(Long teamId, MaterialCreateDto dto) {
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new AppException("Team not found", HttpStatus.NOT_FOUND));
@@ -37,7 +40,6 @@ public class ImpMaterialService implements MaterialService {
                 .s3Key(dto.s3Key())
                 .fileType(dto.fileType())
                 .title(dto.title())
-                .subtitle(dto.subtitle())
                 .fileSize(dto.fileSize())
                 .team(team)
                 .build();
@@ -47,6 +49,7 @@ public class ImpMaterialService implements MaterialService {
     }
 
     @Override
+    @WithSpan
     public void deleteMaterial(Long teamId, String s3Key) {
         Material material = materialRepository.findByS3KeyAndTeamId(s3Key, teamId)
                 .orElseThrow(() -> new AppException("material not found", HttpStatus.NOT_FOUND));
@@ -54,6 +57,7 @@ public class ImpMaterialService implements MaterialService {
     }
 
     @Override
+    @WithSpan
     public void deleteByS3Key(String s3Key) {
         Material material = materialRepository.findByS3Key(s3Key)
                 .orElseThrow(() -> new AppException("Team not found", HttpStatus.NOT_FOUND));

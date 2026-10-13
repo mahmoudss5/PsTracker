@@ -22,7 +22,7 @@ services:
       timeout: 5s   # Wait up to 5 seconds for a response
       retries: 5    # If it fails 5 times in a row, consider it unhealthy
       start_period: 5s # Give Postgres 5 seconds of grace time to boot up initially
-  
+
   redis:
     image: redis:7-alpine
     container_name: pstracker_redis
@@ -35,7 +35,7 @@ services:
   backend:
     build:
       context: ./back
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
     container_name: pstracker_backend
     ports:
       - "8080:8080"
@@ -51,15 +51,82 @@ services:
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
       - AWS_REGION=${AWS_REGION}
       - AWS_BUCKET_NAME=${AWS_BUCKET_NAME}
+      - OTEL_SERVICE_NAME=observability-demo-api
+      - OTEL_RESOURCE_ATTRIBUTES=service.version=1.0.0,deployment.environment.name=demo
+      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
+      - OTEL_TRACES_EXPORTER=otlp
+      - OTEL_METRICS_EXPORTER=otlp
+      - OTEL_LOGS_EXPORTER=otlp
+      - OTEL_METRIC_EXPORT_INTERVAL=5000
+      - OTEL_TRACES_SAMPLER=parentbased_always_on
+      # Demo: capture SLF4J 2.x .addKeyValue() as structured OTLP log attributes.
+      # Explicitly include only demo app structured log attributes, not all keys.
+      - OTEL_INSTRUMENTATION_LOGBACK_APPENDER_EXPERIMENTAL_KEY_VALUE_PAIR_ATTRIBUTES_INCLUDED=app.*
+
     volumes:
       - ./back:/app
       - maven_cache:/root/.m2 # Cache maven dependencies to speed up restarts
     depends_on:
       - postgres
       - redis
-    restart: unless-stopped
+      - otel-collector
+    restart: on-failure
     
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.139.0
+    command: ["--config=/etc/otelcol-contrib/config.yaml"]
+    volumes:
+      - ./otel/collector-config.yaml:/etc/otelcol-contrib/config.yaml:ro
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+    depends_on:
+      - prometheus
+      - loki
+      - tempo
 
+  prometheus:
+
+      image: prom/prometheus:v3.7.3
+      command:
+        - --config.file=/etc/prometheus/prometheus.yml
+        - --web.enable-remote-write-receiver
+      volumes:
+        - ./otel/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      ports:
+        - "9090:9090"
+
+  loki:
+    image: grafana/loki:3.5.7
+    command: ["-config.file=/mnt/config/loki-config.yaml"]
+    volumes:
+     - ./otel/loki-config.yaml:/mnt/config/loki-config.yaml:ro
+    ports:
+     - "3100:3100"
+
+  tempo:
+    image: grafana/tempo:2.9.0
+    command: [ "-config.file=/etc/tempo.yaml" ]
+    volumes:
+      - ./otel/tempo.yaml:/etc/tempo.yaml:ro
+    ports:
+      - "3200:3200"
+      - "4319:4317"
+
+  grafana:
+      image: grafana/grafana:12.1.0
+      environment:
+        GF_SECURITY_ADMIN_USER: admin
+        GF_SECURITY_ADMIN_PASSWORD: admin
+      volumes:
+        - ./otel/grafana-datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml:ro
+      ports:
+        - "3000:3000"
+      depends_on:
+        - prometheus
+        - loki
+        - tempo
   frontend:
     build:
       context: ./Front/icpc-tracker
@@ -75,4 +142,3 @@ services:
     depends_on:
       - backend
     restart: unless-stopped
-  

@@ -5,6 +5,9 @@ import com.TrainingTracker.TraingingTracker.DataAccessLayer.Repositories.Materia
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Storage.StorageUploadResponse;
 import com.TrainingTracker.TraingingTracker.ExceptionHandling.ErrosEntites.AppException;
 import java.time.Duration;
+
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -30,9 +33,10 @@ public class storageServiceImp implements storageService {
     private  String bucketName;
 
     @Override
+    @WithSpan
     public StorageUploadResponse uploadFile(Long teamId, String fileName, String fileType, String fileSize) {
         String s3Key = generateS3Key(teamId, fileName);
-
+        Span.current().setAttribute("TeamId", teamId);
         PutObjectPresignRequest request = PutObjectPresignRequest.builder()
                 .signatureDuration(Duration.ofMinutes(15))
                 .putObjectRequest(
@@ -40,6 +44,7 @@ public class storageServiceImp implements storageService {
                                 .bucket(bucketName)
                                 .key(s3Key)
                                 .contentType(fileType)
+                                .contentLength(Long.parseLong(fileSize))
                                 .build())
                 .build();
 

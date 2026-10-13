@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { User, Lock, Key, ShieldAlert, ChevronDown, ChevronUp } from 'lucide-react';
 import type { TraineeResponse } from '../../types/api.types';
 import { useCfAvatar } from '../../hooks/useCfAvatar';
+import { getFallbackAvatar, handleAvatarError } from '../../utils/avatar';
 
 interface SettingsFormProps {
   user: TraineeResponse | null;
@@ -68,7 +69,7 @@ export function SettingsForm({ user, onUpdated }: SettingsFormProps) {
   };
 
   const cfAvatar = useCfAvatar(user?.codeforcesHandle);
-  const avatarUrl = cfAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.userName || 'User'}`;
+  const avatarUrl = cfAvatar || getFallbackAvatar(user?.userName);
 
   const roleText = user?.role ? user.role.toUpperCase() : 'USER';
   const roleBadgeColor = roleText === 'COACH' 
@@ -86,9 +87,7 @@ export function SettingsForm({ user, onUpdated }: SettingsFormProps) {
             src={avatarUrl}
             alt={user?.userName || 'User'}
             className="h-32 w-32 shrink-0 rounded-full border-4 border-dashboard-border object-cover bg-dashboard-elevated shadow-lg mb-4"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.userName || 'User'}`;
-            }}
+            onError={(event) => handleAvatarError(event, getFallbackAvatar(user?.userName))}
           />
           <h2 className="text-2xl font-bold text-dashboard-text tracking-tight">{user?.userName || 'User'}</h2>
           <span className={`mt-2 px-3 py-1 rounded-full text-xs font-bold tracking-wider border ${roleBadgeColor}`}>

@@ -7,6 +7,7 @@ import { TraineesTable } from '../components/CoachDashboard/TraineesTable';
 import { useCoachDashboard } from '../hooks/useCoachDashboard';
 import { useCurrentUser } from '../hooks/useCurrentUser';
 import { useCfAvatar } from '../hooks/useCfAvatar';
+import { getFallbackAvatar, handleAvatarError } from '../utils/avatar';
 
 type Tab = 'analytics' | 'reports' | 'codeReview';
 
@@ -16,7 +17,7 @@ export function CoachDashboard() {
     useCoachDashboard();
   const { user } = useCurrentUser();
   const cfAvatar = useCfAvatar(user?.codeforcesHandle);
-  const avatarUrl = cfAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.userName || 'Coach'}&backgroundColor=transparent`;
+  const avatarUrl = cfAvatar || getFallbackAvatar(user?.userName || 'Coach');
 
   return (
     <div className="space-y-6">
@@ -56,7 +57,12 @@ export function CoachDashboard() {
             New Session
           </button>
           <div className="w-8 h-8 rounded bg-dashboard-primary/20 flex items-center justify-center text-dashboard-primary font-bold text-sm ml-2 overflow-hidden border border-dashboard-primary/30">
-            <img src={avatarUrl} alt="Coach Avatar" className="w-full h-full object-cover" />
+            <img
+              src={avatarUrl}
+              alt="Coach Avatar"
+              className="w-full h-full object-cover"
+              onError={(event) => handleAvatarError(event, getFallbackAvatar(user?.userName || 'Coach'))}
+            />
           </div>
         </div>
       </div>

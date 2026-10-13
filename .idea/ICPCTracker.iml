@@ -2,7 +2,17 @@
 <module type="JAVA_MODULE" version="4">
   <component name="NewModuleRootManager" inherit-compiler-output="true">
     <exclude-output />
-    <content url="file://$MODULE_DIR$" />
+    <content url="file://$MODULE_DIR$">
+      <excludeFolder url="file://$MODULE_DIR$/.agents" />
+      <excludeFolder url="file://$MODULE_DIR$/.codex" />
+      <excludeFolder url="file://$MODULE_DIR$/.github/modernize/java-upgrade/20260709191634" />
+      <excludeFolder url="file://$MODULE_DIR$/.github/modernize/java-upgrade/20260709191652" />
+      <excludeFolder url="file://$MODULE_DIR$/.github/modernize/java-upgrade/20260712153500" />
+      <excludeFolder url="file://$MODULE_DIR$/.github/modernize/java-upgrade/hooks" />
+      <excludeFolder url="file://$MODULE_DIR$/.idea/dataSources" />
+      <excludeFolder url="file://$MODULE_DIR$/playGround/.idea" />
+      <excludeFolder url="file://$MODULE_DIR$/playGround/out" />
+    </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>

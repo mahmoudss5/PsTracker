@@ -16,6 +16,17 @@ export default defineConfig({
     host: true,
     strictPort: true,
     port: 5173,
+    proxy: {
+      '/codeforces-api': {
+        target: 'https://codeforces.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/codeforces-api/, '/api'),
+      },
+      '/codeforces-image': {
+        target: 'https://userpic.codeforces.org',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/codeforces-image/, ''),
+      },
+    },
   }
 })
-

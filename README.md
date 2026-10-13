@@ -22,6 +22,7 @@ Track Codeforces submissions, analyse performance trends, and coordinate with yo
 - [Features](#features)
 - [Architecture](#architecture)
 - [Tech Stack](#tech-stack)
+- [Observability](#observability)
 - [Project Structure](#project-structure)
 - [API Reference](#api-reference)
 - [Database Schema](#database-schema)
@@ -132,6 +133,23 @@ Submissions are **automatically synced** from the Codeforces API on a background
 
 ---
 
+## Observability
+
+The backend is instrumented with the OpenTelemetry Java agent and exports traces, metrics, and logs over OTLP to the OpenTelemetry Collector. The Collector routes each signal to its storage backend, and Grafana is provisioned with all three data sources for local dashboards and investigation.
+
+| Component | Purpose | Local URL |
+|---|---|---|
+| **OpenTelemetry Java Agent** | Automatic Spring Boot/JVM instrumentation | — |
+| **OpenTelemetry Collector** | Receives and routes OTLP telemetry | `http://localhost:4318` (HTTP), `localhost:4317` (gRPC) |
+| **Prometheus** | Metrics storage and querying | http://localhost:9090 |
+| **Loki** | Structured log storage and querying | http://localhost:3100 |
+| **Tempo** | Distributed trace storage and querying | http://localhost:3200 |
+| **Grafana** | Unified observability UI | http://localhost:3000 |
+
+The Docker Compose stack provisions Prometheus, Loki, and Tempo as Grafana data sources automatically. For local development, Grafana starts with `admin` / `admin` credentials; change these before using the stack outside a local environment.
+
+---
+
 ## Project Structure
 
 ```
@@ -229,7 +247,13 @@ PsTracker/
 │       └── config/
 │           └── api.tsx               # Axios instance + JWT interceptors
 │
-└── docker-compose.yml                # Redis container
+├── otel/                              # OpenTelemetry Collector and backend configs
+│   ├── collector-config.yaml          # OTLP pipelines for metrics, logs, and traces
+│   ├── prometheus.yml                 # Prometheus scrape configuration
+│   ├── loki-config.yaml               # Loki configuration
+│   ├── tempo.yaml                     # Tempo configuration
+│   └── grafana-datasources.yaml       # Provisioned Grafana data sources
+└── docker-compose.yml                 # Application and observability stack
 ```
 
 ---
@@ -358,13 +382,13 @@ RefreshToken
 - Java 21+
 - Maven 3.9+
 - Node.js 20+
-- Docker & Docker Compose (for Redis)
+- Docker & Docker Compose
 - PostgreSQL (running locally or via Docker)
 
 ### 1 — Start all services with Docker Compose
 
 ```bash
-# Starts PostgreSQL, Redis, Spring Boot backend, and Vite frontend
+# Starts the application and observability stack
 docker compose up -d --build
 ```
 
@@ -376,10 +400,17 @@ Services:
 | Swagger UI | http://localhost:8080/swagger-ui.html |
 | PostgreSQL | localhost:5433 |
 | Redis | localhost:6379 |
+| OpenTelemetry Collector (OTLP/HTTP) | http://localhost:4318 |
+| Prometheus | http://localhost:9090 |
+| Loki | http://localhost:3100 |
+| Tempo | http://localhost:3200 |
+| Grafana | http://localhost:3000 |
 
-The frontend `Dockerfile.dev` runs the **Vite dev server** (hot-module replacement enabled). File changes in `Front/icpc-tracker/src/` are reflected in the browser instantly without rebuilding the container.
+The backend exports telemetry to the Collector at `http://otel-collector:4318` inside Docker. Metrics are sent to Prometheus through remote write, logs are sent to Loki using OTLP, and traces are sent to Tempo using OTLP. Open Grafana at `http://localhost:3000` to explore the provisioned Prometheus, Loki, and Tempo data sources.
 
-The backend `Dockerfile.dev` runs `mvn spring-boot:run` with Spring DevTools. File changes trigger an automatic backend restart.
+The frontend `Dockerfile` runs the **Vite dev server** (hot-module replacement enabled). File changes in `Front/icpc-tracker/src/` are reflected in the browser instantly without rebuilding the container.
+
+The backend `Dockerfile` runs `mvn spring-boot:run` with Spring DevTools. File changes trigger an automatic backend restart.
 
 ### 2 — Configure the backend
 

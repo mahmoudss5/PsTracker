@@ -11,6 +11,8 @@ import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.Submission;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.User;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Repositories.SubmissionRepository;
 import com.TrainingTracker.TraingingTracker.Util.SecuiryUserUtil;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -49,12 +51,14 @@ public class ImpSubmissionService implements SubmissionService {
 
     @Override
     @Transactional
+    @WithSpan
     @Caching(evict = {
         @CacheEvict(value = "userSubmissions", allEntries = true),
         @CacheEvict(value = "solvedProblemsToday", allEntries = true),
         @CacheEvict(value = "allTrainees", allEntries = true)
     })
     public SubmissionResponseDto createCurrentUserSubmission(SubmissionCreateDto dto) {
+        Span.current().setAttribute("UserId", dto.userId());
         Long currentUserId = SecuiryUserUtil.getCurrntUserId();
         SubmissionCreateDto currentUserDto = new SubmissionCreateDto(
                 currentUserId,

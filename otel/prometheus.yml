@@ -1,0 +1,8 @@
+global:
+  scrape_interval: 15s
+scrape_configs:
+  - job_name: prometheus-self
+    static_configs:
+      - targets: ['prometheus:9090']
+# The demo API is PUSHING metrics through OTel Collector remote-write.
+# There is intentionally no scrape target for the application.
