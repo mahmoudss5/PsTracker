@@ -35,6 +35,7 @@ server:
 app:
   codeforces-base-url: ${CODEFORCES_BASE_URL:https://codeforces.com/api}
   swagger-server-url: ${SWAGGER_SERVER_URL:http://localhost:8080}
+  trusted-proxy-addresses: ${TRUSTED_PROXY_ADDRESSES:}
   cors-allowed-origins:
     - ${FRONTEND_ORIGIN_1:http://localhost:5173}
     - ${FRONTEND_ORIGIN_2:http://localhost:5174}

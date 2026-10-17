@@ -4,6 +4,7 @@ import com.TrainingTracker.TraingingTracker.BusinessLogic.InterfacesServiceLayer
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Team.TeamCreateDto;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Team.TeamJoinDto;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Team.TeamResponseDto;
+import com.TrainingTracker.TraingingTracker.Security.Aop.RateLimit;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +29,7 @@ public class TeamController {
 
     @Operation(summary = "Join a team using its code")
     @PostMapping("/join")
+    @RateLimit(requests = 10, windowSeconds = 60, key = "team:join")
     public ResponseEntity<Void> joinTeam(@RequestBody TeamJoinDto dto) {
         teamsService.JoinTeam(dto.teamCode());
         return ResponseEntity.ok().build();

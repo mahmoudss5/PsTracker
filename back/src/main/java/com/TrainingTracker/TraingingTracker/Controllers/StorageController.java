@@ -2,6 +2,7 @@ package com.TrainingTracker.TraingingTracker.Controllers;
 
 import com.TrainingTracker.TraingingTracker.BusinessLogic.InterfacesServiceLayer.storageService;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Storage.StorageUploadResponse;
+import com.TrainingTracker.TraingingTracker.Security.Aop.RateLimit;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,7 @@ public class StorageController {
 
     @Operation(summary = "Generate a presigned URL for uploading a file")
     @PostMapping("/upload-url")
+    @RateLimit(requests = 20, windowSeconds = 60, key = "storage:upload-url")
     public ResponseEntity<StorageUploadResponse> generateUploadUrl(
             @RequestParam Long teamId,
             @RequestParam String fileName,

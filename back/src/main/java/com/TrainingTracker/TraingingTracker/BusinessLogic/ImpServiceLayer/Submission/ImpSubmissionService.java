@@ -58,8 +58,8 @@ public class ImpSubmissionService implements SubmissionService {
         @CacheEvict(value = "allTrainees", allEntries = true)
     })
     public SubmissionResponseDto createCurrentUserSubmission(SubmissionCreateDto dto) {
-        Span.current().setAttribute("UserId", dto.userId());
         Long currentUserId = SecuiryUserUtil.getCurrntUserId();
+        Span.current().setAttribute("UserId", currentUserId);
         SubmissionCreateDto currentUserDto = new SubmissionCreateDto(
                 currentUserId,
                 dto.problemId(),

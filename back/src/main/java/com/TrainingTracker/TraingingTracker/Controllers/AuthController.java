@@ -5,6 +5,8 @@ import com.TrainingTracker.TraingingTracker.BusinessLogic.InterfacesServiceLayer
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Auth.AuthResponse;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Auth.SignInDto;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Auth.SignUpDto;
+import com.TrainingTracker.TraingingTracker.Security.Aop.RateLimit;
+import com.TrainingTracker.TraingingTracker.Security.RateLimitIdentity;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,7 @@ public class AuthController {
 
 
   @PostMapping("/login")
+    @RateLimit(requests = 10, windowSeconds = 60, key = "auth:login", identity = RateLimitIdentity.IP)
     public ResponseEntity<AuthResponse> login(@RequestBody SignInDto dto, HttpServletResponse response) {
       AuthResponse authResponse=authService.signIn(dto);
       ResponseCookie cookie=ResponseCookie.from("refreshToken",authResponse.RefershToken())
@@ -44,6 +47,7 @@ public class AuthController {
   }
 
   @PostMapping("/register")
+  @RateLimit(requests = 5, windowSeconds = 60, key = "auth:register", identity = RateLimitIdentity.IP)
   public ResponseEntity<AuthResponse> register(@RequestBody SignUpDto dto, HttpServletResponse response) {
       AuthResponse authResponse=authService.signUp(dto);
       ResponseCookie cookie=ResponseCookie.from("refreshToken",authResponse.RefershToken())
@@ -74,6 +78,7 @@ public class AuthController {
   }
 
   @GetMapping("/refresh")
+  @RateLimit(requests = 30, windowSeconds = 60, key = "auth:refresh", identity = RateLimitIdentity.IP)
   public ResponseEntity<java.util.Map<String, String>> refreshToken(@CookieValue(name = "refreshToken", required = false) String refreshToken, HttpServletResponse response) {
       log.info("Refreshing token");
       if (refreshToken == null || refreshToken.isBlank()) {

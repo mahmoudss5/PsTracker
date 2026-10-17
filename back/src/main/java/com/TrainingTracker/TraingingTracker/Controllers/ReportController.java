@@ -1,6 +1,7 @@
 package com.TrainingTracker.TraingingTracker.Controllers;
 
 import com.TrainingTracker.TraingingTracker.BusinessLogic.InterfacesServiceLayer.ReportService;
+import com.TrainingTracker.TraingingTracker.Security.Aop.RateLimit;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Report.ReportCreateDto;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Report.ReportResponseDto;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Report.ReportUpdateDto;
@@ -20,12 +21,14 @@ public class ReportController {
 
     @Operation(summary = "Create report")
     @PostMapping
+    @RateLimit(requests = 10, windowSeconds = 60, key = "report:create")
     public ResponseEntity<ReportResponseDto> createReport(@RequestBody ReportCreateDto dto) {
         return ResponseEntity.ok(reportService.createReport(dto));
     }
 
     @Operation(summary = "Create report for current user")
     @PostMapping("/me")
+    @RateLimit(requests = 10, windowSeconds = 60, key = "report:create")
     public ResponseEntity<ReportResponseDto> createCurrentUserReport(@RequestBody ReportUpdateDto dto) {
         return ResponseEntity.ok(reportService.createCurrentUserReport(dto));
     }

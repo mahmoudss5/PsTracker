@@ -3,6 +3,7 @@ import com.TrainingTracker.TraingingTracker.BusinessLogic.InterfacesServiceLayer
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Submission.SubmissionCreateDto;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Submission.SubmissionResponseDto;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Submission.SubmissionUpdateDto;
+import com.TrainingTracker.TraingingTracker.Security.Aop.RateLimit;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -25,12 +26,14 @@ public class SubmissionController {
 
     @Operation(summary = "Create submission")
     @PostMapping
+    @RateLimit(requests = 10, windowSeconds = 60, key = "submission:create")
     public ResponseEntity<SubmissionResponseDto> createSubmission(@RequestBody SubmissionCreateDto dto) {
         return ResponseEntity.ok(submissionService.createSubmission(dto));
     }
 
     @Operation(summary = "Create submission for current user")
     @PostMapping("/me")
+    @RateLimit(requests = 10, windowSeconds = 60, key = "submission:create")
     public ResponseEntity<SubmissionResponseDto> createCurrentUserSubmission(@RequestBody SubmissionCreateDto dto) {
         return ResponseEntity.ok(submissionService.createCurrentUserSubmission(dto));
     }
