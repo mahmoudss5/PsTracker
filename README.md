@@ -146,7 +146,7 @@ The backend is instrumented with the OpenTelemetry Java agent and exports traces
 | **Tempo** | Distributed trace storage and querying | http://localhost:3200 |
 | **Grafana** | Unified observability UI | http://localhost:3000 |
 
-The Docker Compose stack provisions Prometheus, Loki, and Tempo as Grafana data sources automatically. For local development, Grafana starts with `admin` / `admin` credentials; change these before using the stack outside a local environment.
+The Docker Compose stack provisions Prometheus, Loki, and Tempo as Grafana data sources automatically. Grafana credentials are configured through environment variables; do not place them in documentation or source code.
 
 ---
 
@@ -412,32 +412,18 @@ The frontend `Dockerfile` runs the **Vite dev server** (hot-module replacement e
 
 The backend `Dockerfile` runs `mvn spring-boot:run` with Spring DevTools. File changes trigger an automatic backend restart.
 
-### 2 — Configure the backend
+### 2 — Configure environment variables
 
-Create `back/src/main/resources/application.properties` (or `.yml`):
+If the environment files do not exist, copy the templates and replace every placeholder with local or deployment-specific values:
 
-```properties
-# Database
-spring.datasource.url=jdbc:postgresql://localhost:5432/pstracker
-spring.datasource.username=your_db_user
-spring.datasource.password=your_db_password
-
-# JPA
-spring.jpa.hibernate.ddl-auto=update
-spring.jpa.show-sql=false
-
-# Redis
-spring.data.redis.host=localhost
-spring.data.redis.port=6379
-
-# JWT
-app.jwt.secret=your_256_bit_secret_here
-app.jwt.expiration-ms=900000
-app.jwt.refresh-expiration-ms=604800000
-
-# Server
-server.port=8000
+```bash
+cp .env.example .env
+cp Front/icpc-tracker/.env.example Front/icpc-tracker/.env
 ```
+
+If an `.env` file already exists, merge the missing variable names from the templates instead of overwriting it.
+
+The templates contain configuration names only. Keep the resulting `.env` files local and never commit credentials, tokens, passwords, or cloud keys.
 
 
 ### Running locally (without Docker)
@@ -464,27 +450,9 @@ Open `http://localhost:5173` in your browser.
 
 ## Environment Variables
 
-### Backend (`application.properties`)
-| Key | Description | Example |
-|---|---|---|
-| `spring.datasource.url` | PostgreSQL JDBC URL | `jdbc:postgresql://localhost:5432/pstracker` |
-| `spring.datasource.username` | DB username | `postgres` |
-| `spring.datasource.password` | DB password | `secret` |
-| `spring.data.redis.host` | Redis host | `localhost` |
-| `app.jwt.secret` | 256-bit JWT signing secret | `myVeryLongSecretKey...` |
-| `app.jwt.expiration-ms` | Access token TTL (ms) | `900000` (15 min) |
-| `app.jwt.refresh-expiration-ms` | Refresh token TTL (ms) | `604800000` (7 days) |
-| `FRONTEND_ORIGIN_1..4` | Allowed CORS origins passed into the backend from docker compose | `http://localhost:5173` |
+Use the root [`.env.example`](.env.example) for backend, database, AWS, CORS, and Grafana settings. Use [`Front/icpc-tracker/.env.example`](Front/icpc-tracker/.env.example) for frontend API and WebSocket URLs.
 
-The backend CORS list is resolved from `app.cors-allowed-origins`, and the compose file supplies local defaults for `FRONTEND_ORIGIN_1` through `FRONTEND_ORIGIN_4`. Override them in your environment for production domains.
-
-### Frontend (`src/config/runtime.ts`)
-| Variable | Description | Default |
-|---|---|---|
-| `VITE_API_URL` | Backend API base URL | `http://localhost:8080/api` |
-| `VITE_WS_URL` | WebSocket base URL | Auto-derived from `VITE_API_URL` (replaces `/api` → `/ws`) |
-
-Set in `docker-compose.yml` under the `frontend` service environment, or in a `.env` file at `Front/icpc-tracker/.env`.
+The backend CORS list is resolved from `app.cors-allowed-origins`. Set the `FRONTEND_ORIGIN_*` values to the exact deployed frontend origins.
 
 ---
 

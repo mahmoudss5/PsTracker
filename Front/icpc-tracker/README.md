@@ -146,7 +146,7 @@ Request:
 ```json
 {
   "email": "trainee@example.com",
-  "password": "password123"
+  "password": "<password>"
 }
 ```
 
@@ -173,7 +173,7 @@ Request:
 {
   "username": "trainee_user",
   "email": "trainee@example.com",
-  "password": "password123",
+  "password": "<password>",
   "codeforcesHandle": "tourist",
   "isCoach": false
 }

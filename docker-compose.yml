@@ -7,9 +7,9 @@ services:
     image: postgres:16-alpine
     container_name: pstracker_db
     environment:
-      POSTGRES_DB: pstracker
-      POSTGRES_USER: pstracker_user
-      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: ${DB_NAME:-pstracker}
+      POSTGRES_USER: ${DB_USERNAME:-pstracker_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set}
     ports:
       - "5433:5432"
     volumes:
@@ -17,7 +17,7 @@ services:
     restart: unless-stopped
     
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U pstracker_user -d pstracker"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-pstracker_user} -d ${DB_NAME:-pstracker}"]
       interval: 5s  # Check every 5 seconds
       timeout: 5s   # Wait up to 5 seconds for a response
       retries: 5    # If it fails 5 times in a row, consider it unhealthy
@@ -41,16 +41,24 @@ services:
       - "8080:8080"
       - "5005:5005" # For remote debugging if needed
     environment:
-      - DB_URL=jdbc:postgresql://postgres:5432/pstracker
-      - DB_USERNAME=pstracker_user
-      - DB_PASSWORD=123456
+      - DB_URL=${DOCKER_DB_URL:-jdbc:postgresql://postgres:5432/pstracker}
+      - DB_USERNAME=${DB_USERNAME:-pstracker_user}
+      - DB_PASSWORD=${DB_PASSWORD:?DB_PASSWORD must be set}
       - SPRING_DATA_REDIS_HOST=redis
       - SPRING_DATA_REDIS_PORT=6379
-      - JWT_SECRET=THIS_IS_A_VERY_LONG_SECRET_KEY_MINIMUM_32_CHARS
-      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-      - AWS_REGION=${AWS_REGION}
-      - AWS_BUCKET_NAME=${AWS_BUCKET_NAME}
+      - JWT_SECRET=${JWT_SECRET:?JWT_SECRET must be set}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:?AWS_ACCESS_KEY_ID must be set}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:?AWS_SECRET_ACCESS_KEY must be set}
+      - AWS_REGION=${AWS_REGION:-us-east-1}
+      - AWS_BUCKET_NAME=${AWS_BUCKET_NAME:?AWS_BUCKET_NAME must be set}
+      - CODEFORCES_BASE_URL=${CODEFORCES_BASE_URL:-https://codeforces.com/api}
+      - SWAGGER_SERVER_URL=${SWAGGER_SERVER_URL:-http://localhost:8080}
+      - TRUSTED_PROXY_ADDRESSES=${TRUSTED_PROXY_ADDRESSES:-}
+      - FRONTEND_ORIGIN_1=${FRONTEND_ORIGIN_1:-http://localhost:5173}
+      - FRONTEND_ORIGIN_2=${FRONTEND_ORIGIN_2:-http://localhost:5174}
+      - FRONTEND_ORIGIN_3=${FRONTEND_ORIGIN_3:-http://127.0.0.1:5173}
+      - FRONTEND_ORIGIN_4=${FRONTEND_ORIGIN_4:-http://127.0.0.1:5174}
+      - FRONTEND_ORIGIN_5=${FRONTEND_ORIGIN_5:-}
       - OTEL_SERVICE_NAME=observability-demo-api
       - OTEL_RESOURCE_ATTRIBUTES=service.version=1.0.0,deployment.environment.name=demo
       - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
@@ -117,8 +125,8 @@ services:
   grafana:
       image: grafana/grafana:12.1.0
       environment:
-        GF_SECURITY_ADMIN_USER: admin
-        GF_SECURITY_ADMIN_PASSWORD: admin
+        GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+        GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?GRAFANA_ADMIN_PASSWORD must be set}
       volumes:
         - ./otel/grafana-datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml:ro
       ports:
