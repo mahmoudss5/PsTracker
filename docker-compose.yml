@@ -138,7 +138,7 @@ services:
   frontend:
     build:
       context: ./Front/icpc-tracker
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
     container_name: pstracker_frontend
     ports:
       - "5173:80"
