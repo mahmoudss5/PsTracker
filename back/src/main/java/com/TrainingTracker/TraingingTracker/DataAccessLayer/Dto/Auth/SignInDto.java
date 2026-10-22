@@ -1,6 +1,13 @@
 package com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Auth;
 
-public record SignInDto(String email, String password) {}
+import jakarta.validation.constraints.Email;
+
+public record SignInDto(
+    @Email 
+    String email,
+     
+    String password
+) {}
 
 
 

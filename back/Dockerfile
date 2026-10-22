@@ -1,14 +1,24 @@
-FROM maven:3.9-eclipse-temurin-21
+
+# Build stage
+FROM maven:3.9-eclipse-temurin-21 AS build
 
 WORKDIR /app
 
-COPY pom.xml .
+COPY pom.xml ./
 
 RUN mvn dependency:go-offline -B
 
-ADD https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v2.32.0/opentelemetry-javaagent.jar /otel/opentelemetry-javaagent.jar
+COPY src ./src
 
-EXPOSE 8080
-EXPOSE 5005
+RUN mvn package -DskipTests -B
 
-CMD ["mvn", "spring-boot:run", "-Dspring-boot.run.jvmArguments=-javaagent:/otel/opentelemetry-javaagent.jar -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"]
+# Runtime stage
+FROM eclipse-temurin:21-jre
+
+WORKDIR /app
+
+COPY --from=build /app/target/*.jar app.jar
+
+# The OpenTelemetry agent must be mounted at /otel/
+
+ENTRYPOINT ["java", "-javaagent:/otel/opentelemetry-javaagent.jar", "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005", "-jar", "app.jar"]
