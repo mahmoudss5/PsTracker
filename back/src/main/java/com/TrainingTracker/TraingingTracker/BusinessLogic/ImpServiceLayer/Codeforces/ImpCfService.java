@@ -1,34 +1,18 @@
 package com.TrainingTracker.TraingingTracker.BusinessLogic.ImpServiceLayer.Codeforces;
-import com.TrainingTracker.TraingingTracker.BusinessLogic.ImpServiceLayer.Problem.ProblemMapper;
-import com.TrainingTracker.TraingingTracker.BusinessLogic.ImpServiceLayer.Submission.SubmissionMapper;
+
 import com.TrainingTracker.TraingingTracker.BusinessLogic.InterfacesServiceLayer.CfService;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Codeforces.CodeforcesUserInfo;
-import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Codeforces.RatingChange.CodeforcesRatingChangeResponse;
-import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Codeforces.RatingChange.CodeforcesRatingChangeResult;
-import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.Contest;
-import com.TrainingTracker.TraingingTracker.DataAccessLayer.Repositories.ContestRepository;
-import com.TrainingTracker.TraingingTracker.DataAccessLayer.Repositories.UserRepository;
-import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Codeforces.Submission.codeforcesSubmissionDto;
-import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Codeforces.Submission.result.CodeforcesSubmissionResult;
-import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.Problem;
-import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.Submission;
+import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Codeforces.Queue.CfJob;
+import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Codeforces.Queue.CfJobType;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.User;
-import com.TrainingTracker.TraingingTracker.DataAccessLayer.Repositories.ProblemRepository;
-import com.TrainingTracker.TraingingTracker.DataAccessLayer.Repositories.SubmissionRepository;
-import com.TrainingTracker.TraingingTracker.Util.SecuiryUserUtil;
+import com.TrainingTracker.TraingingTracker.DataAccessLayer.Repositories.UserRepository;
+import com.TrainingTracker.TraingingTracker.ExceptionHandling.ErrosEntites.CfQueueException;
+import com.TrainingTracker.TraingingTracker.ExceptionHandling.ErrosEntites.CfUserHandlerError;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.RestClient;
-import tools.jackson.databind.JsonNode;
 
-import java.lang.reflect.ParameterizedType;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -37,163 +21,38 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class ImpCfService implements CfService {
 
-    private final RestClient restClient;
     private final UserRepository userRepository;
-    private final ProblemMapper problemMapper;
-    private final SubmissionMapper submissionMapper;
-    private final ProblemRepository problemRepository;
-    private final SubmissionRepository submissionRepository;
-    private final ContestRepository contestRepository;
-
-
-
+    private final CfQueue cfQueue;
 
     @Scheduled(fixedDelay = 12, timeUnit = TimeUnit.HOURS)
-    private void syncCodeforcesUserData() {
-        log.info("Starting Codeforces user contest data synchronization...");
-        List<User> userList = userRepository.findAll();
-        if (userList.isEmpty()) {
-            return;
-        }
-
-        for (User user : userList) {
-            if (user.getCodeforcesHandle() == null || user.getCodeforcesHandle().isEmpty()) {
-                continue;
-            }
-
-            try {
-                CodeforcesRatingChangeResponse response = restClient.get()
-                        .uri("/user.rating?handle={handle}", user.getCodeforcesHandle())
-                        .retrieve()
-                        .body(com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Codeforces.RatingChange.CodeforcesRatingChangeResponse.class);
-
-                if (response != null && "OK".equals(response.getStatus()) && response.getResult() != null) {
-                    for (CodeforcesRatingChangeResult result : response.getResult()) {
-                        if (!contestRepository.existsByUserIdAndContestId(user.getId(), result.getContestId())) {
-                           Contest contest =genreateContest(result, user);
-                            contestRepository.save(contest);
-                        }
-                    }
-                }
-            } catch (HttpClientErrorException e) {
-                log.error("User not found on Codeforces for contest sync: {}", e.getMessage());
-            } catch (HttpServerErrorException e) {
-                log.error("Couldn't connect to Codeforces for contest sync: {}", e.getMessage());
-            } catch (Exception e) {
-                log.error("Error during Codeforces contest sync: {}", e.getMessage(), e);
-            }
-
-            try {
-                Thread.sleep(2000); // codeforces rate limits
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        }
+    private void enqueueContestSyncJobs() {
+        enqueueJobs(CfJobType.CONTEST_SYNC);
     }
-
 
     @Scheduled(fixedDelay = 2, timeUnit = TimeUnit.MINUTES)
-    private void syncCodforcesSubmissionData() {
-        log.info("Starting Codeforces submission data synchronization...");
-        List<User>userList=userRepository.findAll();
-        if(userList.isEmpty()){
-            log.error("No users found in the database");
-            return;
-        }
-        for(User user:userList) {
-            String username = user.getUsername();
-           log.info("Fetching submissions for user: {}", username);
-            try {
-                codeforcesSubmissionDto response = restClient.get()
-                        .uri("/user.status?handle={handle}&from=1&count=100", getUserCodeforecesHandle(user.getId()))
-                        .retrieve()
-                        .body(codeforcesSubmissionDto.class);
-
-                if(!response.getStatus().equals("OK")){
-                    log.error("Failed to fetch submissions for user {}: {}", user.getId(), response.getStatus());
-                    continue;
-                }
-            List<CodeforcesSubmissionResult> submissions = response.getResult();
-            for (CodeforcesSubmissionResult submission : submissions) {
-
-                Problem problem = problemMapper.ToEntity(submission.getProblem());
-
-                Problem dbProblem = problemRepository.findByName(problem.getName())
-                        .orElseGet(() -> problemRepository.save(problem));
-
-                if(!submissionRepository.existsByCodeforcesSubmissionId(submission.getId())){
-                    Submission submissionEntity = submissionMapper.toEntity(submission, user, dbProblem);
-                    submissionRepository.save(submissionEntity);
-                }
-            }
-
-            } catch (HttpClientErrorException e) {
-                log.error("User not found on Codeforces: {}", e.getMessage());
-            } catch (HttpServerErrorException e) {
-                log.error("Couldn't connect to Codeforces: {}", e.getMessage());
-            }
-              // sleep for 3 seconds before the next request (Codeforces API rate limit)
-            try {
-                Thread.sleep(3000);
-            } catch (InterruptedException e) {
-                log.error("Thread interrupted during sleep: {}", e.getMessage());
-                Thread.currentThread().interrupt();
-            }
-        }
+    private void enqueueSubmissionSyncJobs() {
+        enqueueJobs(CfJobType.SUBMISSION_SYNC);
     }
-
 
     @Override
     public boolean checkIfUserCfAccountExist(String userHandle) {
         try {
-            ResponseEntity<JsonNode> response = restClient.get()
-                    .uri("/user.info?handles={handle}&checkHistoricHandles=false", userHandle)
-                    .retrieve()
-                    .toEntity(JsonNode.class);
-
-            return response.getStatusCode().is2xxSuccessful()
-                    && "OK".equals(response.getBody().get("status").asText());
-        } catch (HttpClientErrorException e) {
+            return getUserInfo(userHandle) != null;
+        } catch (CfUserHandlerError exception) {
             return false;
-        } catch (HttpServerErrorException e) {
-            throw new RuntimeException("couldn't connect to codeforces");
         }
     }
 
     @Override
     public CodeforcesUserInfo getUserInfo(String userHandle) {
         try {
-            ResponseEntity<JsonNode> response = restClient.get()
-                    .uri("/user.info?handles={handle}&checkHistoricHandles=false", userHandle)
-                    .retrieve()
-                    .toEntity(JsonNode.class);
-
-            if (response.getStatusCode().is2xxSuccessful() && "OK".equals(response.getBody().get("status").asText())) {
-                JsonNode userInfo = response.getBody().get("result").get(0);
-                Long rating = userInfo.has("rating") ? userInfo.get("rating").asLong() : null;
-                Long maxRate = userInfo.has("maxRating") ? userInfo.get("maxRating").asLong() : null;
-                String rank = userInfo.has("rank") ? userInfo.get("rank").asText() : null;
-                String maxRank = userInfo.has("maxRank") ? userInfo.get("maxRank").asText() : null;
-
-                return new CodeforcesUserInfo(
-                        rating,
-                        maxRate,
-                        rank,
-                        maxRank
-                );
-            } else {
-                throw new RuntimeException("Failed to fetch user info from Codeforces");
+            return cfQueue.enqueueAndWait(CfJobType.USER_INFO, userHandle, CodeforcesUserInfo.class);
+        } catch (CfQueueException exception) {
+            if ("CLIENT".equals(exception.errorType())) {
+                throw new CfUserHandlerError("User not found on Codeforces");
             }
-        } catch (HttpClientErrorException e) {
-            log.error("User not found on Codeforces: {}", e.getMessage());
-            throw new RuntimeException("User not found on Codeforces");
-        } catch (HttpServerErrorException e) {
-            log.error("Couldn't connect to Codeforces: {}", e.getMessage());
-            throw new RuntimeException("couldn't connect to codeforces");
+            throw new IllegalStateException("couldn't connect to codeforces", exception);
         }
-    }
-    private String getUserCodeforecesHandle(Long userId) {
-        return userRepository.findById(userId).orElseThrow().getCodeforcesHandle();
     }
 
     @Override
@@ -202,18 +61,17 @@ public class ImpCfService implements CfService {
         return info == null ? null : info.rating();
     }
 
+    private void enqueueJobs(CfJobType type) {
+        log.info("Queueing Codeforces {} jobs...", type);
+        List<User> users = userRepository.findAll();
 
-    private Contest genreateContest(CodeforcesRatingChangeResult result, User user){
-        Contest contest = Contest.builder()
-                .contestId(result.getContestId())
-                .contestName(result.getContestName())
-                .rank(result.getRank())
-                .oldRating(result.getOldRating())
-                .newRating(result.getNewRating())
-                .ratingUpdateTime(LocalDateTime.ofEpochSecond(result.getRatingUpdateTimeSeconds(), 0, java.time.ZoneOffset.UTC))
-                .user(user)
-                .build();
-        return contest;
+        for (User user : users) {
+            String handle = user.getCodeforcesHandle();
+            if (handle == null || handle.isBlank()) {
+                continue;
+            }
+
+            cfQueue.enqueue(CfJob.background(type, user.getId(), handle));
+        }
     }
-
 }

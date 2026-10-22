@@ -5,11 +5,13 @@ import com.TrainingTracker.TraingingTracker.BusinessLogic.InterfacesServiceLayer
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Auth.AuthResponse;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Auth.SignInDto;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Auth.SignUpDto;
+import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Codeforces.CodeforcesUserInfo;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.RefreshToken;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.Types.Role;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.User;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Repositories.RefershTokenRepositroy;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Repositories.UserRepository;
+import com.TrainingTracker.TraingingTracker.ExceptionHandling.ErrosEntites.CfUserHandlerError;
 import com.TrainingTracker.TraingingTracker.Security.User.SecurityUser;
 import com.TrainingTracker.TraingingTracker.Security.jwt.JwtService;
 import jakarta.transaction.Transactional;
@@ -71,11 +73,12 @@ public class ImpAuthService implements AuthService {
             throw new IllegalArgumentException("Email is already registered");
         }
 
-        if(!cfService.checkIfUserCfAccountExist(dto.codeforcesHandle())){
-            throw new IllegalArgumentException("Codeforces account does not exist");
+        CodeforcesUserInfo info;
+        try {
+            info = cfService.getUserInfo(dto.codeforcesHandle());
+        } catch (CfUserHandlerError exception) {
+            throw new IllegalArgumentException("Codeforces account does not exist", exception);
         }
-
-        com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Codeforces.CodeforcesUserInfo info = cfService.getUserInfo(dto.codeforcesHandle());
 
         User.UserBuilder userBuilder = User.builder()
             .username(dto.userName())

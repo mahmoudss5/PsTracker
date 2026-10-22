@@ -1,134 +1,74 @@
 package com.TrainingTracker.TraingingTracker.BusinessLogic.ImpServiceLayer.Codeforces;
 
-import com.TrainingTracker.TraingingTracker.BusinessLogic.ImpServiceLayer.Problem.ProblemMapper;
-import com.TrainingTracker.TraingingTracker.BusinessLogic.ImpServiceLayer.Submission.SubmissionMapper;
-import com.TrainingTracker.TraingingTracker.BusinessLogic.InterfacesServiceLayer.UserService;
-import com.TrainingTracker.TraingingTracker.DataAccessLayer.Repositories.ProblemRepository;
-import com.TrainingTracker.TraingingTracker.DataAccessLayer.Repositories.SubmissionRepository;
+import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Codeforces.CodeforcesUserInfo;
+import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Codeforces.Queue.CfJobType;
+import com.TrainingTracker.TraingingTracker.DataAccessLayer.Repositories.UserRepository;
+import com.TrainingTracker.TraingingTracker.ExceptionHandling.ErrosEntites.CfQueueException;
+import com.TrainingTracker.TraingingTracker.ExceptionHandling.ErrosEntites.CfUserHandlerError;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.RestClient;
-import org.springframework.http.HttpStatus;
-import tools.jackson.databind.JsonNode;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ImpCfServiceTest {
 
     @Mock
-    private RestClient restClient;
+    private UserRepository userRepository;
 
     @Mock
-    private UserService userService;
-
-    @Mock
-    private ProblemMapper problemMapper;
-
-    @Mock
-    private SubmissionMapper submissionMapper;
-
-    @Mock
-    private ProblemRepository problemRepository;
-
-    @Mock
-    private SubmissionRepository submissionRepository;
+    private CfQueue cfQueue;
 
     @InjectMocks
     private ImpCfService cfService;
 
     @Test
-    void testCheckIfUserCfAccountExist_Success() {
+    void checkIfUserCfAccountExist_ReturnsTrueForValidUser() {
         String handle = "tourist";
-        
-        RestClient.RequestHeadersUriSpec requestHeadersUriSpec = mock(RestClient.RequestHeadersUriSpec.class);
-        RestClient.RequestHeadersSpec requestHeadersSpec = mock(RestClient.RequestHeadersSpec.class);
-        RestClient.ResponseSpec responseSpec = mock(RestClient.ResponseSpec.class);
-        JsonNode mockBody = mock(JsonNode.class);
-        JsonNode mockStatus = mock(JsonNode.class);
+        CodeforcesUserInfo info = new CodeforcesUserInfo(3500L, 3800L, "legend", "legend");
 
-        when(restClient.get()).thenReturn(requestHeadersUriSpec);
-        when(requestHeadersUriSpec.uri(anyString(), eq(handle))).thenReturn(requestHeadersSpec);
-        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
-        when(responseSpec.toEntity(JsonNode.class)).thenReturn(ResponseEntity.ok(mockBody));
-        when(mockBody.get("status")).thenReturn(mockStatus);
-        when(mockStatus.asText()).thenReturn("OK");
+        when(cfQueue.enqueueAndWait(eq(CfJobType.USER_INFO), eq(handle), eq(CodeforcesUserInfo.class)))
+                .thenReturn(info);
 
-        boolean exists = cfService.checkIfUserCfAccountExist(handle);
-
-        assertTrue(exists);
+        assertTrue(cfService.checkIfUserCfAccountExist(handle));
     }
 
     @Test
-    void testCheckIfUserCfAccountExist_NotFound() {
+    void checkIfUserCfAccountExist_ReturnsFalseForInvalidUser() {
         String handle = "nonexistent";
 
-        RestClient.RequestHeadersUriSpec requestHeadersUriSpec = mock(RestClient.RequestHeadersUriSpec.class);
-        RestClient.RequestHeadersSpec requestHeadersSpec = mock(RestClient.RequestHeadersSpec.class);
-        RestClient.ResponseSpec responseSpec = mock(RestClient.ResponseSpec.class);
+        when(cfQueue.enqueueAndWait(eq(CfJobType.USER_INFO), eq(handle), eq(CodeforcesUserInfo.class)))
+                .thenThrow(new CfQueueException("CLIENT", "User not found"));
 
-        when(restClient.get()).thenReturn(requestHeadersUriSpec);
-        when(requestHeadersUriSpec.uri(anyString(), eq(handle))).thenReturn(requestHeadersSpec);
-        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
-        when(responseSpec.toEntity(JsonNode.class)).thenThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND));
-
-        boolean exists = cfService.checkIfUserCfAccountExist(handle);
-
-        assertFalse(exists);
+        assertFalse(cfService.checkIfUserCfAccountExist(handle));
     }
 
     @Test
-    void testCheckIfUserCfAccountExist_ServerError() {
+    void getUserInfo_ThrowsWhenCodeforcesIsUnavailable() {
         String handle = "tourist";
 
-        RestClient.RequestHeadersUriSpec requestHeadersUriSpec = mock(RestClient.RequestHeadersUriSpec.class);
-        RestClient.RequestHeadersSpec requestHeadersSpec = mock(RestClient.RequestHeadersSpec.class);
-        RestClient.ResponseSpec responseSpec = mock(RestClient.ResponseSpec.class);
+        when(cfQueue.enqueueAndWait(eq(CfJobType.USER_INFO), eq(handle), eq(CodeforcesUserInfo.class)))
+                .thenThrow(new CfQueueException("SERVER", "Codeforces unavailable"));
 
-        when(restClient.get()).thenReturn(requestHeadersUriSpec);
-        when(requestHeadersUriSpec.uri(anyString(), eq(handle))).thenReturn(requestHeadersSpec);
-        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
-        when(responseSpec.toEntity(JsonNode.class)).thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
-
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> cfService.checkIfUserCfAccountExist(handle));
-        assertEquals("couldn't connect to codeforces", exception.getMessage());
+        assertThrows(IllegalStateException.class, () -> cfService.getUserInfo(handle));
     }
 
     @Test
-    void testGetUserRating_Success() {
+    void getUserRating_ReturnsRatingFromQueuedUserInfoRequest() {
         String handle = "tourist";
+        CodeforcesUserInfo info = new CodeforcesUserInfo(3500L, 3800L, "legend", "legend");
 
-        RestClient.RequestHeadersUriSpec requestHeadersUriSpec = mock(RestClient.RequestHeadersUriSpec.class);
-        RestClient.RequestHeadersSpec requestHeadersSpec = mock(RestClient.RequestHeadersSpec.class);
-        RestClient.ResponseSpec responseSpec = mock(RestClient.ResponseSpec.class);
-        JsonNode mockBody = mock(JsonNode.class);
-        JsonNode mockStatus = mock(JsonNode.class);
-        JsonNode mockResult = mock(JsonNode.class);
-        JsonNode mockUserInfo = mock(JsonNode.class);
-        JsonNode mockRating = mock(JsonNode.class);
+        when(cfQueue.enqueueAndWait(eq(CfJobType.USER_INFO), eq(handle), eq(CodeforcesUserInfo.class)))
+                .thenReturn(info);
 
-        when(restClient.get()).thenReturn(requestHeadersUriSpec);
-        when(requestHeadersUriSpec.uri(anyString(), eq(handle))).thenReturn(requestHeadersSpec);
-        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
-        when(responseSpec.toEntity(JsonNode.class)).thenReturn(ResponseEntity.ok(mockBody));
-        
-        when(mockBody.get("status")).thenReturn(mockStatus);
-        when(mockStatus.asText()).thenReturn("OK");
-        when(mockBody.get("result")).thenReturn(mockResult);
-        when(mockResult.get(0)).thenReturn(mockUserInfo);
-        when(mockUserInfo.has("rating")).thenReturn(true);
-        when(mockUserInfo.get("rating")).thenReturn(mockRating);
-        when(mockRating.asLong()).thenReturn(3500L);
-
-        Long rating = cfService.getUserRating(handle);
-
-        assertEquals(3500L, rating);
+        assertEquals(3500L, cfService.getUserRating(handle));
     }
 }
