@@ -18,6 +18,7 @@ import com.TrainingTracker.TraingingTracker.DataAccessLayer.Repositories.Problem
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Repositories.SubmissionRepository;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Repositories.UserRepository;
 import com.TrainingTracker.TraingingTracker.ExceptionHandling.ErrosEntites.CfUserHandlerError;
+import com.TrainingTracker.TraingingTracker.Util.CfUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -100,7 +101,7 @@ public class CfWorker {
 
         JsonNode body = response.getBody();
         if (body == null || !response.getStatusCode().is2xxSuccessful()
-                || !"OK".equals(text(body.get("status")))) {
+                || !"OK".equals(CfUtil.text(body.get("status")))) {
             throw new CfUserHandlerError("User not found on Codeforces");
         }
 
@@ -111,10 +112,10 @@ public class CfWorker {
 
         JsonNode userInfo = result.get(0);
         return new CodeforcesUserInfo(
-                optionalLong(userInfo, "rating"),
-                optionalLong(userInfo, "maxRating"),
-                optionalText(userInfo, "rank"),
-                optionalText(userInfo, "maxRank")
+                CfUtil.optionalLong(userInfo, "rating"),
+                CfUtil.optionalLong(userInfo, "maxRating"),
+                CfUtil.optionalText(userInfo, "rank"),
+                CfUtil.optionalText(userInfo, "maxRank")
         );
     }
 
@@ -189,15 +190,4 @@ public class CfWorker {
         }
     }
 
-    private String text(JsonNode node) {
-        return node == null || node.isNull() ? null : node.asText();
-    }
-
-    private Long optionalLong(JsonNode node, String field) {
-        return node.has(field) && !node.get(field).isNull() ? node.get(field).asLong() : null;
-    }
-
-    private String optionalText(JsonNode node, String field) {
-        return node.has(field) && !node.get(field).isNull() ? node.get(field).asText() : null;
-    }
 }
