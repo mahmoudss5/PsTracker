@@ -7,11 +7,13 @@ import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.Team;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.User;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Repositories.TeamRepository;
 import com.TrainingTracker.TraingingTracker.ExceptionHandling.ErrosEntites.TeamError;
+import com.TrainingTracker.TraingingTracker.ExceptionHandling.ErrosEntites.AppException;
 import com.TrainingTracker.TraingingTracker.Util.SecuiryUserUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
+import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 
 import org.springframework.cache.annotation.Cacheable;
@@ -75,6 +77,9 @@ public class ImpTeamService implements TeamsService {
         User user = userService.getUserById(userId);
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new RuntimeException("Team not found with id: " + teamId));
+        if (!Boolean.TRUE.equals(userService.isSameTeam(teamId, userId))) {
+            throw new AppException("You are not a member of this team", HttpStatus.FORBIDDEN);
+        }
         if (user.getTraineeTeam() != null && user.getTraineeTeam().getId().equals(team.getId())) {
             user.setTraineeTeam(null);
             team.getTrainees().remove(user); // keep both sides in sync

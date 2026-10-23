@@ -1,6 +1,7 @@
 package com.TrainingTracker.TraingingTracker.Controllers;
 import com.TrainingTracker.TraingingTracker.BusinessLogic.InterfacesServiceLayer.UserService;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.User.TraineResponse;
+import com.TrainingTracker.TraingingTracker.Security.Aop.IsTeamMember;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +34,7 @@ public class UserController {
 
     @Operation(summary = "Get all trainees by team id")
     @GetMapping("/team/{teamId}")
+    @IsTeamMember
     public ResponseEntity<List<TraineResponse>> getAllUsersByTeamId(@PathVariable Long teamId) {
         return ResponseEntity.ok(userService.getAllUserByTeamId(teamId));
     }

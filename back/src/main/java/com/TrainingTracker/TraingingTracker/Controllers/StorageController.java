@@ -40,7 +40,7 @@ public class StorageController {
 
     @Operation(summary = "Generate a presigned URL for viewing a file inline")
     @GetMapping("/view-url")
-    @IsTeamMember
+    @IsTeamMember(resource = IsTeamMember.Resource.S3_KEY)
     public ResponseEntity<Map<String, String>> generateViewUrl(@RequestParam String s3Key) {
         String viewUrl = storageService.getFileUrl(s3Key);
         return ResponseEntity.ok(Map.of("viewUrl", viewUrl));
@@ -48,7 +48,7 @@ public class StorageController {
 
     @Operation(summary = "Generate a presigned URL for downloading a file")
     @GetMapping("/download-url")
-    @IsTeamMember
+    @IsTeamMember(resource = IsTeamMember.Resource.S3_KEY)
     public ResponseEntity<Map<String, String>> generateDownloadUrl(@RequestParam String s3Key) {
         String downloadUrl = storageService.downloadFile(s3Key);
         return ResponseEntity.ok(Map.of("downloadUrl", downloadUrl));

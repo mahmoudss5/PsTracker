@@ -6,6 +6,7 @@ import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.TeamMessage.Team
 import com.TrainingTracker.TraingingTracker.ExceptionHandling.ErrosEntites.AppException;
 import com.TrainingTracker.TraingingTracker.Security.User.SecurityUser;
 import com.TrainingTracker.TraingingTracker.Security.Aop.RateLimit;
+import com.TrainingTracker.TraingingTracker.Security.Aop.IsTeamMember;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,7 @@ public class TeamMessageController {
 
     @Operation(summary = "Get a team's message history")
     @GetMapping("/team/{teamId}")
+    @IsTeamMember
     public ResponseEntity<List<TeamMessageResponseDto>> getTeamMessages(
             @PathVariable Long teamId,
             Principal principal) {
@@ -43,6 +45,7 @@ public class TeamMessageController {
     @Operation(summary = "Send a message to a team")
     @PostMapping("/team/{teamId}")
     @RateLimit(requests = 60, windowSeconds = 60, key = "team-message:send")
+    @IsTeamMember
     public ResponseEntity<TeamMessageResponseDto> sendMessage(
             @PathVariable Long teamId,
             @Valid @RequestBody TeamMessageCreateDto dto,

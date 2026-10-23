@@ -135,6 +135,7 @@ class ImpTeamServiceTest {
         try (MockedStatic<SecuiryUserUtil> securityUtilMockedStatic = mockStatic(SecuiryUserUtil.class)) {
             securityUtilMockedStatic.when(SecuiryUserUtil::getCurrntUserId).thenReturn(userId);
             when(userService.getUserById(userId)).thenReturn(user);
+            when(userService.isSameTeam(teamId, userId)).thenReturn(true);
             when(teamRepository.findById(teamId)).thenReturn(Optional.of(team));
 
             teamService.leaveTeam(teamId);

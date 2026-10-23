@@ -4,6 +4,7 @@ import com.TrainingTracker.TraingingTracker.BusinessLogic.InterfacesServiceLayer
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Announcment.AnnouncementResponseDto;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Announcment.AnnouncmentCreateDto;
 import com.TrainingTracker.TraingingTracker.Util.SecuiryUserUtil;
+import com.TrainingTracker.TraingingTracker.Security.Aop.IsTeamMember;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +32,7 @@ public class AnnouncmentController {
     }
     @Operation(summary = "get all announcmnet for specif team")
     @GetMapping("/getAllForTeam")
+    @IsTeamMember
     public ResponseEntity<List<AnnouncementResponseDto>>geAllForTeam(@RequestParam Long teamId){
         List<AnnouncementResponseDto> announcments=announcmentService.getAllAnnouncmentsForTeam(teamId);
         return ResponseEntity.ok(announcments);

@@ -4,6 +4,7 @@ import com.TrainingTracker.TraingingTracker.BusinessLogic.InterfacesServiceLayer
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.User.TraineResponse;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.Team;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.User;
+import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.Types.Role;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Repositories.TeamRepository;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Repositories.UserRepository;
 import com.TrainingTracker.TraingingTracker.Util.SecuiryUserUtil;
@@ -115,17 +116,16 @@ public class ImpUserService implements UserService {
     @Transactional(readOnly = true)
     @Cacheable(value = "isSameTeam", key = "#teamId + '_' + #userId")
     public Boolean isSameTeam(Long teamId, Long userId) {
-        User user=userRepository.findById(userId)
-                .orElseThrow(()->new RuntimeException("User not found with id: " + userId));
-        Boolean isSame=false;
-        if(user.getRole().name().equals("COACH")) {
-            isSame = isSameTeamForCoach(user, teamId);
-        }else{
-            if(user.getTraineeTeam()!=null) {
-                isSame = user.getTraineeTeam().getId().equals(teamId);
-            }
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+
+        if (user.getRole() == Role.Coach) {
+            return isSameTeamForCoach(user, teamId);
         }
-        return isSame;
+
+        return user.getRole() == Role.Trainee
+                && user.getTraineeTeam() != null
+                && user.getTraineeTeam().getId().equals(teamId);
     }
 
 }

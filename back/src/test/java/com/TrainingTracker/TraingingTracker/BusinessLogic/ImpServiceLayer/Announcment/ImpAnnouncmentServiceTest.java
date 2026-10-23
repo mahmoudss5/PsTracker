@@ -13,6 +13,7 @@ import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.User;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Repositories.AnnouncmentRepository;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Repositories.AnnouncmentTeamRepository;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Repositories.AnnouncmentUserRepository;
+import com.TrainingTracker.TraingingTracker.ExceptionHandling.ErrosEntites.AppException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -63,7 +64,8 @@ class ImpAnnouncmentServiceTest {
         );
         Announcment announcment = Announcment.builder().id(10L).content("Maintenance tomorrow").type(AnnouncmentType.INFO).build();
         User trainee = User.builder().id(300L).email("trainee@example.com").build();
-        Team team = Team.builder().id(100L).teamName("Alpha").trainees(java.util.List.of(trainee)).build();
+        User coach = User.builder().id(1L).email("coach@example.com").build();
+        Team team = Team.builder().id(100L).teamName("Alpha").coach(coach).trainees(java.util.List.of(trainee)).build();
 
         when(announcmentMapper.toEntityWithSave(createDto)).thenReturn(announcment);
         when(teamsService.getTeamById(100L)).thenReturn(team);
@@ -94,6 +96,23 @@ class ImpAnnouncmentServiceTest {
         verify(userService).getUserById(200L);
         verify(notificationService).createNotification(any(com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Notification.NotificationCreateDto.class));
         verifyNoInteractions(teamsService);
+    }
+
+    @Test
+    void testSendAnnouncment_TeamRejectsNonCoachBeforeSaving() {
+        AnnouncmentCreateDto createDto = new AnnouncmentCreateDto(
+                "INFO", "Maintenance tomorrow", 1L, true, 100L
+        );
+        User coach = User.builder().id(9L).build();
+        Team team = Team.builder().id(100L).coach(coach).build();
+        when(teamsService.getTeamById(100L)).thenReturn(team);
+
+        AppException exception = assertThrows(AppException.class,
+                () -> announcmentService.sendAnnouncment(createDto));
+
+        assertEquals(403, exception.getStatus().value());
+        verifyNoInteractions(announcmentMapper);
+        verify(teamsService).getTeamById(100L);
     }
 
     @Test

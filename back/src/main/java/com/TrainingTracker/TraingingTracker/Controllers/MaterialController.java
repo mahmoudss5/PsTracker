@@ -3,6 +3,7 @@ package com.TrainingTracker.TraingingTracker.Controllers;
 import com.TrainingTracker.TraingingTracker.BusinessLogic.InterfacesServiceLayer.MaterialService;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Material.MaterialCreateDto;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Material.MaterialResponseDto;
+import com.TrainingTracker.TraingingTracker.Security.Aop.IsTeamMember;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,6 +22,7 @@ public class MaterialController {
 
     @Operation(summary = "Get materials for a team")
     @GetMapping("/team/{teamId}")
+    @IsTeamMember
     public ResponseEntity<List<MaterialResponseDto>> getTeamMaterials(@PathVariable Long teamId) {
         return ResponseEntity.ok(materialService.getTeamMaterials(teamId));
     }
@@ -28,6 +30,7 @@ public class MaterialController {
     @Operation(summary = "Add a material to a team")
     @PostMapping("/team/{teamId}")
     @PreAuthorize("hasAuthority('Coach')")
+    @IsTeamMember
     public ResponseEntity<MaterialResponseDto> addMaterial(
             @PathVariable Long teamId,
             @RequestBody MaterialCreateDto dto) {

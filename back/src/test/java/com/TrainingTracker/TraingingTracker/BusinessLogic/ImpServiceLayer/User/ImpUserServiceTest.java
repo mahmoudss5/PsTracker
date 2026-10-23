@@ -246,4 +246,33 @@ class ImpUserServiceTest {
         assertEquals(user2, results.get(1));
         verify(userRepository, times(1)).findAll();
     }
+
+    @Test
+    void testIsSameTeam_CoachOwnsTeam() {
+        Long coachId = 7L;
+        Long teamId = 100L;
+        Team team = Team.builder().id(teamId).build();
+        User coach = User.builder()
+                .id(coachId)
+                .role(Role.Coach)
+                .teams(List.of(team))
+                .build();
+        when(userRepository.findById(coachId)).thenReturn(Optional.of(coach));
+
+        assertTrue(userService.isSameTeam(teamId, coachId));
+    }
+
+    @Test
+    void testIsSameTeam_CoachDoesNotOwnTeam() {
+        Long coachId = 7L;
+        Team otherTeam = Team.builder().id(200L).build();
+        User coach = User.builder()
+                .id(coachId)
+                .role(Role.Coach)
+                .teams(List.of(otherTeam))
+                .build();
+        when(userRepository.findById(coachId)).thenReturn(Optional.of(coach));
+
+        assertFalse(userService.isSameTeam(100L, coachId));
+    }
 }

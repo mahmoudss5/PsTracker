@@ -49,6 +49,7 @@ public class TeamController {
 
     @Operation(summary = "Get team details by id")
     @GetMapping("/{id}")
+    @IsTeamMember
     public ResponseEntity<TeamResponseDto> getTeamById(@PathVariable Long id) {
         return ResponseEntity.ok(teamsService.getTeamResponseById(id));
     }

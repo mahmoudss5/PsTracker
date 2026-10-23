@@ -9,4 +9,13 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface IsTeamMember {
+
+    Resource resource() default Resource.TEAM_ID;
+
+    int argumentIndex() default 0;
+
+    enum Resource {
+        TEAM_ID,
+        S3_KEY
+    }
 }
