@@ -9,6 +9,7 @@ import com.TrainingTracker.TraingingTracker.Security.Aop.RateLimit;
 import com.TrainingTracker.TraingingTracker.Security.RateLimitIdentity;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -30,7 +31,7 @@ public class AuthController {
 
   @PostMapping("/login")
     @RateLimit(requests = 10, windowSeconds = 60, key = "auth:login", identity = RateLimitIdentity.IP)
-    public ResponseEntity<AuthResponse> login(@RequestBody SignInDto dto, HttpServletResponse response) {
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody SignInDto dto, HttpServletResponse response) {
       AuthResponse authResponse=authService.signIn(dto);
       ResponseCookie cookie=ResponseCookie.from("refreshToken",authResponse.RefershToken())
               .httpOnly(true)
@@ -48,7 +49,7 @@ public class AuthController {
 
   @PostMapping("/register")
   @RateLimit(requests = 5, windowSeconds = 60, key = "auth:register", identity = RateLimitIdentity.IP)
-  public ResponseEntity<AuthResponse> register(@RequestBody SignUpDto dto, HttpServletResponse response) {
+  public ResponseEntity<AuthResponse> register(@Valid @RequestBody SignUpDto dto, HttpServletResponse response) {
       AuthResponse authResponse=authService.signUp(dto);
       ResponseCookie cookie=ResponseCookie.from("refreshToken",authResponse.RefershToken())
               .httpOnly(true)

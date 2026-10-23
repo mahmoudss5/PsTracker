@@ -1,12 +1,17 @@
 package com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Announcment;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 
 public record AnnouncmentCreateDto(
-        String type,
-        String content,
-        Long senderId,
-        boolean isTeamAnnouncment,
-        Long receiverId) {
- }
+                @NotBlank String type,
 
+                @NotBlank String content,
 
+                @NotNull @Positive Long senderId,
+
+                boolean isTeamAnnouncment,
+
+                @NotNull @Positive Long receiverId) {
+}

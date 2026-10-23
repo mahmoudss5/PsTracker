@@ -1,4 +1,6 @@
 package com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.TeamMessage;
 
-public record TeamMessageCreateDto(String content) {
+import jakarta.validation.constraints.NotBlank;
+
+public record TeamMessageCreateDto(@NotBlank String content) {
 }

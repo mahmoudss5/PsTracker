@@ -1,7 +1,9 @@
 package com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.User;
 
+import jakarta.validation.constraints.NotBlank;
+
 public record UpdatePasswordDto(
-    String oldPassword,
-    String newPassword
-) {
+        @NotBlank String oldPassword,
+
+        @NotBlank String newPassword) {
 }

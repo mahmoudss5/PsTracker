@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
+import com.TrainingTracker.TraingingTracker.Security.Aop.IsTeamMember;
 import java.util.Map;
 
 @RestController
@@ -38,6 +38,7 @@ public class StorageController {
 
     @Operation(summary = "Generate a presigned URL for viewing a file inline")
     @GetMapping("/view-url")
+    @IsTeamMember
     public ResponseEntity<Map<String, String>> generateViewUrl(@RequestParam String s3Key) {
         String viewUrl = storageService.getFileUrl(s3Key);
         return ResponseEntity.ok(Map.of("viewUrl", viewUrl));
@@ -45,6 +46,7 @@ public class StorageController {
 
     @Operation(summary = "Generate a presigned URL for downloading a file")
     @GetMapping("/download-url")
+    @IsTeamMember
     public ResponseEntity<Map<String, String>> generateDownloadUrl(@RequestParam String s3Key) {
         String downloadUrl = storageService.downloadFile(s3Key);
         return ResponseEntity.ok(Map.of("downloadUrl", downloadUrl));

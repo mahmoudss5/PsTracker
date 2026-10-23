@@ -2,6 +2,7 @@ package com.TrainingTracker.TraingingTracker.Controllers;
 import com.TrainingTracker.TraingingTracker.BusinessLogic.InterfacesServiceLayer.UserService;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.User.TraineResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -44,13 +45,13 @@ public class UserController {
 
     @Operation(summary = "Update user profile (userName only)")
     @org.springframework.web.bind.annotation.PutMapping("/me/profile")
-    public ResponseEntity<TraineResponse> updateProfile(@org.springframework.web.bind.annotation.RequestBody com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.User.UpdateProfileDto dto) {
+    public ResponseEntity<TraineResponse> updateProfile(@Valid @org.springframework.web.bind.annotation.RequestBody com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.User.UpdateProfileDto dto) {
         return ResponseEntity.ok(userService.updateProfile(dto));
     }
 
     @Operation(summary = "Update user password")
     @org.springframework.web.bind.annotation.PutMapping("/me/password")
-    public ResponseEntity<Void> updatePassword(@org.springframework.web.bind.annotation.RequestBody com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.User.UpdatePasswordDto dto) {
+    public ResponseEntity<Void> updatePassword(@Valid @org.springframework.web.bind.annotation.RequestBody com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.User.UpdatePasswordDto dto) {
         userService.updatePassword(dto);
         return ResponseEntity.ok().build();
     }

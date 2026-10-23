@@ -6,6 +6,7 @@ import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Team.TeamJoinDto
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Team.TeamResponseDto;
 import com.TrainingTracker.TraingingTracker.Security.Aop.RateLimit;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +23,7 @@ public class TeamController {
 
     @Operation(summary = "Create a team")
     @PostMapping
-    public ResponseEntity<Map<String, String>> createTeam(@RequestBody TeamCreateDto dto) {
+    public ResponseEntity<Map<String, String>> createTeam(@Valid @RequestBody TeamCreateDto dto) {
         String teamCode = teamsService.createTeam(dto.teamName());
         return ResponseEntity.ok(Map.of("teamCode", teamCode));
     }

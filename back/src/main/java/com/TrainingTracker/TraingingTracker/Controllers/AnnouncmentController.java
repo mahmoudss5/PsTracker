@@ -5,6 +5,7 @@ import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Announcment.Anno
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Announcment.AnnouncmentCreateDto;
 import com.TrainingTracker.TraingingTracker.Util.SecuiryUserUtil;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -37,7 +38,7 @@ public class AnnouncmentController {
 
     @Operation(summary = "Send an announcement to a user or a team")
     @PostMapping("/sendAnnouncmnet")
-    public void sendAnnouncment(@RequestBody AnnouncmentCreateDto announcmentCreateDto) {
+    public void sendAnnouncment(@Valid @RequestBody AnnouncmentCreateDto announcmentCreateDto) {
         AnnouncmentCreateDto authenticatedSenderDto = new AnnouncmentCreateDto(
                 announcmentCreateDto.type(),
                 announcmentCreateDto.content(),

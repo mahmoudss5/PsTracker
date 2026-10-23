@@ -7,6 +7,7 @@ import com.TrainingTracker.TraingingTracker.ExceptionHandling.ErrosEntites.AppEx
 import com.TrainingTracker.TraingingTracker.Security.User.SecurityUser;
 import com.TrainingTracker.TraingingTracker.Security.Aop.RateLimit;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -44,7 +45,7 @@ public class TeamMessageController {
     @RateLimit(requests = 60, windowSeconds = 60, key = "team-message:send")
     public ResponseEntity<TeamMessageResponseDto> sendMessage(
             @PathVariable Long teamId,
-            @RequestBody TeamMessageCreateDto dto,
+            @Valid @RequestBody TeamMessageCreateDto dto,
             Principal principal) {
         TeamMessageResponseDto response = teamMessageService.sendMessage(teamId, getUserId(principal), dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -53,7 +54,7 @@ public class TeamMessageController {
     @MessageMapping("/teams/{teamId}/messages")
     public void sendMessageOverWebSocket(
             @DestinationVariable Long teamId,
-            @Payload TeamMessageCreateDto dto,
+            @Valid @Payload TeamMessageCreateDto dto,
             Principal principal) {
         teamMessageService.sendMessage(teamId, getUserId(principal), dto);
     }
