@@ -10,4 +10,5 @@ public interface MaterialService {
     MaterialResponseDto addMaterial(Long teamId, MaterialCreateDto dto);
     void deleteMaterial(Long teamId, String s3Key);
     void deleteByS3Key(String s3Key);
+    Long getTeamIdByS3Key(String s3Key);
 }

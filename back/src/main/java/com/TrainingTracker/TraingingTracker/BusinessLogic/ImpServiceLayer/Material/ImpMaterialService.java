@@ -65,6 +65,16 @@ public class ImpMaterialService implements MaterialService {
         materialRepository.deleteById(material.getId());
     }
 
+    @Override
+    public Long getTeamIdByS3Key(String s3Key) {
+        Material material=materialRepository.findByS3Key(s3Key)
+                .orElseThrow(() -> new AppException("Material not found", HttpStatus.NOT_FOUND));
+        if(material.getTeam()!=null){
+            return material.getTeam().getId();
+        }
+        return 0L;
+    }
+
     private MaterialResponseDto toDto(Material material) {
         return new MaterialResponseDto(
                 material.getId(),

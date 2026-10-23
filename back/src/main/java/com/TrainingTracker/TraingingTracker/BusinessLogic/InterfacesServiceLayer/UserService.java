@@ -16,4 +16,5 @@ public interface UserService {
     
     TraineResponse updateProfile(com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.User.UpdateProfileDto dto);
     void updatePassword(com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.User.UpdatePasswordDto dto);
+    Boolean isSameTeam(Long teamId, Long userId);
 }

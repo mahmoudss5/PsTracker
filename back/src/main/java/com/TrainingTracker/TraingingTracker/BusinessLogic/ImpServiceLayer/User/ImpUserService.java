@@ -107,4 +107,25 @@ public class ImpUserService implements UserService {
         userRepository.save(user);
     }
 
+    private Boolean isSameTeamForCoach(User coach, Long teamId) {
+        return coach.getTeams().stream().anyMatch(team -> team.getId().equals(teamId));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    @Cacheable(value = "isSameTeam", key = "#teamId + '_' + #userId")
+    public Boolean isSameTeam(Long teamId, Long userId) {
+        User user=userRepository.findById(userId)
+                .orElseThrow(()->new RuntimeException("User not found with id: " + userId));
+        Boolean isSame=false;
+        if(user.getRole().name().equals("COACH")) {
+            isSame = isSameTeamForCoach(user, teamId);
+        }else{
+            if(user.getTraineeTeam()!=null) {
+                isSame = user.getTraineeTeam().getId().equals(teamId);
+            }
+        }
+        return isSame;
+    }
+
 }
