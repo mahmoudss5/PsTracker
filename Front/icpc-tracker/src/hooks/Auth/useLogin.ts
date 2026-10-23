@@ -1,6 +1,6 @@
 import { useCallback, useState, type FormEvent } from 'react';
 import type { LoginCredentials } from '../../types/auth.types';
-import { useAuth, } from '../../contextes/AuthContext';
+import { useAuth } from '../../contextes/useAuth';
 import {toast} from "sonner";
 import {useNavigate} from "react-router-dom";
 import {getIsCoach} from "../../services/AuthService.tsx";
@@ -51,7 +51,7 @@ export function useLogin() {
         setIsSubmitting(false);
       }
     },
-    [credentials,navigate],
+    [credentials, login, navigate],
   );
 
 

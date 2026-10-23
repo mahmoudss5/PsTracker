@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { getAllUsers } from '../services/userService';
 import type { TraineeResponse } from '../types/api.types';
 
@@ -10,26 +10,16 @@ interface UseUsersResult {
 }
 
 export function useUsers(enabled = true): UseUsersResult {
-  const [users, setUsers] = useState<TraineeResponse[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const query = useQuery({
+    queryKey: ['users'],
+    queryFn: getAllUsers,
+    enabled,
+  });
 
-  const fetchData = useCallback(async () => {
-    if (!enabled) return;
-    setIsLoading(true);
-    setError(null);
-    try {
-      setUsers(await getAllUsers());
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load users');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [enabled]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  return { users, isLoading, error, refetch: fetchData };
+  return {
+    users: query.data ?? [],
+    isLoading: query.isLoading,
+    error: query.error instanceof Error ? query.error.message : null,
+    refetch: query.refetch,
+  };
 }

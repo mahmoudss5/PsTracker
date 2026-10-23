@@ -13,7 +13,7 @@ export function SettingsPage() {
         <p className="text-dashboard-muted mt-3 text-lg">Manage your profile details, handle, and security preferences.</p>
       </div>
       
-      <SettingsForm user={user} onUpdated={refetch} />
+      <SettingsForm key={user?.id ?? 'loading'} user={user} onUpdated={refetch} />
     </div>
   );
 }

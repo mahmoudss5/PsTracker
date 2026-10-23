@@ -8,7 +8,8 @@
  *   2. Fires a `sonner` toast with type-aware styling.
  */
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 import { webSocketUrl } from "../config/runtime";
@@ -34,33 +35,34 @@ const TOAST_ICON: Record<string, string> = {
 export function useTeamAnnouncements(
   teamId: number | undefined,
 ): UseTeamAnnouncementsResult {
-  const [announcements, setAnnouncements] = useState<AnnouncementResponseDto[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [liveAnnouncementsByTeam, setLiveAnnouncementsByTeam] = useState<Record<number, AnnouncementResponseDto[]>>({});
   const [newIds, setNewIds] = useState<Set<number>>(new Set());
   const clientRef = useRef<Client | null>(null);
   // Track IDs we already have to detect true newcomers
   const knownIdsRef = useRef<Set<number>>(new Set());
 
   // ── REST history ────────────────────────────────────────────────────────────
-  const fetchData = useCallback(async () => {
-    if (!teamId) return;
-    setIsLoading(true);
-    setError(null);
-    try {
-      const data = await getAnnouncementsForTeam(teamId);
-      setAnnouncements(data);
-      knownIdsRef.current = new Set(data.map((a) => a.id));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load announcements");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [teamId]);
+  const query = useQuery({
+    queryKey: ["team-announcements", teamId],
+    queryFn: () => getAnnouncementsForTeam(teamId as number),
+    enabled: teamId !== undefined,
+  });
+
+  const announcements = useMemo(() => {
+    const history = query.data ?? [];
+    const liveAnnouncements = teamId === undefined ? [] : liveAnnouncementsByTeam[teamId] ?? [];
+    const byId = new Map<number, AnnouncementResponseDto>();
+    [...history, ...liveAnnouncements].forEach((announcement) => {
+      byId.set(announcement.id, announcement);
+    });
+    return Array.from(byId.values()).sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    );
+  }, [query.data, liveAnnouncementsByTeam, teamId]);
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    knownIdsRef.current = new Set(announcements.map((announcement) => announcement.id));
+  }, [announcements]);
 
   // ── STOMP subscription ──────────────────────────────────────────────────────
   useEffect(() => {
@@ -85,7 +87,10 @@ export function useTeamAnnouncements(
               knownIdsRef.current.add(ann.id);
 
               // Prepend — newest first
-              setAnnouncements((prev) => [ann, ...prev]);
+              setLiveAnnouncementsByTeam((prev) => ({
+                ...prev,
+                [teamId]: [...(prev[teamId] ?? []), ann],
+              }));
 
               // Mark as "new" for entrance animation (clear after 3 s)
               setNewIds((prev) => {
@@ -136,5 +141,11 @@ export function useTeamAnnouncements(
     };
   }, [teamId]);
 
-  return { announcements, isLoading, error, refetch: fetchData, newIds };
+  return {
+    announcements,
+    isLoading: query.isLoading,
+    error: query.error instanceof Error ? query.error.message : null,
+    refetch: () => { void query.refetch(); },
+    newIds,
+  };
 }

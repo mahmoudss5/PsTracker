@@ -3,7 +3,7 @@ import type { FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import type { RegisterCredentials, UserRole } from '../../types/auth.types';
 import { toast } from 'sonner';
-import { useAuth } from "../../contextes/AuthContext";
+import { useAuth } from "../../contextes/useAuth";
 import { getIsCoach } from "../../services/AuthService.tsx";
 
 const INITIAL_CREDENTIALS: Omit<RegisterCredentials, 'isCoach'> = {
@@ -88,7 +88,7 @@ export function useRegister() {
         setIsSubmitting(false);
       }
     },
-    [credentials, confirmPassword, selectedRole,register],
+    [credentials, confirmPassword, navigate, register, selectedRole],
   );
 
   return {

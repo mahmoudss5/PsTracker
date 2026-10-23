@@ -41,8 +41,8 @@ export function CoachOverview({
     try {
       const response = await createTeam({ teamName: teamName.trim() });
       setCreatedCode(response.teamCode);
-    } catch (err: any) {
-      setError(err.message || 'Failed to create team. Please try again.');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to create team. Please try again.');
     } finally {
       setIsSubmitting(false);
     }

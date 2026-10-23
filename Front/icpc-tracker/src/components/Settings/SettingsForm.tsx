@@ -1,4 +1,4 @@
-import { useState, useEffect, type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import { updateProfile, updatePassword } from '../../services/userService';
 import { toast } from 'sonner';
 import { User, Lock, Key, ShieldAlert, ChevronDown, ChevronUp } from 'lucide-react';
@@ -12,7 +12,7 @@ interface SettingsFormProps {
 }
 
 export function SettingsForm({ user, onUpdated }: SettingsFormProps) {
-  const [userName, setUserName] = useState('');
+  const [userName, setUserName] = useState(() => user?.userName ?? '');
 
   const [showPasswordFields, setShowPasswordFields] = useState(false);
   const [oldPassword, setOldPassword] = useState('');
@@ -21,12 +21,6 @@ export function SettingsForm({ user, onUpdated }: SettingsFormProps) {
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (user) {
-      setUserName(user.userName || '');
-    }
-  }, [user]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();

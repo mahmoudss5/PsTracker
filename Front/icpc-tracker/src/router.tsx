@@ -8,18 +8,7 @@ import { InvalidUrl } from './components/shared/InvalidUrl';
 import { TeamPage } from './pages/TeamPage';
 import { SubmissionsPage } from './pages/SubmissionsPage';
 import { SettingsPage } from './pages/SettingsPage';
-import { useCurrentUser } from './hooks/useCurrentUser';
-
-function DashboardIndexRedirect() {
-  const { user, isLoading } = useCurrentUser();
-  
-  if (isLoading) return null;
-  
-  if (user?.role?.toLowerCase() === 'coach') {
-    return <Navigate to="coach" replace />;
-  }
-  return <Navigate to="trainee" replace />;
-}
+import { DashboardIndexRedirect } from './pages/DashboardIndexRedirect';
 
 export const router = createBrowserRouter([
   {

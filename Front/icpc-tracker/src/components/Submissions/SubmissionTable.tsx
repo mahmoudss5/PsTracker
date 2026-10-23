@@ -56,7 +56,11 @@ export function SubmissionTable({ submissions }: SubmissionTableProps) {
   const toggleVerdict = (v: Verdict) => {
     setVerdictFilter((prev) => {
       const next = new Set(prev);
-      next.has(v) ? next.delete(v) : next.add(v);
+      if (next.has(v)) {
+        next.delete(v);
+      } else {
+        next.add(v);
+      }
       return next;
     });
     setPage(1);
@@ -72,7 +76,7 @@ export function SubmissionTable({ submissions }: SubmissionTableProps) {
 
     // Sort
     rows.sort((a, b) => {
-      let cmp = 0;
+      let cmp: number;
       if (sortKey === 'problemName' || sortKey === 'language' || sortKey === 'verdict') {
         cmp = a[sortKey].localeCompare(b[sortKey]);
       } else if (sortKey === 'date') {

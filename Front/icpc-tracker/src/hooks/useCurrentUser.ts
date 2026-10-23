@@ -9,7 +9,7 @@
  *   const { user, isLoading, error, refetch } = useCurrentUser();
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import type { TraineeResponse } from '../types/api.types';
 import { getCurrentUser } from '../services/userService';
 
@@ -21,26 +21,15 @@ interface UseCurrentUserResult {
 }
 
 export function useCurrentUser(): UseCurrentUserResult {
-  const [user, setUser] = useState<TraineeResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const query = useQuery({
+    queryKey: ['current-user'],
+    queryFn: getCurrentUser,
+  });
 
-  const fetchData = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const data = await getCurrentUser();
-      setUser(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load user profile');
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  return { user, isLoading, error, refetch: fetchData };
+  return {
+    user: query.data ?? null,
+    isLoading: query.isLoading,
+    error: query.error instanceof Error ? query.error.message : null,
+    refetch: () => { void query.refetch(); },
+  };
 }

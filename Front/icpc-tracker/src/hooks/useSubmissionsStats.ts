@@ -84,9 +84,6 @@ function buildDailyActivity(
     days = Math.ceil(
       (customRange.to.getTime() - customRange.from.getTime()) / (1000 * 60 * 60 * 24),
     ) + 1;
-  } else {
-    // all — last 30 days for the chart
-    days = 30;
   }
 
   const countMap: Record<string, number> = {};

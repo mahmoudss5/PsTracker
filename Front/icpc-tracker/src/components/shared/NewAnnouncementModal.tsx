@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, type FormEvent } from "react";
+import { useCallback, useState, useEffect, useRef, type FormEvent } from "react";
 import { X, Megaphone, AlertTriangle, Info, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { createTeamAnnouncement } from "../../services/announcementService";
@@ -66,14 +66,16 @@ export function NewAnnouncementModal({
   const [isSending, setIsSending] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  const handleClose = useCallback(() => {
+    setType("INFO");
+    setContent("");
+    onClose();
+  }, [onClose]);
+
   // Focus textarea when modal opens
   useEffect(() => {
     if (isOpen) {
       setTimeout(() => textareaRef.current?.focus(), 80);
-    } else {
-      // Reset on close
-      setType("INFO");
-      setContent("");
     }
   }, [isOpen]);
 
@@ -81,11 +83,11 @@ export function NewAnnouncementModal({
   useEffect(() => {
     if (!isOpen) return;
     const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") handleClose();
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [isOpen, onClose]);
+  }, [isOpen, handleClose]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -99,7 +101,7 @@ export function NewAnnouncementModal({
         description: "Your team will see it in real-time.",
       });
       onSent?.();
-      onClose();
+      handleClose();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to send announcement");
     } finally {
@@ -117,7 +119,7 @@ export function NewAnnouncementModal({
     /* Backdrop */
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      onClick={(e) => e.target === e.currentTarget && onClose()}
+      onClick={(e) => e.target === e.currentTarget && handleClose()}
     >
       {/* Blur overlay */}
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
@@ -138,7 +140,7 @@ export function NewAnnouncementModal({
             <h2 className="text-sm font-bold text-dashboard-text">New Announcement</h2>
           </div>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="flex h-7 w-7 items-center justify-center rounded-full text-dashboard-muted transition hover:bg-dashboard-elevated hover:text-dashboard-text"
             aria-label="Close"
           >
@@ -204,7 +206,7 @@ export function NewAnnouncementModal({
           <div className="flex items-center justify-end gap-3 pt-1">
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               className="rounded-lg border border-dashboard-border px-4 py-2 text-sm font-semibold text-dashboard-muted transition hover:border-dashboard-primary/30 hover:text-dashboard-text"
             >
               Cancel

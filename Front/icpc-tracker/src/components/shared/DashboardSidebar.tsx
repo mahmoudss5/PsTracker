@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { RiTeamFill } from "react-icons/ri";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
-import { useAuth } from "../../contextes/AuthContext";
+import { useAuth } from "../../contextes/useAuth";
 import { getIsCoach } from "../../services/AuthService";
 
 interface SidebarProps {

@@ -10,7 +10,8 @@
  *  6. Cleans up the connection on unmount / teamId change.
  */
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 import { webSocketUrl } from "../config/runtime";
@@ -30,27 +31,34 @@ interface UseTeamChatReturn {
 }
 
 export function useTeamChat(teamId: number | null): UseTeamChatReturn {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [status, setStatus] = useState<ChatStatus>("connecting");
-  const [historyError, setHistoryError] = useState<string | null>(null);
+  const [liveMessagesByTeam, setLiveMessagesByTeam] = useState<Record<number, ChatMessage[]>>({});
+  const [connectionState, setConnectionState] = useState<{ teamId: number | null; status: ChatStatus }>(() => ({
+    teamId,
+    status: teamId === null ? "disconnected" : "connecting",
+  }));
   const [newIds, setNewIds] = useState<Set<number>>(new Set());
   const clientRef = useRef<Client | null>(null);
   const knownIdsRef = useRef<Set<number>>(new Set());
 
   // ── 1. Load history ────────────────────────────────────────────────────────
-  useEffect(() => {
-    if (teamId === null) return;
-    setMessages([]);
-    setHistoryError(null);
-    knownIdsRef.current = new Set();
+  const historyQuery = useQuery({
+    queryKey: ["team-chat", teamId],
+    queryFn: () => getTeamMessages(teamId as number),
+    enabled: teamId !== null,
+  });
+  const messages = useMemo(() => {
+    const history = historyQuery.data ?? [];
+    const liveMessages = teamId === null ? [] : liveMessagesByTeam[teamId] ?? [];
+    const byId = new Map<number, ChatMessage>();
+    [...history, ...liveMessages].forEach((message) => byId.set(message.id, message));
+    return Array.from(byId.values()).sort(
+      (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+    );
+  }, [historyQuery.data, liveMessagesByTeam, teamId]);
 
-    getTeamMessages(teamId)
-      .then((history) => {
-        setMessages(history);
-        knownIdsRef.current = new Set(history.map((m) => m.id));
-      })
-      .catch((err: Error) => setHistoryError(err.message));
-  }, [teamId]);
+  useEffect(() => {
+    knownIdsRef.current = new Set(messages.map((message) => message.id));
+  }, [messages]);
 
   // ── 2. STOMP connection ────────────────────────────────────────────────────
   useEffect(() => {
@@ -70,7 +78,7 @@ export function useTeamChat(teamId: number | null): UseTeamChatReturn {
       reconnectDelay: 5000,
 
       onConnect: () => {
-        setStatus("connected");
+        setConnectionState({ teamId, status: "connected" });
 
         client.subscribe(
           `/topic/teams/${teamId}/messages`,
@@ -82,7 +90,10 @@ export function useTeamChat(teamId: number | null): UseTeamChatReturn {
               if (knownIdsRef.current.has(msg.id)) return;
               knownIdsRef.current.add(msg.id);
 
-              setMessages((prev) => [...prev, msg]);
+              setLiveMessagesByTeam((prev) => ({
+                ...prev,
+                [teamId]: [...(prev[teamId] ?? []), msg],
+              }));
 
               // Track as "new" for entrance animation (clear after 2 s)
               setNewIds((prev) => {
@@ -104,13 +115,12 @@ export function useTeamChat(teamId: number | null): UseTeamChatReturn {
         );
       },
 
-      onStompError: () => setStatus("error"),
-      onDisconnect: () => setStatus("disconnected"),
-      onWebSocketError: () => setStatus("error"),
+      onStompError: () => setConnectionState({ teamId, status: "error" }),
+      onDisconnect: () => setConnectionState({ teamId, status: "disconnected" }),
+      onWebSocketError: () => setConnectionState({ teamId, status: "error" }),
     });
 
     clientRef.current = client;
-    setStatus("connecting");
     client.activate();
 
     return () => {
@@ -137,5 +147,17 @@ export function useTeamChat(teamId: number | null): UseTeamChatReturn {
     [teamId],
   );
 
-  return { messages, status, send, historyError, newIds };
+  const status = connectionState.teamId === teamId
+    ? connectionState.status
+    : teamId === null
+      ? "disconnected"
+      : "connecting";
+
+  return {
+    messages,
+    status,
+    send,
+    historyError: historyQuery.error instanceof Error ? historyQuery.error.message : null,
+    newIds,
+  };
 }

@@ -12,7 +12,7 @@
  *   const { members, isLoading, error } = useTeamMembers(teamId);
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import type { TraineeResponse } from '../types/api.types';
 import { getUsersByTeamId } from '../services/userService';
 
@@ -24,27 +24,16 @@ interface UseTeamMembersResult {
 }
 
 export function useTeamMembers(teamId: number | null): UseTeamMembersResult {
-  const [members, setMembers] = useState<TraineeResponse[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const query = useQuery({
+    queryKey: ['team-members', teamId],
+    queryFn: () => getUsersByTeamId(teamId as number),
+    enabled: teamId !== null,
+  });
 
-  const fetchData = useCallback(async () => {
-    if (teamId === null) return;
-    setIsLoading(true);
-    setError(null);
-    try {
-      const data = await getUsersByTeamId(teamId);
-      setMembers(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load team members');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [teamId]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  return { members, isLoading, error, refetch: fetchData };
+  return {
+    members: query.data ?? [],
+    isLoading: query.isLoading,
+    error: query.error instanceof Error ? query.error.message : null,
+    refetch: () => { void query.refetch(); },
+  };
 }

@@ -12,7 +12,8 @@
  *  - newIds: Set of IDs that just arrived live (for animation)
  */
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 import { webSocketUrl } from "../config/runtime";
@@ -51,35 +52,31 @@ async function patchMarkRead(id: number): Promise<NotificationResponse> {
 }
 
 export function useNotifications(): UseNotificationsResult {
-  const [notifications, setNotifications] = useState<NotificationResponse[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+  const [liveNotifications, setLiveNotifications] = useState<NotificationResponse[]>([]);
   const [newIds, setNewIds] = useState<Set<number>>(new Set());
   const clientRef = useRef<Client | null>(null);
   const knownIdsRef = useRef<Set<number>>(new Set());
 
   // ── REST history ────────────────────────────────────────────────────────────
-  const fetchData = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const data = await fetchMyNotifications();
-      // Sort newest-first
-      const sorted = [...data].sort(
-        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-      );
-      setNotifications(sorted);
-      knownIdsRef.current = new Set(sorted.map((n) => n.id));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load notifications");
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  const query = useQuery({
+    queryKey: ["notifications", "me"],
+    queryFn: fetchMyNotifications,
+  });
+  const notifications = useMemo(() => {
+    const history = query.data ?? [];
+    const byId = new Map<number, NotificationResponse>();
+    [...history, ...liveNotifications].forEach((notification) => {
+      byId.set(notification.id, notification);
+    });
+    return Array.from(byId.values()).sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    );
+  }, [query.data, liveNotifications]);
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    knownIdsRef.current = new Set(notifications.map((notification) => notification.id));
+  }, [notifications]);
 
   // ── STOMP subscription ──────────────────────────────────────────────────────
   useEffect(() => {
@@ -100,7 +97,7 @@ export function useNotifications(): UseNotificationsResult {
             if (knownIdsRef.current.has(notif.id)) return;
             knownIdsRef.current.add(notif.id);
 
-            setNotifications((prev) => [notif, ...prev]);
+            setLiveNotifications((prev) => [notif, ...prev]);
 
             // Mark for animation
             setNewIds((prev) => {
@@ -141,15 +138,30 @@ export function useNotifications(): UseNotificationsResult {
   const markRead = useCallback(async (id: number) => {
     try {
       const updated = await patchMarkRead(id);
-      setNotifications((prev) =>
-        prev.map((n) => (n.id === id ? { ...n, isRead: updated.isRead } : n)),
+      queryClient.setQueryData<NotificationResponse[]>(["notifications", "me"], (current) =>
+        current?.map((notification) =>
+          notification.id === id ? { ...notification, isRead: updated.isRead } : notification,
+        ) ?? [],
+      );
+      setLiveNotifications((current) =>
+        current.map((notification) =>
+          notification.id === id ? { ...notification, isRead: updated.isRead } : notification,
+        ),
       );
     } catch {
       // silent — badge will desync but not break UX
     }
-  }, []);
+  }, [queryClient]);
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
-  return { notifications, unreadCount, isLoading, error, markRead, newIds, refetch: fetchData };
+  return {
+    notifications,
+    unreadCount,
+    isLoading: query.isLoading,
+    error: query.error instanceof Error ? query.error.message : null,
+    markRead,
+    newIds,
+    refetch: () => { void query.refetch(); },
+  };
 }

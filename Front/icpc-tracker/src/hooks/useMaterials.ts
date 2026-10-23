@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { getTeamMaterials, type MaterialResponseDto } from '../services/materialService';
 
 interface UseMaterialsResult {
@@ -9,26 +9,16 @@ interface UseMaterialsResult {
 }
 
 export function useMaterials(teamId?: number): UseMaterialsResult {
-  const [materials, setMaterials] = useState<MaterialResponseDto[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const query = useQuery({
+    queryKey: ['materials', teamId],
+    queryFn: () => getTeamMaterials(teamId as number),
+    enabled: teamId !== undefined,
+  });
 
-  const fetchData = useCallback(async () => {
-    if (!teamId) return;
-    setIsLoading(true);
-    setError(null);
-    try {
-      setMaterials(await getTeamMaterials(teamId));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load materials');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [teamId]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  return { materials, isLoading, error, refetch: fetchData };
+  return {
+    materials: query.data ?? [],
+    isLoading: query.isLoading,
+    error: query.error instanceof Error ? query.error.message : null,
+    refetch: () => { void query.refetch(); },
+  };
 }

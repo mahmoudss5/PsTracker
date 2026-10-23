@@ -29,9 +29,8 @@ import { createTeam, joinTeam } from "../services/teamService";
 import type { TeamResponse, TraineeResponse } from "../types/api.types";
 
 // Helper to check if a user is online
-function isOnline(presence: any[], userId: number | undefined) {
-  if (!presence || !Array.isArray(presence) || !userId) return false;
-  return presence.some((p) => p === userId || p?.userId === userId || p?.id === userId);
+function isOnline(presence: number[], userId: number | undefined) {
+  return userId !== undefined && presence.includes(userId);
 }
 import { useCopyToClipboard } from "../hooks/useCopyToClipboard";
 
@@ -86,7 +85,7 @@ function CopyableTeamCode({ code }: { code: string }) {
   );
 }
 
-function CoachOverview({ presence }: { presence: any[] }) {
+function CoachOverview({ presence }: { presence: number[] }) {
   const navigate = useNavigate();
   const [teamName, setTeamName] = useState("");
   const [query, setQuery] = useState("");
@@ -233,7 +232,7 @@ function CoachOverview({ presence }: { presence: any[] }) {
   );
 }
 
-function UserRow({ user, presence }: { user: TraineeResponse; presence: any[] }) {
+function UserRow({ user, presence }: { user: TraineeResponse; presence: number[] }) {
   const inTeam = Boolean(user.teamName);
   const online = isOnline(presence, user.id);
   
@@ -306,7 +305,7 @@ function ErrorBlock({ message, onRetry }: { message: string; onRetry: () => void
   );
 }
 
-function TeamDetail({ team, isCoach, presence }: { team: TeamResponse; isCoach: boolean; presence: any[] }) {
+function TeamDetail({ team, isCoach, presence }: { team: TeamResponse; isCoach: boolean; presence: number[] }) {
   const [activeTab, setActiveTab] = useState<Tab>("chat");
   const [isMaterialUploadOpen, setIsMaterialUploadOpen] = useState(false);
   // Use the live STOMP-backed hook so the badge stays current in real time.

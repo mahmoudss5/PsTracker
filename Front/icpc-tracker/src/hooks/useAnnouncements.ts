@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { getAnnouncementsForTeam, getAnnouncementsForUser, type AnnouncementResponseDto } from '../services/announcementService';
 
 interface UseAnnouncementsResult {
@@ -9,30 +9,20 @@ interface UseAnnouncementsResult {
 }
 
 export function useAnnouncements(teamId?: number, userId?: number): UseAnnouncementsResult {
-  const [announcements, setAnnouncements] = useState<AnnouncementResponseDto[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const query = useQuery({
+    queryKey: ['announcements', teamId, userId],
+    queryFn: async (): Promise<AnnouncementResponseDto[]> => {
+      if (teamId) return getAnnouncementsForTeam(teamId);
+      if (userId) return getAnnouncementsForUser(userId);
+      return [];
+    },
+    enabled: Boolean(teamId || userId),
+  });
 
-  const fetchData = useCallback(async () => {
-    if (!teamId && !userId) return;
-    setIsLoading(true);
-    setError(null);
-    try {
-      if (teamId) {
-        setAnnouncements(await getAnnouncementsForTeam(teamId));
-      } else if (userId) {
-        setAnnouncements(await getAnnouncementsForUser(userId));
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load announcements');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [teamId, userId]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  return { announcements, isLoading, error, refetch: fetchData };
+  return {
+    announcements: query.data ?? [],
+    isLoading: query.isLoading,
+    error: query.error instanceof Error ? query.error.message : null,
+    refetch: () => { void query.refetch(); },
+  };
 }

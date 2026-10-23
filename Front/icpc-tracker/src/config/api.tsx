@@ -1,5 +1,14 @@
-import axios from "axios";
+import axios, { type AxiosError, type InternalAxiosRequestConfig } from "axios";
 import { apiBaseUrl } from "./runtime";
+
+type RetryableRequestConfig = InternalAxiosRequestConfig & {
+  _retry?: boolean;
+};
+
+interface QueuedRequest {
+  resolve: (token: string | null) => void;
+  reject: (error: unknown) => void;
+}
 
 export const apiClient=axios.create({
   baseURL: apiBaseUrl,
@@ -10,22 +19,22 @@ export const apiClient=axios.create({
 })
 
 
-apiClient.interceptors.request.use((config)=>{
+apiClient.interceptors.request.use((config) => {
     const token=localStorage.getItem("token")
     if(token){
         config.headers.Authorization=`Bearer ${token}`
     }
     return config
 },
-(error:Error)=>{
+(error: unknown) => {
     return Promise.reject(error)
 }
 )
 
 let isRefreshing:boolean=false
-let failedQueue:any[]=[]
+let failedQueue: QueuedRequest[] = [];
 
-const processQueue=(error:any ,token :string| null)=>{
+const processQueue = (error: unknown, token: string | null): void => {
     failedQueue.forEach((request)=>{
         if(error){
             request.reject(error)
@@ -34,35 +43,46 @@ const processQueue=(error:any ,token :string| null)=>{
         }
     })
     failedQueue=[]
-}
+};
 
 
 apiClient.interceptors.response.use(
   (response) => response,
 
-  async (error) => {
-    const originalRequest = error.config;
+  async (error: unknown) => {
+    if (!axios.isAxiosError(error)) {
+      return Promise.reject(error);
+    }
 
-    if ((error.response?.status === 401 || error.response?.status === 403) && !originalRequest._retry) {
+    const axiosError = error as AxiosError;
+    const originalRequest = axiosError.config as RetryableRequestConfig | undefined;
+    if (!originalRequest) {
+      return Promise.reject(error);
+    }
+
+    if ((axiosError.response?.status === 401 || axiosError.response?.status === 403) && !originalRequest._retry) {
       // If the original request was login or register, just pass the 401 error through
       // so the form can display the "bad credentials" error instead of trying to refresh.
       if (originalRequest.url === "/auth/login" || originalRequest.url === "/auth/register") {
-        return Promise.reject(error);
+        return Promise.reject(axiosError);
       }
 
       if (originalRequest.url === "/auth/refresh") {
         localStorage.clear();
-        return Promise.reject(error);
+        return Promise.reject(axiosError);
       }
 
       originalRequest._retry = true;
 
       if (isRefreshing) {
         return new Promise<string | null>((resolve, reject) => {
-          failedQueue.push({ resolve, reject });
+          failedQueue.push({
+            resolve: (token) => resolve(token),
+            reject,
+          });
         })
           .then((token) => {
-            originalRequest.headers["Authorization"] = `Bearer ${token}`;
+            originalRequest.headers.Authorization = `Bearer ${token}`;
             return apiClient(originalRequest);
           })
           .catch((err) => Promise.reject(err));
@@ -71,13 +91,13 @@ apiClient.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const response = await apiClient.get("/auth/refresh");
+        const response = await apiClient.get<{ token: string }>("/auth/refresh");
 
         const { token: newAccessToken } = response.data;
 
         localStorage.setItem("token", newAccessToken);
 
-        originalRequest.headers["Authorization"] = `Bearer ${newAccessToken}`;
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
 
         processQueue(null, newAccessToken);
 
@@ -94,6 +114,6 @@ apiClient.interceptors.response.use(
       }
     }
 
-    return Promise.reject(error);
+    return Promise.reject(axiosError);
   }
 );

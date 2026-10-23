@@ -10,7 +10,7 @@
  *   const { team, isLoading, error } = useTeam(teamId);
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import type { TeamResponse } from '../types/api.types';
 import { getCurrentCoachTeams, getTeamById } from '../services/teamService';
 
@@ -22,29 +22,18 @@ interface UseTeamResult {
 }
 
 export function useTeam(teamId: number | null): UseTeamResult {
-  const [team, setTeam] = useState<TeamResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const query = useQuery({
+    queryKey: ['team', teamId],
+    queryFn: () => getTeamById(teamId as number),
+    enabled: teamId !== null,
+  });
 
-  const fetchData = useCallback(async () => {
-    if (teamId === null) return;
-    setIsLoading(true);
-    setError(null);
-    try {
-      const data = await getTeamById(teamId);
-      setTeam(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load team');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [teamId]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  return { team, isLoading, error, refetch: fetchData };
+  return {
+    team: query.data ?? null,
+    isLoading: query.isLoading,
+    error: query.error instanceof Error ? query.error.message : null,
+    refetch: () => { void query.refetch(); },
+  };
 }
 
 interface UseCoachTeamsResult {
@@ -55,27 +44,16 @@ interface UseCoachTeamsResult {
 }
 
 export function useCoachTeams(enabled = true): UseCoachTeamsResult {
-  const [teams, setTeams] = useState<TeamResponse[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const query = useQuery({
+    queryKey: ['coach-teams'],
+    queryFn: getCurrentCoachTeams,
+    enabled,
+  });
 
-  const fetchData = useCallback(async () => {
-    if (!enabled) return;
-    setIsLoading(true);
-    setError(null);
-    try {
-      const data = await getCurrentCoachTeams();
-      setTeams(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load coach teams');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [enabled]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  return { teams, isLoading, error, refetch: fetchData };
+  return {
+    teams: query.data ?? [],
+    isLoading: query.isLoading,
+    error: query.error instanceof Error ? query.error.message : null,
+    refetch: () => { void query.refetch(); },
+  };
 }

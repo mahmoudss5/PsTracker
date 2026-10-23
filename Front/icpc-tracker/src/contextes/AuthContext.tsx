@@ -1,11 +1,8 @@
-import { createContext, useContext, useMemo } from 'react'
-import type { AuthContextType } from '../types/auth.types'
+import { useMemo } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import type { LoginCredentials, RegisterCredentials } from '../types/auth.types'
 import { login, register, logout } from '../services/AuthService'
-
-
- const AuthContext = createContext<AuthContextType | undefined>(undefined)
+import { AuthContext } from './authContext'
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
 
@@ -43,7 +40,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 queryClient.clear();
             },
         };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [loginMutation, registerMutation, queryClient])
 
 
@@ -56,12 +52,6 @@ return(
 
 
 
-}
-
-export function useAuth():AuthContextType{
-  const context=useContext(AuthContext);
-  if(!context) throw new Error('useAuth must be used within an AuthProvider');
-  return context;
 }
 
 

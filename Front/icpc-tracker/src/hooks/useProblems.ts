@@ -9,7 +9,8 @@
  *   const { problems } = useProblems({ tag: 'dp' });
  */
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import type { ProblemResponse } from '../types/api.types';
 import { getAllProblems } from '../services/problemService';
 
@@ -28,34 +29,23 @@ interface UseProblemsResult {
 export function useProblems(options: UseProblemsOptions = {}): UseProblemsResult {
   const { tag } = options;
 
-  const [rawProblems, setRawProblems] = useState<ProblemResponse[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchData = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const data = await getAllProblems();
-      setRawProblems(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load problems');
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
+  const query = useQuery({
+    queryKey: ['problems'],
+    queryFn: getAllProblems,
+  });
   const problems = useMemo(() => {
+    const rawProblems = query.data ?? [];
     if (!tag) return rawProblems;
     const lower = tag.toLowerCase();
     return rawProblems.filter((p) =>
       p.tags.some((t) => t.toLowerCase().includes(lower)),
     );
-  }, [rawProblems, tag]);
+  }, [query.data, tag]);
 
-  return { problems, isLoading, error, refetch: fetchData };
+  return {
+    problems,
+    isLoading: query.isLoading,
+    error: query.error instanceof Error ? query.error.message : null,
+    refetch: () => { void query.refetch(); },
+  };
 }

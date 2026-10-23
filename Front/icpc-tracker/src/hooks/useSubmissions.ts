@@ -11,7 +11,7 @@
  *   const { submissions, isLoading, error } = useSubmissions({ userId: 42 });
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import type { SubmissionEntry, Verdict } from '../types/dashboard.types';
 import type { SubmissionResponse } from '../types/api.types';
 import {
@@ -77,14 +77,9 @@ export function useSubmissions(
 ): UseSubmissionsResult {
   const { userId } = options;
 
-  const [submissions, setSubmissions] = useState<SubmissionEntry[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchData = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
+  const query = useQuery({
+    queryKey: ['submissions', userId],
+    queryFn: async (): Promise<SubmissionEntry[]> => {
       const raw: SubmissionResponse[] = userId
         ? await getSubmissionsByUserId(userId)
         : await getMySubmissions();
@@ -94,17 +89,14 @@ export function useSubmissions(
         (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
       );
 
-      setSubmissions(sorted.map(toSubmissionEntry));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load submissions');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [userId]);
+      return sorted.map(toSubmissionEntry);
+    },
+  });
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  return { submissions, isLoading, error, refetch: fetchData };
+  return {
+    submissions: query.data ?? [],
+    isLoading: query.isLoading,
+    error: query.error instanceof Error ? query.error.message : null,
+    refetch: () => { void query.refetch(); },
+  };
 }

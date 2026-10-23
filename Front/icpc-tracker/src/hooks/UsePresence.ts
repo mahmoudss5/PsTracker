@@ -4,6 +4,12 @@ import { getToken } from "../services/AuthService";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 
+type PresenceEntry = number | { userId?: number; id?: number };
+
+function isPresenceObject(value: unknown): value is Exclude<PresenceEntry, number> {
+    return typeof value === "object" && value !== null;
+}
+
 export const usePresence = (UserId: number | undefined) => {
     const [presence, setPresence] = useState<number[]>([]);
     const [status, setStatus] = useState("pending");
@@ -38,11 +44,18 @@ export const usePresence = (UserId: number | undefined) => {
                 client.subscribe("/topic/presence", (frame) => {
                     console.log("[Presence] received frame:", frame.body);
                     try {
-                        const users = JSON.parse(frame.body || "[]");
+                        const users: unknown = JSON.parse(frame.body || "[]");
+                        if (!Array.isArray(users)) return;
                         // Backend sends List<UserPresence> where each has a userId field (Long).
-                        const ids = users.map((u: any) =>
-                            typeof u === "number" ? u : Number(u.userId ?? u.id)
-                        );
+                        const ids = users
+                            .map((entry: unknown): number | null => {
+                                if (typeof entry === "number") return entry;
+                                if (!isPresenceObject(entry)) return null;
+
+                                const id = entry.userId ?? entry.id;
+                                return typeof id === "number" ? id : null;
+                            })
+                            .filter((id): id is number => id !== null);
                         console.log("[Presence] online user IDs:", ids);
                         setPresence(ids);
                     } catch (err) {
