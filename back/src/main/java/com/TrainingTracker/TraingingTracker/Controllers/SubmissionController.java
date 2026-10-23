@@ -28,7 +28,7 @@ public class SubmissionController {
     @PostMapping
     @RateLimit(requests = 10, windowSeconds = 60, key = "submission:create")
     public ResponseEntity<SubmissionResponseDto> createSubmission(@RequestBody SubmissionCreateDto dto) {
-        return ResponseEntity.ok(submissionService.createSubmission(dto));
+        return ResponseEntity.ok(submissionService.createCurrentUserSubmission(dto));
     }
 
     @Operation(summary = "Create submission for current user")

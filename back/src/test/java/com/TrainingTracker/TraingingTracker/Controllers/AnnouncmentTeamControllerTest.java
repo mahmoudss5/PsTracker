@@ -3,6 +3,8 @@ package com.TrainingTracker.TraingingTracker.Controllers;
 import com.TrainingTracker.TraingingTracker.BusinessLogic.InterfacesServiceLayer.AnnouncmentService;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Announcment.AnnouncementResponseDto;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Announcment.AnnouncmentCreateDto;
+import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.User;
+import com.TrainingTracker.TraingingTracker.Security.User.SecurityUser;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -11,6 +13,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -51,6 +55,7 @@ class AnnouncmentTeamControllerTest {
 
     @Test
     void testSendAnnouncementToTeam() {
+        Long authenticatedUserId = 42L;
         AnnouncmentCreateDto inputDto = new AnnouncmentCreateDto(
                 "INFO",
                 "New team update",
@@ -60,7 +65,23 @@ class AnnouncmentTeamControllerTest {
         );
         doNothing().when(announcmentService).sendAnnouncment(any(AnnouncmentCreateDto.class));
 
-        ResponseEntity<Void> response = announcmentTeamController.sendAnnouncementToTeam(inputDto);
+        User authenticatedUser = User.builder()
+                .id(authenticatedUserId)
+                .build();
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(
+                        new SecurityUser(authenticatedUser),
+                        null,
+                        List.of()
+                )
+        );
+
+        ResponseEntity<Void> response;
+        try {
+            response = announcmentTeamController.sendAnnouncementToTeam(inputDto);
+        } finally {
+            SecurityContextHolder.clearContext();
+        }
 
         assertNotNull(response);
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -71,7 +92,7 @@ class AnnouncmentTeamControllerTest {
         AnnouncmentCreateDto capturedDto = captor.getValue();
         assertEquals("INFO", capturedDto.type());
         assertEquals("New team update", capturedDto.content());
-        assertEquals(5L, capturedDto.senderId());
+        assertEquals(authenticatedUserId, capturedDto.senderId());
         assertTrue(capturedDto.isTeamAnnouncment()); // Must be overridden to true
         assertEquals(1L, capturedDto.receiverId());
     }

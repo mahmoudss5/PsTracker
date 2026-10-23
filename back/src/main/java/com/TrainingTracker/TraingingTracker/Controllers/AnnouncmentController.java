@@ -3,6 +3,7 @@ package com.TrainingTracker.TraingingTracker.Controllers;
 import com.TrainingTracker.TraingingTracker.BusinessLogic.InterfacesServiceLayer.AnnouncmentService;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Announcment.AnnouncementResponseDto;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Announcment.AnnouncmentCreateDto;
+import com.TrainingTracker.TraingingTracker.Util.SecuiryUserUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,8 +23,9 @@ public class AnnouncmentController {
 
     @Operation(summary = "get all announcmnet for specif user")
     @GetMapping("/getAllForUser")
-    public ResponseEntity<List<AnnouncementResponseDto>> getAll(@RequestParam Long userId){
-           List<AnnouncementResponseDto> announcments=announcmentService.getAllAnnouncmentsForUser(userId);
+    public ResponseEntity<List<AnnouncementResponseDto>> getAll(){
+           List<AnnouncementResponseDto> announcments = announcmentService
+                   .getAllAnnouncmentsForUser(SecuiryUserUtil.getCurrntUserId());
            return ResponseEntity.ok(announcments);
     }
     @Operation(summary = "get all announcmnet for specif team")
@@ -36,7 +38,14 @@ public class AnnouncmentController {
     @Operation(summary = "Send an announcement to a user or a team")
     @PostMapping("/sendAnnouncmnet")
     public void sendAnnouncment(@RequestBody AnnouncmentCreateDto announcmentCreateDto) {
-        announcmentService.sendAnnouncment(announcmentCreateDto);
+        AnnouncmentCreateDto authenticatedSenderDto = new AnnouncmentCreateDto(
+                announcmentCreateDto.type(),
+                announcmentCreateDto.content(),
+                SecuiryUserUtil.getCurrntUserId(),
+                announcmentCreateDto.isTeamAnnouncment(),
+                announcmentCreateDto.receiverId()
+        );
+        announcmentService.sendAnnouncment(authenticatedSenderDto);
     }
 
 

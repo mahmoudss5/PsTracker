@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,6 +27,7 @@ public class MaterialController {
 
     @Operation(summary = "Add a material to a team")
     @PostMapping("/team/{teamId}")
+    @PreAuthorize("hasAuthority('Coach')")
     public ResponseEntity<MaterialResponseDto> addMaterial(
             @PathVariable Long teamId,
             @RequestBody MaterialCreateDto dto) {

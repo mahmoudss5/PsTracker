@@ -23,7 +23,12 @@ public class ReportController {
     @PostMapping
     @RateLimit(requests = 10, windowSeconds = 60, key = "report:create")
     public ResponseEntity<ReportResponseDto> createReport(@RequestBody ReportCreateDto dto) {
-        return ResponseEntity.ok(reportService.createReport(dto));
+        ReportUpdateDto currentUserReport = new ReportUpdateDto(
+                dto.numberOfProblems(),
+                dto.numberOfHints(),
+                dto.comment()
+        );
+        return ResponseEntity.ok(reportService.createCurrentUserReport(currentUserReport));
     }
 
     @Operation(summary = "Create report for current user")

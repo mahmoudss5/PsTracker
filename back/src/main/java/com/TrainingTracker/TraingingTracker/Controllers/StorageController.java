@@ -6,6 +6,7 @@ import com.TrainingTracker.TraingingTracker.Security.Aop.RateLimit;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,6 +26,7 @@ public class StorageController {
     @Operation(summary = "Generate a presigned URL for uploading a file")
     @PostMapping("/upload-url")
     @RateLimit(requests = 20, windowSeconds = 60, key = "storage:upload-url")
+    @PreAuthorize("hasAuthority('Coach')")
     public ResponseEntity<StorageUploadResponse> generateUploadUrl(
             @RequestParam Long teamId,
             @RequestParam String fileName,
@@ -50,6 +52,7 @@ public class StorageController {
 
     @Operation(summary = "Delete a file from storage")
     @DeleteMapping
+    @PreAuthorize("hasAuthority('Coach')")
     public ResponseEntity<Void> deleteFile(@RequestParam String s3Key) {
         storageService.deleteFile(s3Key);
         return ResponseEntity.noContent().build();

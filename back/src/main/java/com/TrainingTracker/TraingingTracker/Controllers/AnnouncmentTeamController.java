@@ -3,6 +3,7 @@ package com.TrainingTracker.TraingingTracker.Controllers;
 import com.TrainingTracker.TraingingTracker.BusinessLogic.InterfacesServiceLayer.AnnouncmentService;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Announcment.AnnouncementResponseDto;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Announcment.AnnouncmentCreateDto;
+import com.TrainingTracker.TraingingTracker.Util.SecuiryUserUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +36,7 @@ public class AnnouncmentTeamController {
         AnnouncmentCreateDto dto = new AnnouncmentCreateDto(
                 announcementCreateDto.type(),
                 announcementCreateDto.content(),
-                announcementCreateDto.senderId(),
+                SecuiryUserUtil.getCurrntUserId(),
                 true,
                 announcementCreateDto.receiverId()
         );

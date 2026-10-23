@@ -3,6 +3,7 @@ package com.TrainingTracker.TraingingTracker.Controllers;
 import com.TrainingTracker.TraingingTracker.BusinessLogic.InterfacesServiceLayer.NotificationService;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Notification.NotificationCreateDto;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Notification.NotificationResponseDto;
+import com.TrainingTracker.TraingingTracker.Util.SecuiryUserUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +28,13 @@ public class NotificationController {
     @Operation(summary = "Create notification")
     @PostMapping
     public ResponseEntity<NotificationResponseDto> createNotification(@RequestBody NotificationCreateDto dto) {
-        return ResponseEntity.ok(notificationService.createNotification(dto));
+        NotificationCreateDto authenticatedUserDto = new NotificationCreateDto(
+                SecuiryUserUtil.getCurrntUserId(),
+                dto.title(),
+                dto.message(),
+                dto.type()
+        );
+        return ResponseEntity.ok(notificationService.createNotification(authenticatedUserDto));
     }
 
     @Operation(summary = "Get all notifications")
@@ -44,8 +51,9 @@ public class NotificationController {
 
     @Operation(summary = "Get notifications by user id")
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<NotificationResponseDto>> getNotificationsByUserId(@PathVariable Long userId) {
-        return ResponseEntity.ok(notificationService.getNotificationsByUserId(userId));
+    public ResponseEntity<List<NotificationResponseDto>> getNotificationsByUserId(@PathVariable Long ignoredUserId) {
+        return ResponseEntity.ok(notificationService
+                .getNotificationsByUserId(SecuiryUserUtil.getCurrntUserId()));
     }
 
     @Operation(summary = "Get notification by id")
