@@ -1,7 +1,6 @@
 volumes:
   postgres_data:
   redis_data:
-  maven_cache:
 services:
   postgres:
     image: postgres:16-alpine
@@ -35,11 +34,10 @@ services:
   backend:
     build:
       context: ./back
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.prod
     container_name: pstracker_backend
     ports:
       - "8080:8080"
-      - "5005:5005" # For remote debugging if needed
     environment:
       - DB_URL=${DOCKER_DB_URL:-jdbc:postgresql://postgres:5432/pstracker}
       - DB_USERNAME=${DB_USERNAME:-pstracker_user}
@@ -72,9 +70,6 @@ services:
       # Explicitly include only demo app structured log attributes, not all keys.
       - OTEL_INSTRUMENTATION_LOGBACK_APPENDER_EXPERIMENTAL_KEY_VALUE_PAIR_ATTRIBUTES_INCLUDED=app.*
 
-    volumes:
-      - ./back:/app
-      - maven_cache:/root/.m2 # Cache maven dependencies to speed up restarts
     depends_on:
       - postgres
       - redis
@@ -138,15 +133,13 @@ services:
   frontend:
     build:
       context: ./Front/icpc-tracker
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.prod
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:8080/api}
+        VITE_WS_URL: ${VITE_WS_URL:-http://localhost:8080/ws}
     container_name: pstracker_frontend
     ports:
       - "5173:80"
-    environment:
-      - VITE_API_URL=http://localhost:8080/api
-    volumes:
-      - ./Front/icpc-tracker:/app
-      - /app/node_modules # Prevent local node_modules from overwriting container's
     depends_on:
       - backend
     restart: unless-stopped

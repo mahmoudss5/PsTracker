@@ -1,7 +1,9 @@
 package com.TrainingTracker.TraingingTracker.DataAccessLayer.Repositories;
 
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.Team;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -14,6 +16,17 @@ public interface TeamRepository extends JpaRepository<Team,Long> {
   Optional<Team>findById(Long id);
   Boolean existsByTeamCode(String teamCode);
   List<Team> findByCoachId(Long coachId);
+
+
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query("""
+        SELECT t
+        FROM Team t
+        WHERE t.teamCode = :teamCode
+    """)
+  Optional<Team> findByTeamCodeForUpdate(
+          @Param("teamCode") String teamCode
+  );
 
   @Query("""
           select t.teamName

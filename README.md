@@ -6,20 +6,31 @@ PsTracker is a full-stack ICPC training platform. Coaches manage teams, announce
 
 - `back/`: Spring Boot 4 API, PostgreSQL persistence, Redis queue/cache, JWT authentication, S3 presigned URLs, Codeforces synchronization, and STOMP/WebSocket features.
 - `Front/icpc-tracker/`: React, TypeScript, Vite, and Tailwind frontend.
-- `docker-compose.yml`: local infrastructure plus the application and observability services.
+- `docker-compose.prod.yml`: production images and runtime services.
+- `docker-compose.dev.yml`: local development services with source mounts and debug support.
 
 ## Run locally
 
 Requirements: Java 21, Node.js 20+, npm, Docker, and Docker Compose.
 
 1. Copy `.env.example` to `.env` and replace the placeholders.
-2. Start local infrastructure:
+2. Start the development stack:
 
    ```bash
-   docker compose up -d postgres redis
+   docker compose -f docker-compose.dev.yml up --build
    ```
 
-3. Start the backend from `back/` with the values from `.env` exported in your shell or IDE. For the Compose PostgreSQL mapping, use:
+   The development Compose file reads values from the root `.env` automatically and provides safe local fallbacks when a value is absent.
+
+3. To run the production-style images locally, use:
+
+   ```bash
+   docker compose -f docker-compose.prod.yml up --build
+   ```
+
+   The production Compose file requires deployment secrets such as `DB_PASSWORD`, `JWT_SECRET`, and AWS credentials.
+
+4. To run the backend directly from `back/` with the values from `.env`, use:
 
    ```text
    DB_URL=jdbc:postgresql://localhost:5433/pstracker
@@ -32,7 +43,7 @@ Requirements: Java 21, Node.js 20+, npm, Docker, and Docker Compose.
    ./mvnw spring-boot:run
    ```
 
-4. Start the frontend:
+5. Start the frontend outside Docker:
 
    ```bash
    cd Front/icpc-tracker
@@ -43,7 +54,7 @@ Requirements: Java 21, Node.js 20+, npm, Docker, and Docker Compose.
 
 Open the frontend at [http://localhost:5173](http://localhost:5173). The API is available at [http://localhost:8080](http://localhost:8080), and Swagger is at [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html).
 
-The current Compose file still contains development/debug mounts and should not be treated as a production deployment. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) before deploying it anywhere public.
+The development and production Compose files are intentionally separate. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) before deploying the production stack anywhere public.
 
 ## Useful checks
 
@@ -53,7 +64,7 @@ The current Compose file still contains development/debug mounts and should not 
 (cd Front/icpc-tracker && npm run lint)
 ```
 
-The build and backend tests currently pass. Frontend lint currently reports known errors; the prioritized fix list is in [docs/TODO.md](docs/TODO.md).
+The frontend build and lint checks currently pass. The prioritized remaining project work is in [docs/TODO.md](docs/TODO.md).
 
 ## Documentation
 

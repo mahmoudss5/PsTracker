@@ -18,4 +18,6 @@ public interface TeamsService {
 
      public List<TeamResponseDto> getCurrentCoachTeams();
      void updateTeamName(Long teamId, String teamName);
+
+     Long getTeamCoachId(Long teamId);
 }

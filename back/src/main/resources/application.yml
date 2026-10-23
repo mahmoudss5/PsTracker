@@ -33,17 +33,17 @@ server:
   shutdown: graceful
 
 app:
-  codeforces-base-url: ${CODEFORCES_BASE_URL:https://codeforces.com/api}
-  swagger-server-url: ${SWAGGER_SERVER_URL:http://localhost:8080}
-  trusted-proxy-addresses: ${TRUSTED_PROXY_ADDRESSES:}
+  codeforces-base-url: ${CODEFORCES_BASE_URL}
+  swagger-server-url: ${SWAGGER_SERVER_URL}
+  trusted-proxy-addresses: ${TRUSTED_PROXY_ADDRESSES}
   cors-allowed-origins:
-    - ${FRONTEND_ORIGIN_1:http://localhost:5173}
-    - ${FRONTEND_ORIGIN_2:http://localhost:5174}
-    - ${FRONTEND_ORIGIN_3:http://127.0.0.1:5173}
-    - ${FRONTEND_ORIGIN_4:http://127.0.0.1:5174}
-    - ${FRONTEND_ORIGIN_5:http://20.215.209.195:5173}
+    - ${FRONTEND_ORIGIN_1}
+    - ${FRONTEND_ORIGIN_2}
+    - ${FRONTEND_ORIGIN_3}
+    - ${FRONTEND_ORIGIN_4}
+    - ${FRONTEND_ORIGIN_5}
 aws:
-  access-key-id: ${AWS_ACCESS_KEY_ID:AKIA4A57V42Z63755456}
-  secret-access-key: ${AWS_SECRET_ACCESS_KEY:1234567890}
-  region: ${AWS_REGION:us-east-1}
-  bucket-name: ${AWS_BUCKET_NAME:training-tracker-bucket}
+  access-key-id: ${AWS_ACCESS_KEY_ID}
+  secret-access-key: ${AWS_SECRET_ACCESS_KEY}
+  region: ${AWS_REGION}
+  bucket-name: ${AWS_BUCKET_NAME}

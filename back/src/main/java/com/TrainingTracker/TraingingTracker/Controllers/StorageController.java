@@ -2,6 +2,7 @@ package com.TrainingTracker.TraingingTracker.Controllers;
 
 import com.TrainingTracker.TraingingTracker.BusinessLogic.InterfacesServiceLayer.storageService;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Storage.StorageUploadResponse;
+import com.TrainingTracker.TraingingTracker.Security.Aop.IsTeamCoach;
 import com.TrainingTracker.TraingingTracker.Security.Aop.RateLimit;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,7 @@ public class StorageController {
     @PostMapping("/upload-url")
     @RateLimit(requests = 20, windowSeconds = 60, key = "storage:upload-url")
     @PreAuthorize("hasAuthority('Coach')")
+    @IsTeamCoach
     public ResponseEntity<StorageUploadResponse> generateUploadUrl(
             @RequestParam Long teamId,
             @RequestParam String fileName,
@@ -55,6 +57,7 @@ public class StorageController {
     @Operation(summary = "Delete a file from storage")
     @DeleteMapping
     @PreAuthorize("hasAuthority('Coach')")
+    @IsTeamCoach
     public ResponseEntity<Void> deleteFile(@RequestParam String s3Key) {
         storageService.deleteFile(s3Key);
         return ResponseEntity.noContent().build();

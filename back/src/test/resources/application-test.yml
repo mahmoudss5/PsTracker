@@ -14,3 +14,12 @@ spring:
         format_sql: true
   flyway:
     enabled: false
+
+aws:
+  access-key-id: test-access-key
+  secret-access-key: test-secret-key
+  region: us-east-1
+  bucket-name: test-bucket
+
+app:
+  trusted-proxy-addresses: ""

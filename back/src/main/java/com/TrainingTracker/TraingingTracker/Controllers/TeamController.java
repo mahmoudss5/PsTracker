@@ -4,11 +4,13 @@ import com.TrainingTracker.TraingingTracker.BusinessLogic.InterfacesServiceLayer
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Team.TeamCreateDto;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Team.TeamJoinDto;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Team.TeamResponseDto;
+import com.TrainingTracker.TraingingTracker.Security.Aop.IsTeamMember;
 import com.TrainingTracker.TraingingTracker.Security.Aop.RateLimit;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -23,6 +25,7 @@ public class TeamController {
 
     @Operation(summary = "Create a team")
     @PostMapping
+    @PreAuthorize("hasAuthority('Coach')")
     public ResponseEntity<Map<String, String>> createTeam(@Valid @RequestBody TeamCreateDto dto) {
         String teamCode = teamsService.createTeam(dto.teamName());
         return ResponseEntity.ok(Map.of("teamCode", teamCode));
@@ -38,6 +41,7 @@ public class TeamController {
 
     @Operation(summary = "Leave a team")
     @PostMapping("/leave/{teamId}")
+    @IsTeamMember
     public ResponseEntity<Void> leaveTeam(@PathVariable Long teamId) {
         teamsService.leaveTeam(teamId);
         return ResponseEntity.ok().build();

@@ -69,13 +69,13 @@ class ImpTeamServiceTest {
 
         try (MockedStatic<SecuiryUserUtil> securityUtilMockedStatic = mockStatic(SecuiryUserUtil.class)) {
             securityUtilMockedStatic.when(SecuiryUserUtil::getCurrntUserId).thenReturn(traineeId);
-            when(teamRepository.findByTeamCode(teamCode)).thenReturn(Optional.of(team));
+            when(teamRepository.findByTeamCodeForUpdate(teamCode)).thenReturn(Optional.of(team));
             when(userService.getUserById(traineeId)).thenReturn(trainee);
 
             teamService.JoinTeam(teamCode);
 
             assertEquals(true, team.getTrainees().contains(trainee));
-            verify(teamRepository).save(team);
+            verify(teamRepository, never()).save(any(Team.class));
         }
     }
 
@@ -95,11 +95,24 @@ class ImpTeamServiceTest {
                 .trainees(traineesList)
                 .build();
 
-        when(teamRepository.findByTeamCode(teamCode)).thenReturn(Optional.of(team));
+        when(teamRepository.findByTeamCodeForUpdate(teamCode)).thenReturn(Optional.of(team));
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> teamService.JoinTeam(teamCode));
         assertEquals("Team is full", exception.getMessage());
         verify(teamRepository, never()).save(any());
+    }
+
+    @Test
+    void testGetTeamCoachId_Success() {
+        Long teamId = 100L;
+        Long coachId = 1L;
+        User coach = User.builder().id(coachId).username("coach").build();
+        Team team = Team.builder().id(teamId).coach(coach).build();
+        when(teamRepository.findById(teamId)).thenReturn(Optional.of(team));
+
+        Long result = teamService.getTeamCoachId(teamId);
+
+        assertEquals(coachId, result);
     }
 
     @Test

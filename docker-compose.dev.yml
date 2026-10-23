@@ -1,0 +1,149 @@
+volumes:
+  postgres_data:
+  redis_data:
+  maven_cache:
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: pstracker_db_dev
+    environment:
+      POSTGRES_DB: ${DB_NAME:-pstracker}
+      POSTGRES_USER: ${DB_USERNAME:-pstracker_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-pstracker_dev}
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-pstracker_user} -d ${DB_NAME:-pstracker}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+  redis:
+    image: redis:7-alpine
+    container_name: pstracker_redis_dev
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  backend:
+    build:
+      context: ./back
+      dockerfile: Dockerfile.dev
+    container_name: pstracker_backend_dev
+    ports:
+      - "8080:8080"
+      - "5005:5005"
+    environment:
+      DB_URL: ${DOCKER_DB_URL:-jdbc:postgresql://postgres:5432/pstracker}
+      DB_USERNAME: ${DB_USERNAME:-pstracker_user}
+      DB_PASSWORD: ${DB_PASSWORD:-pstracker_dev}
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      JWT_SECRET: ${JWT_SECRET:-dev-only-jwt-secret-change-me-32-characters}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-dev-access-key}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-dev-secret-key}
+      AWS_REGION: ${AWS_REGION:-us-east-1}
+      AWS_BUCKET_NAME: ${AWS_BUCKET_NAME:-pstracker-dev}
+      CODEFORCES_BASE_URL: ${CODEFORCES_BASE_URL:-https://codeforces.com/api}
+      SWAGGER_SERVER_URL: ${SWAGGER_SERVER_URL:-http://localhost:8080}
+      TRUSTED_PROXY_ADDRESSES: ${TRUSTED_PROXY_ADDRESSES:-}
+      FRONTEND_ORIGIN_1: ${FRONTEND_ORIGIN_1:-http://localhost:5173}
+      FRONTEND_ORIGIN_2: ${FRONTEND_ORIGIN_2:-http://localhost:5174}
+      FRONTEND_ORIGIN_3: ${FRONTEND_ORIGIN_3:-http://127.0.0.1:5173}
+      FRONTEND_ORIGIN_4: ${FRONTEND_ORIGIN_4:-http://127.0.0.1:5174}
+      FRONTEND_ORIGIN_5: ${FRONTEND_ORIGIN_5:-}
+      OTEL_SERVICE_NAME: observability-demo-api-dev
+      OTEL_RESOURCE_ATTRIBUTES: service.version=dev,deployment.environment.name=development
+      OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
+      OTEL_TRACES_EXPORTER: otlp
+      OTEL_METRICS_EXPORTER: otlp
+      OTEL_LOGS_EXPORTER: otlp
+      OTEL_METRIC_EXPORT_INTERVAL: 5000
+      OTEL_TRACES_SAMPLER: parentbased_always_on
+      OTEL_INSTRUMENTATION_LOGBACK_APPENDER_EXPERIMENTAL_KEY_VALUE_PAIR_ATTRIBUTES_INCLUDED: app.*
+    volumes:
+      - ./back:/app
+      - maven_cache:/root/.m2
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      otel-collector:
+        condition: service_started
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.139.0
+    command: ["--config=/etc/otelcol-contrib/config.yaml"]
+    volumes:
+      - ./otel/collector-config.yaml:/etc/otelcol-contrib/config.yaml:ro
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+    depends_on:
+      - prometheus
+      - loki
+      - tempo
+
+  prometheus:
+    image: prom/prometheus:v3.7.3
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --web.enable-remote-write-receiver
+    volumes:
+      - ./otel/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+
+  loki:
+    image: grafana/loki:3.5.7
+    command: ["-config.file=/mnt/config/loki-config.yaml"]
+    volumes:
+      - ./otel/loki-config.yaml:/mnt/config/loki-config.yaml:ro
+    ports:
+      - "3100:3100"
+
+  tempo:
+    image: grafana/tempo:2.9.0
+    command: ["-config.file=/etc/tempo.yaml"]
+    volumes:
+      - ./otel/tempo.yaml:/etc/tempo.yaml:ro
+    ports:
+      - "3200:3200"
+      - "4319:4317"
+
+  grafana:
+    image: grafana/grafana:12.1.0
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-dev-grafana-password}
+    volumes:
+      - ./otel/grafana-datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml:ro
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+      - loki
+      - tempo
+
+  frontend:
+    build:
+      context: ./Front/icpc-tracker
+      dockerfile: Dockerfile.dev
+    container_name: pstracker_frontend_dev
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:8080/api}
+      VITE_WS_URL: ${VITE_WS_URL:-http://localhost:8080/ws}
+    volumes:
+      - ./Front/icpc-tracker:/app
+      - /app/node_modules
+    depends_on:
+      - backend

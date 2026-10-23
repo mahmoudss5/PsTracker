@@ -30,13 +30,13 @@ Do not put database, JWT, AWS, or other backend secrets in the frontend environm
 
 ## Recommended local workflow
 
-Start only local infrastructure first:
+Start the development stack with source mounts and remote debugging:
 
 ```bash
-docker compose up -d postgres redis
+docker compose -f docker-compose.dev.yml up --build
 ```
 
-The Compose host ports are PostgreSQL `5433` and Redis `6379`. When running the backend outside Docker, set `DB_URL` to `jdbc:postgresql://localhost:5433/pstracker` and keep Redis pointed at `localhost`.
+The development Compose file reads `.env` automatically and falls back to local-safe values when variables are missing. Its host ports are PostgreSQL `5433`, Redis `6379`, backend `8080`/debug `5005`, and frontend `5173`.
 
 Start the backend:
 
@@ -72,10 +72,10 @@ npm run build
 npm run lint
 ```
 
-Compose syntax:
+Production Compose syntax:
 
 ```bash
-docker compose config --quiet
+docker compose -f docker-compose.prod.yml config --quiet
 ```
 
 The backend test profile uses H2 and creates/drops its test schema. It does not replace PostgreSQL migration testing. The application test may log Redis connection failures when Redis is not running because scheduled workers start with the application.
@@ -104,4 +104,4 @@ The backend is the source of truth for identity and permissions. The frontend ma
 
 ## Docker note
 
-The current root Compose file combines local development mounts with the JAR image and observability services. It is useful as a configuration reference, but production deployment needs the split and fixes described in [DEPLOYMENT.md](DEPLOYMENT.md).
+Use `docker-compose.dev.yml` for source-mounted development and `docker-compose.prod.yml` for the executable-JAR/Nginx production-style images. The production definition does not publish the backend debug port or mount source/Maven directories. See [DEPLOYMENT.md](DEPLOYMENT.md) for release controls.

@@ -8,14 +8,14 @@ This document records the current state found in the repository. It is intention
 
 | Check | Result | Notes |
 |---|---|---|
-| `docker compose config --quiet` | Pass | Compose syntax resolves successfully. |
+| `docker compose -f docker-compose.prod.yml config --quiet` | Pass | Production Compose syntax resolves successfully. The development file also resolves without `.env` because it has local fallbacks. |
 | `cd back && ./mvnw clean test` | Pass | The test reports contain no failures or errors after a clean build. The application test logs Redis connection errors because no local Redis was running, but the Maven command still passed. |
 | `cd Front/icpc-tracker && npm run build` | Pass | TypeScript compilation and Vite production build pass. Vite reports a JavaScript chunk larger than 500 kB. |
-| `cd Front/icpc-tracker && npm run lint` | Fails | 30 errors and 3 warnings remain. |
+| `cd Front/icpc-tracker && npm run lint` | Pass | The previous 30 errors and 3 warnings were fixed. |
 
 ## What is already present
 
-- The backend Dockerfile already uses a Maven build stage and a JRE runtime stage that runs an executable JAR. The old “replace `mvn spring-boot:run`” task is no longer an accurate TODO.
+- The production backend Dockerfile uses a Maven build stage and a non-root JRE runtime stage that runs an executable JAR; the development Dockerfile retains `mvn spring-boot:run` and remote debugging.
 - Codeforces calls are routed through `CfQueue` and `CfWorker`; the worker processes one job every two seconds and has retry handling for common remote failures.
 - Frontend chat uses STOMP over SockJS through `useTeamChat`; it is not the old hardcoded mock implementation.
 - Announcements and materials use API hooks and live backend endpoints.
@@ -24,11 +24,11 @@ This document records the current state found in the repository. It is intention
 
 ## Findings that affect correctness or deployment
 
-### 1. The current Compose application container is inconsistent with the JAR image
+### 1. Production and development Docker definitions are now separated
 
-`back/Dockerfile` copies `app.jar` into `/app`, but the `backend` service bind-mounts `./back:/app`, which hides the image contents at runtime. The same service exposes remote debug port `5005`. The Dockerfile also references `/otel/opentelemetry-javaagent.jar`, while the current image/Compose configuration does not provide that file.
+`docker-compose.prod.yml` uses `back/Dockerfile.prod` and no longer bind-mounts `./back:/app`, mounts Maven cache data, or publishes remote-debug port `5005`. `docker-compose.dev.yml` uses `back/Dockerfile.dev` with those development features intentionally enabled.
 
-This means the production-style image path must be fixed before relying on `docker compose up` for a deployment. The exact changes are in the P0 section of [TODO.md](TODO.md).
+The production backend omits the OpenTelemetry Java agent because the repository does not supply a reviewed agent binary. Add one deliberately if production telemetry requires it.
 
 ### 2. Security is authenticated-by-default, not resource-authorized
 
@@ -50,17 +50,9 @@ The root `.env` is ignored and is not tracked; do not copy its values into docum
 
 `.github/workflows/PsTrackerCi.yml` runs Maven from the repository root even though `back/pom.xml` is the backend project file. Its `pull_request` syntax is also not in the standard GitHub Actions branch-filter shape. The workflow needs separate backend/frontend jobs and should validate the same commands documented in the repository.
 
-### 6. Frontend lint is the largest immediate quality signal
+### 6. Frontend lint is now clean
 
-The failing lint output is concentrated in:
-
-- state updates called directly from effects in data hooks and UI components;
-- `any` usage in dashboard, API, presence, and team components;
-- sorting/table logic;
-- the commented route guard and fast-refresh export rules;
-- three hook dependency warnings.
-
-These are not all production blockers individually, but fixing them makes future security and API changes easier to verify.
+The previous 30 errors and 3 warnings were fixed by removing unsafe `any`, moving REST fetching to React Query, correcting table sorting, and fixing hook dependencies. Remaining frontend work is now separate from lint correctness.
 
 ### 7. Database migration history needs reconciliation
 

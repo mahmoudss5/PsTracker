@@ -30,7 +30,6 @@ public class ImpTeamService implements TeamsService {
     private static final String CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     private static final int CODE_LENGTH = 6;
 
-
     @Override
     @Transactional
     public String createTeam(String teamName) {
@@ -47,30 +46,38 @@ public class ImpTeamService implements TeamsService {
 
     @Override
     @Transactional
-    @CacheEvict(value = {"teams", "trainees", "teamTrainees", "allTrainees"}, allEntries = true)
+    @CacheEvict(value = { "teams", "trainees", "teamTrainees", "allTrainees" }, allEntries = true)
     public void JoinTeam(String teamCode) {
-        Team team = teamRepository.findByTeamCode(teamCode)
+        // this method already has a write lock on the team
+        Team team = teamRepository.findByTeamCodeForUpdate(teamCode)
                 .orElseThrow(() -> new TeamError("Team not found with code: " + teamCode));
 
-        if (team.getTrainees().size() >= 4) throw new TeamError("Team is full");
+        if (team.getTrainees().size() >= 4) {
+            throw new TeamError("Team is full");
+        }
+
         Long traineeId = SecuiryUserUtil.getCurrntUserId();
         User trainee = userService.getUserById(traineeId);
+
+        if (trainee.getTraineeTeam() != null) {
+            throw new TeamError("Trainee already belongs to a team");
+        }
+
         trainee.setTraineeTeam(team);
-        team.getTrainees().add(trainee);   // keep both sides in sync
-        teamRepository.save(team);
+        team.getTrainees().add(trainee);
     }
 
     @Override
     @Transactional
-    @CacheEvict(value = {"teams", "trainees", "teamTrainees", "allTrainees"}, allEntries = true)
+    @CacheEvict(value = { "teams", "trainees", "teamTrainees", "allTrainees" }, allEntries = true)
     public void leaveTeam(Long teamId) {
         Long userId = SecuiryUserUtil.getCurrntUserId();
         User user = userService.getUserById(userId);
         Team team = teamRepository.findById(teamId)
-                .orElseThrow(()->new RuntimeException("Team not found with id: "+teamId));
+                .orElseThrow(() -> new RuntimeException("Team not found with id: " + teamId));
         if (user.getTraineeTeam() != null && user.getTraineeTeam().getId().equals(team.getId())) {
             user.setTraineeTeam(null);
-            team.getTrainees().remove(user);   // keep both sides in sync
+            team.getTrainees().remove(user); // keep both sides in sync
         }
         teamRepository.save(team);
     }
@@ -80,6 +87,19 @@ public class ImpTeamService implements TeamsService {
     public Team getTeamById(Long teamId) {
         return teamRepository.findById(teamId)
                 .orElseThrow(() -> new RuntimeException("Team not found with id: " + teamId));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Long getTeamCoachId(Long teamId) {
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new TeamError("Team not found with id: " + teamId));
+
+        if (team.getCoach() == null) {
+            throw new TeamError("Team has no coach: " + teamId);
+        }
+
+        return team.getCoach().getId();
     }
 
     @Override
@@ -105,7 +125,6 @@ public class ImpTeamService implements TeamsService {
         team.setTeamName(teamName);
         teamRepository.save(team);
     }
-
 
     private String GenerateRandomTeamCode() {
         SecureRandom random = new SecureRandom();

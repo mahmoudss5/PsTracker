@@ -2,23 +2,33 @@
 
 ## Current status
 
-The repository has a multi-stage backend image, but the current Compose service is still development-oriented. Do not expose it publicly unchanged.
+The repository provides separate development and production Docker definitions. Use `docker-compose.prod.yml` for the production-style JAR/Nginx images and `docker-compose.dev.yml` for source-mounted local development.
 
-Current blockers include:
+The development stack intentionally includes:
 
-- `backend` bind-mounts `./back:/app`, hiding the JAR copied into `/app` by the image.
-- The backend image starts with `-javaagent:/otel/opentelemetry-javaagent.jar`, but the current image/Compose setup does not supply that file.
-- `5005` remote debugging is published.
-- Source and Maven cache mounts are present.
-- Database/Redis/observability services are published directly on host ports.
+- `backend` source and Maven cache mounts.
+- The backend's `5005` remote-debug port.
+- Vite and Spring Boot live development commands.
+
+The production stack removes those development mounts and debug settings:
+
+- the backend runs the executable JAR from `back/Dockerfile.prod`;
+- the frontend is built into an Nginx image from `Front/icpc-tracker/Dockerfile.prod`;
+- no source bind mounts, Maven cache mount, or remote-debug port are configured.
+
+The local `.env` files are ignored; commit only the `.env.example` templates.
+
+Remaining deployment blockers to resolve before a public release include:
+
+- Database, Redis, and observability services are still published directly on host ports.
 - WebSocket origins currently allow `*`.
 
 ## Target deployment shape
 
 Use one of these explicit layouts:
 
-1. `docker-compose.dev.yml`: source mounts, local ports, optional debug tools, and fast development feedback.
-2. `docker-compose.prod.yml`: immutable backend/frontend images, no source or Maven mounts, no debug port, private internal services, health-based startup, and only the reverse proxy published.
+1. `docker-compose.dev.yml`: source mounts, local ports, debug tools, and fast development feedback.
+2. `docker-compose.prod.yml`: executable-JAR/Nginx images, no source or Maven mounts, no debug port, and deployment-secret checks.
 
 The production backend should run the executable JAR from the runtime image. If OpenTelemetry is required, copy a reviewed agent into the image or mount it read-only through a deliberate deployment volume. Otherwise remove the `-javaagent` option from the production entrypoint.
 
@@ -82,7 +92,7 @@ Before deployment, run:
 (cd back && ./mvnw clean test)
 (cd Front/icpc-tracker && npm run build)
 (cd Front/icpc-tracker && npm run lint)
-docker compose config --quiet
+docker compose -f docker-compose.prod.yml config --quiet
 ```
 
 Then build both images and run a smoke test for login, refresh, team membership, chat, materials, and Codeforces queue behavior. The release is not ready while frontend lint fails or while cross-user/team authorization has no negative tests.
