@@ -16,9 +16,10 @@ export function useContests(userId?: number) {
   const query = useQuery({
     queryKey: ['contests', userId],
     queryFn: async (): Promise<ContestResponseDto[]> => {
-      const endpoint = userId ? `/contests/user/${userId}` : '/contests/me';
       try {
-        const response = await apiClient.get<ContestResponseDto[]>(endpoint);
+        const response = userId !== undefined
+          ? await apiClient.post<ContestResponseDto[]>('/contests/user', { userId })
+          : await apiClient.get<ContestResponseDto[]>('/contests/me');
         return response.data;
       } catch (error) {
         throw normalizeApiError(error, 'Failed to load contests');

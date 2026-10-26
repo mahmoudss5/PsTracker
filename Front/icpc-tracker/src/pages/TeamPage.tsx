@@ -269,7 +269,12 @@ function UserRow({ user, presence }: { user: TraineeResponse; presence: number[]
         </span>
         {/* Stats — navigates to that specific user's submissions */}
         <Link
-          to={`/dashboard/submissions/${user.id}`}
+          to="/dashboard/submissions"
+          state={{
+            userId: user.id,
+            userName: user.userName,
+            codeforcesHandle: user.codeforcesHandle,
+          }}
           className="inline-flex items-center gap-1 rounded bg-dashboard-primary/10 px-2.5 py-1.5 text-xs font-semibold text-dashboard-primary transition hover:bg-dashboard-primary/20"
         >
           <BarChart2 size={13} />
@@ -390,7 +395,12 @@ function TeamDetail({ team, isCoach, presence }: { team: TeamResponse; isCoach: 
                 <span className="text-sm font-bold text-dashboard-text">{member.userName}</span>
                 {isCoach && (
                   <Link
-                    to={`/dashboard/submissions/${member.id}`}
+                    to="/dashboard/submissions"
+                    state={{
+                      userId: member.id,
+                      userName: member.userName,
+                      codeforcesHandle: member.codeforcesHandle,
+                    }}
                     className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-semibold text-dashboard-primary transition hover:bg-dashboard-primary/10"
                   >
                     <BarChart2 size={11} />

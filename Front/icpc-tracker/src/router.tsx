@@ -52,7 +52,7 @@ export const router = createBrowserRouter([
         element: <SubmissionsPage />,
       },
       {
-        path: 'submissions/:userId',
+        path: 'submissions',
         element: <SubmissionsPage />,
       },
       {

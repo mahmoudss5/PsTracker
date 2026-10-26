@@ -1,13 +1,17 @@
 package com.TrainingTracker.TraingingTracker.Controllers;
 import com.TrainingTracker.TraingingTracker.BusinessLogic.InterfacesServiceLayer.UserService;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.User.TraineResponse;
-import com.TrainingTracker.TraingingTracker.Security.Aop.IsTeamMember;
+import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.User.UserIdRequestDto;
+import com.TrainingTracker.TraingingTracker.Security.Aop.isSame.Team.IsTeamMember;
+import com.TrainingTracker.TraingingTracker.Security.Aop.isSame.User.IsSameUser;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -40,9 +44,11 @@ public class UserController {
     }
 
     @Operation(summary = "Get user by id")
-    @GetMapping("/{id}")
-    public ResponseEntity<TraineResponse> getUserById(@PathVariable Long id) {
-        return ResponseEntity.ok(userService.getUserResponseById(id));
+    @PostMapping("/by-id")
+    @IsSameUser
+    public ResponseEntity<TraineResponse> getUserById(
+            @Valid @RequestBody UserIdRequestDto request) {
+        return ResponseEntity.ok(userService.getUserResponseById(request.userId()));
     }
 
     @Operation(summary = "Update user profile (userName only)")

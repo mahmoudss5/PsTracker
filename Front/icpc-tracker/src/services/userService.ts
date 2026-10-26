@@ -55,11 +55,12 @@ export async function getUsersByTeamId(
 }
 
 /**
- * GET /api/users/:id
+ * POST /api/users/by-id
+ * Body: { userId: number }
  */
 export async function getUserById(id: number): Promise<TraineeResponse> {
   try {
-    const res = await apiClient.get<TraineeResponse>(`${BASE}/${id}`);
+    const res = await apiClient.post<TraineeResponse>(`${BASE}/by-id`, { userId: id });
     return res.data;
   } catch (err) {
     throw normalizeApiError(err, `Failed to fetch user ${id}`);

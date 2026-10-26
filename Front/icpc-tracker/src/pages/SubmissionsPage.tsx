@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { ArrowLeft, BarChart2, RefreshCw, AlertCircle } from 'lucide-react';
 import { PeriodSelector } from '../components/Submissions/PeriodSelector';
 import { SubmissionStatsBar } from '../components/Submissions/SubmissionStatsBar';
@@ -8,11 +8,15 @@ import { SubmissionActivityChart } from '../components/Submissions/SubmissionAct
 import { SubmissionTable } from '../components/Submissions/SubmissionTable';
 import { useSubmissions } from '../hooks/useSubmissions';
 import { useSubmissionsStats } from '../hooks/useSubmissionsStats';
-import { useUserById } from '../hooks/useUserById';
 import type { TimePeriod, CustomRange } from '../types/dashboard.types';
 
 export function SubmissionsPage() {
-  const { userId } = useParams<{ userId?: string }>();
+  const location = useLocation();
+  const navigationState = location.state as {
+    userId?: number;
+    userName?: string;
+    codeforcesHandle?: string;
+  } | null;
 
   const [period, setPeriod] = useState<TimePeriod>('30d');
   const [customRange, setCustomRange] = useState<CustomRange | undefined>(undefined);
@@ -22,13 +26,8 @@ export function SubmissionsPage() {
     setCustomRange(range);
   };
 
-  // The userId segment in the URL is always a numeric user ID when navigating
-  // from the TraineesTable or TeamPage (which links to /dashboard/submissions/{id}).
-  const numericUserId = userId && /^\d+$/.test(userId) ? Number(userId) : undefined;
-  const isViewingUser = Boolean(userId);
-
-  // Fetch real user profile to display name / initials
-  const { user: targetUser } = useUserById(numericUserId ?? null);
+  const numericUserId = navigationState?.userId;
+  const isViewingUser = numericUserId !== undefined;
 
   const { submissions, isLoading, error, refetch } = useSubmissions(
     numericUserId !== undefined ? { userId: numericUserId } : {},
@@ -36,10 +35,10 @@ export function SubmissionsPage() {
 
   const { filtered, stats } = useSubmissionsStats(submissions, period, customRange);
 
-  // Derived display values (fall back to ID if user hasn't loaded yet)
-  const displayName = targetUser?.userName ?? (numericUserId ? `User #${numericUserId}` : 'My');
-  const avatarInitials = targetUser
-    ? targetUser.userName.slice(0, 2).toUpperCase()
+  // Derived display values (fall back to the ID if navigation state is incomplete)
+  const displayName = navigationState?.userName ?? (numericUserId ? `User #${numericUserId}` : 'My');
+  const avatarInitials = navigationState?.userName
+    ? navigationState.userName.slice(0, 2).toUpperCase()
     : numericUserId
       ? 'U'
       : '';
@@ -72,7 +71,7 @@ export function SubmissionsPage() {
               </h1>
               <p className="text-sm text-dashboard-muted mt-0.5">
                 {isViewingUser
-                  ? `Viewing submission history for ${targetUser ? `@${targetUser.codeforcesHandle || targetUser.userName}` : `user ${numericUserId}`}`
+                  ? `Viewing submission history for ${navigationState?.codeforcesHandle || displayName}`
                   : 'Your complete submission history and performance analytics.'}
               </p>
             </div>

@@ -189,7 +189,12 @@ export function TraineesTable({ trainees, totalTrainees }: TraineesTableProps) {
                   {/* Link to submissions page */}
                   <td className="py-3 text-right">
                     <Link
-                      to={`/dashboard/submissions/${t.id}`}
+                      to="/dashboard/submissions"
+                      state={{
+                        userId: t.id,
+                        userName: t.userName,
+                        codeforcesHandle: t.codeforcesHandle,
+                      }}
                       className="text-xs font-semibold text-dashboard-primary hover:text-dashboard-primary/80 opacity-0 group-hover:opacity-100 transition-opacity"
                     >
                       View →

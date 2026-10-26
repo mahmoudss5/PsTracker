@@ -258,11 +258,15 @@ Request: no body.
 
 Response: `TraineeResponse[]`.
 
-#### `GET /users/{id}`
+#### `POST /users/by-id`
 
-Full URL: `http://localhost:8080/api/users/{id}`
+Full URL: `http://localhost:8080/api/users/by-id`
 
-Request: no body.
+Request body:
+
+```json
+{ "userId": 123 }
+```
 
 Response: `TraineeResponse`.
 
@@ -460,11 +464,15 @@ Request: no body.
 
 Response: `SubmissionResponse[]`.
 
-#### `GET /submissions/user/{userId}`
+#### `POST /submissions/user`
 
-Full URL: `http://localhost:8080/api/submissions/user/{userId}`
+Full URL: `http://localhost:8080/api/submissions/user`
 
-Request: no body.
+Request body:
+
+```json
+{ "userId": 123 }
+```
 
 Response: `SubmissionResponse[]`.
 

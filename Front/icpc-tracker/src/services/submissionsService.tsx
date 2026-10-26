@@ -44,14 +44,15 @@ export async function getMySubmissions(): Promise<SubmissionResponse[]> {
 }
 
 /**
- * GET /api/submissions/user/:userId
+ * POST /api/submissions/user
+ * Body: { userId: number }
  * Coach: fetch all submissions for a specific user.
  */
 export async function getSubmissionsByUserId(
   userId: number,
 ): Promise<SubmissionResponse[]> {
   try {
-    const res = await apiClient.get<SubmissionResponse[]>(`${BASE}/user/${userId}`);
+    const res = await apiClient.post<SubmissionResponse[]>(`${BASE}/user`, { userId });
     return res.data;
   } catch (err) {
     throw normalizeApiError(err, `Failed to fetch submissions for user ${userId}`);

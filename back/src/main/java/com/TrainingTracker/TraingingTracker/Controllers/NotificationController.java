@@ -3,8 +3,11 @@ package com.TrainingTracker.TraingingTracker.Controllers;
 import com.TrainingTracker.TraingingTracker.BusinessLogic.InterfacesServiceLayer.NotificationService;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Notification.NotificationCreateDto;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Notification.NotificationResponseDto;
+import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.User.UserIdRequestDto;
 import com.TrainingTracker.TraingingTracker.Util.SecuiryUserUtil;
+import com.TrainingTracker.TraingingTracker.Security.Aop.isSame.User.IsSameUser;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -50,10 +53,11 @@ public class NotificationController {
     }
 
     @Operation(summary = "Get notifications by user id")
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<NotificationResponseDto>> getNotificationsByUserId(@PathVariable Long ignoredUserId) {
-        return ResponseEntity.ok(notificationService
-                .getNotificationsByUserId(SecuiryUserUtil.getCurrntUserId()));
+    @PostMapping("/user")
+    @IsSameUser
+    public ResponseEntity<List<NotificationResponseDto>> getNotificationsByUserId(
+            @Valid @RequestBody UserIdRequestDto request) {
+        return ResponseEntity.ok(notificationService.getNotificationsByUserId(request.userId()));
     }
 
     @Operation(summary = "Get notification by id")

@@ -1,10 +1,13 @@
 package com.TrainingTracker.TraingingTracker.Controllers;
 
 import com.TrainingTracker.TraingingTracker.BusinessLogic.InterfacesServiceLayer.ReportService;
-import com.TrainingTracker.TraingingTracker.Security.Aop.RateLimit;
+import com.TrainingTracker.TraingingTracker.Security.Aop.RateLimit.RateLimit;
+import com.TrainingTracker.TraingingTracker.Security.Aop.isSame.User.IsSameUser;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Report.ReportCreateDto;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Report.ReportResponseDto;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Report.ReportUpdateDto;
+import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.User.UserIdRequestDto;
+import jakarta.validation.Valid;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -51,9 +54,11 @@ public class ReportController {
     }
 
     @Operation(summary = "Get reports by user id")
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<ReportResponseDto>> getReportsByUserId(@PathVariable Long userId) {
-        return ResponseEntity.ok(reportService.getReportsByUserId(userId));
+    @PostMapping("/user")
+    @IsSameUser
+    public ResponseEntity<List<ReportResponseDto>> getReportsByUserId(
+            @Valid @RequestBody UserIdRequestDto request) {
+        return ResponseEntity.ok(reportService.getReportsByUserId(request.userId()));
     }
 
     @Operation(summary = "Get report by id")

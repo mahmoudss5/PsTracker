@@ -80,7 +80,7 @@ export function useSubmissions(
   const query = useQuery({
     queryKey: ['submissions', userId],
     queryFn: async (): Promise<SubmissionEntry[]> => {
-      const raw: SubmissionResponse[] = userId
+      const raw: SubmissionResponse[] = userId !== undefined
         ? await getSubmissionsByUserId(userId)
         : await getMySubmissions();
 

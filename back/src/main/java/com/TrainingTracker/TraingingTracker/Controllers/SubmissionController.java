@@ -3,8 +3,11 @@ import com.TrainingTracker.TraingingTracker.BusinessLogic.InterfacesServiceLayer
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Submission.SubmissionCreateDto;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Submission.SubmissionResponseDto;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Submission.SubmissionUpdateDto;
-import com.TrainingTracker.TraingingTracker.Security.Aop.RateLimit;
+import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.User.UserIdRequestDto;
+import com.TrainingTracker.TraingingTracker.Security.Aop.RateLimit.RateLimit;
+import com.TrainingTracker.TraingingTracker.Security.Aop.isSame.User.SameUserOrUserCoach;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -51,9 +54,11 @@ public class SubmissionController {
     }
 
     @Operation(summary = "Get submissions by user id")
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<SubmissionResponseDto>> getSubmissionsByUserId(@PathVariable Long userId) {
-        return ResponseEntity.ok(submissionService.getSubmissionsByUserId(userId));
+    @PostMapping("/user")
+    @SameUserOrUserCoach
+    public ResponseEntity<List<SubmissionResponseDto>> getSubmissionsByUserId(
+            @Valid @RequestBody UserIdRequestDto request) {
+        return ResponseEntity.ok(submissionService.getSubmissionsByUserId(request.userId()));
     }
 
     @Operation(summary = "Get submissions by problem id")

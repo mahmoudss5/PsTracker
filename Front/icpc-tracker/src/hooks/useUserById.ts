@@ -1,7 +1,7 @@
 /**
  * useUserById
  *
- * Fetches a single user profile from GET /api/users/{id}.
+ * Fetches a single user profile from POST /api/users/by-id with { userId: id }.
  * Returns null while loading or if id is null.
  */
 
