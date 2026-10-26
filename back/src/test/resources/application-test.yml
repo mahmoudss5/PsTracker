@@ -15,6 +15,9 @@ spring:
   flyway:
     enabled: false
 
+jwt:
+  secret: test-only-jwt-secret-that-is-long-enough
+
 aws:
   access-key-id: test-access-key
   secret-access-key: test-secret-key
@@ -22,4 +25,9 @@ aws:
   bucket-name: test-bucket
 
 app:
+  codeforces-base-url: https://codeforces.test/api
+  swagger-server-url: http://localhost:8080
   trusted-proxy-addresses: ""
+  cors-allowed-origins:
+    - http://localhost:5173
+    - http://localhost:5174

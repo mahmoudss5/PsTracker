@@ -44,7 +44,7 @@ Inject these through the deployment secret mechanism and do not commit them:
 - Exact frontend origins.
 - Grafana credentials if Grafana is deployed.
 
-Remove the fallback values in `application.yml` for production. If a credential may ever have been real, rotate it before deployment.
+`application.yml` and both Compose files now require the database password, JWT secret, AWS credentials/region/bucket, populated frontend origins, and Grafana password from environment or deployment secrets. If a credential may ever have been real, rotate it before deployment.
 
 ### Network
 
