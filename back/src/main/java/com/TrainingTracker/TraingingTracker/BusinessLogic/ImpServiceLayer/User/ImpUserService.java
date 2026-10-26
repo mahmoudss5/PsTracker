@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -77,6 +78,21 @@ public class ImpUserService implements UserService {
     @Transactional(readOnly = true)
     public List<User> getAllUserEntites() {
         return userRepository.findAll();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Boolean isSameUserOrUserCoach(Long currentUserId, Long requestedUserId) {
+        if (Objects.equals(currentUserId, requestedUserId)) {
+            return true;
+        }
+
+        User requestedUser = getUserById(requestedUserId);
+        Team requestedUserTeam = requestedUser.getTraineeTeam();
+
+        return requestedUserTeam != null
+                && requestedUserTeam.getCoach() != null
+                && Objects.equals(requestedUserTeam.getCoach().getId(), currentUserId);
     }
 
     @Override

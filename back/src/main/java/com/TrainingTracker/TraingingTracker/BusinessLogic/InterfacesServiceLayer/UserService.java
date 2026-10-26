@@ -13,6 +13,8 @@ public interface UserService {
     List<TraineResponse> getAllUsers();
     List<TraineResponse> getAllUserByTeamId(Long teamId);
     List<User>getAllUserEntites();
+
+    Boolean isSameUserOrUserCoach(Long currentUserId, Long requestedUserId);
     
     TraineResponse updateProfile(com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.User.UpdateProfileDto dto);
     void updatePassword(com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.User.UpdatePasswordDto dto);
