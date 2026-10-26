@@ -4,7 +4,7 @@ import com.TrainingTracker.TraingingTracker.BusinessLogic.InterfacesServiceLayer
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Announcment.AnnouncementResponseDto;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Announcment.AnnouncmentCreateDto;
 import com.TrainingTracker.TraingingTracker.Util.SecuiryUserUtil;
-import com.TrainingTracker.TraingingTracker.Security.Aop.IsTeamMember;
+import com.TrainingTracker.TraingingTracker.Security.Aop.isSame.Team.IsTeamMember;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

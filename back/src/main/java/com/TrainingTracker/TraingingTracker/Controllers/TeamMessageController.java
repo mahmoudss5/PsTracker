@@ -5,8 +5,8 @@ import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.TeamMessage.Team
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.TeamMessage.TeamMessageResponseDto;
 import com.TrainingTracker.TraingingTracker.ExceptionHandling.ErrosEntites.AppException;
 import com.TrainingTracker.TraingingTracker.Security.User.SecurityUser;
-import com.TrainingTracker.TraingingTracker.Security.Aop.RateLimit;
-import com.TrainingTracker.TraingingTracker.Security.Aop.IsTeamMember;
+import com.TrainingTracker.TraingingTracker.Security.Aop.RateLimit.RateLimit;
+import com.TrainingTracker.TraingingTracker.Security.Aop.isSame.Team.IsTeamMember;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

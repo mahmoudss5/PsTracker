@@ -1,4 +1,4 @@
-package com.TrainingTracker.TraingingTracker.Security.Aop;
+package com.TrainingTracker.TraingingTracker.Security.Aop.isSame.Team;
 
 import lombok.AllArgsConstructor;
 import org.aspectj.lang.annotation.Aspect;
@@ -21,7 +21,7 @@ public class IsTeamCoachAspect {
     private final TeamsService teamsService;
     private final MaterialService materialService;
 
-    @Before("@annotation(com.TrainingTracker.TraingingTracker.Security.Aop.IsTeamCoach)")
+    @Before("@annotation(com.TrainingTracker.TraingingTracker.Security.Aop.isSame.Team.IsTeamCoach)")
     public void checkUserTeam(JoinPoint joinPoint) {
         String methodName = joinPoint.getSignature().getName();
         Long userId = SecuiryUserUtil.getCurrntUserId();

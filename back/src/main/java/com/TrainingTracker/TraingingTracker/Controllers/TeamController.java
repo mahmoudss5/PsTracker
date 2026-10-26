@@ -4,8 +4,8 @@ import com.TrainingTracker.TraingingTracker.BusinessLogic.InterfacesServiceLayer
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Team.TeamCreateDto;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Team.TeamJoinDto;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Team.TeamResponseDto;
-import com.TrainingTracker.TraingingTracker.Security.Aop.IsTeamMember;
-import com.TrainingTracker.TraingingTracker.Security.Aop.RateLimit;
+import com.TrainingTracker.TraingingTracker.Security.Aop.isSame.Team.IsTeamMember;
+import com.TrainingTracker.TraingingTracker.Security.Aop.RateLimit.RateLimit;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

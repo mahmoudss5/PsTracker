@@ -1,4 +1,4 @@
-package com.TrainingTracker.TraingingTracker.Security.Aop;
+package com.TrainingTracker.TraingingTracker.Security.Aop.isSame.Team;
 
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;

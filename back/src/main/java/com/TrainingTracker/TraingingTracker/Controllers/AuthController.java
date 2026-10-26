@@ -5,9 +5,8 @@ import com.TrainingTracker.TraingingTracker.BusinessLogic.InterfacesServiceLayer
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Auth.AuthResponse;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Auth.SignInDto;
 import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Auth.SignUpDto;
-import com.TrainingTracker.TraingingTracker.Security.Aop.RateLimit;
+import com.TrainingTracker.TraingingTracker.Security.Aop.RateLimit.RateLimit;
 import com.TrainingTracker.TraingingTracker.Security.RateLimitIdentity;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

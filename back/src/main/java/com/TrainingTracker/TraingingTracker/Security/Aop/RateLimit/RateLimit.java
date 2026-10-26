@@ -1,4 +1,4 @@
-package com.TrainingTracker.TraingingTracker.Security.Aop;
+package com.TrainingTracker.TraingingTracker.Security.Aop.RateLimit;
 
 import com.TrainingTracker.TraingingTracker.Security.RateLimitIdentity;
 

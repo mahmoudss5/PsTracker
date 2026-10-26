@@ -1,8 +1,7 @@
 
-package com.TrainingTracker.TraingingTracker.Security.Aop;
+package com.TrainingTracker.TraingingTracker.Security.Aop.RateLimit;
 
 import com.TrainingTracker.TraingingTracker.ExceptionHandling.ErrosEntites.RateLimitExceededException;
-import com.TrainingTracker.TraingingTracker.Security.RateLimitIdentity;
 import com.TrainingTracker.TraingingTracker.Security.RateLimting.ClientIpResolver;
 import com.TrainingTracker.TraingingTracker.Security.RateLimting.RateLimitDecision;
 import com.TrainingTracker.TraingingTracker.Security.RateLimting.RedisRateLimiter;
