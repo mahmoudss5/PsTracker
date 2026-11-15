@@ -5,7 +5,6 @@ create table "materials"(
     subtitle varchar(255),
     size varchar(255),
     created_at timestamp,
-    team_id bigint,
-    url varchar(255)
+    team_id bigint
 );
  alter table "materials" add foreign key ("team_id") references "teams" ("id") deferrable initially immediate;
