@@ -84,6 +84,10 @@ public class ImpTeamService implements TeamsService {
         if (!Boolean.TRUE.equals(userService.isSameTeam(teamId, userId))) {
             throw new AppException("You are not a member of this team", HttpStatus.FORBIDDEN);
         }
+        if (userId==team.getCoach().getId()) {
+             throw new TeamError("Coach can not leave the Team he create");
+        }
+
         if (user.getTraineeTeam() != null && user.getTraineeTeam().getId().equals(team.getId())) {
             user.setTraineeTeam(null);
             team.getTrainees().remove(user); // keep both sides in sync
