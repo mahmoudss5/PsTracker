@@ -1,0 +1,50 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: pstracker
+      POSTGRES_USER: pstracker_user
+      POSTGRES_PASSWORD: ci-password
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pstracker_user -d pstracker"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./back
+      dockerfile: Dockerfile.prod
+    ports:
+      - "8080:8080"
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/pstracker
+      DB_USERNAME: pstracker_user
+      DB_PASSWORD: ci-password
+      SPRING_DATA_REDIS_HOST: redis
+      JWT_SECRET: ci-only-secret-key-12345678901234567890
+      AWS_ACCESS_KEY_ID: ci-key
+      AWS_SECRET_ACCESS_KEY: ci-secret
+      AWS_REGION: us-east-1
+      AWS_BUCKET_NAME: ci-bucket
+      CODEFORCES_BASE_URL: http://127.0.0.1:9/api
+      SWAGGER_SERVER_URL: http://localhost:8080
+      TRUSTED_PROXY_ADDRESSES: ""
+      FRONTEND_ORIGIN_1: http://localhost:5173
+      FRONTEND_ORIGIN_2: http://localhost:5174
+      FRONTEND_ORIGIN_3: http://localhost:5175
+      FRONTEND_ORIGIN_4: http://localhost:5176
+      FRONTEND_ORIGIN_5: http://localhost:5177
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
