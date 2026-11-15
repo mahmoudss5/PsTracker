@@ -35,6 +35,10 @@ public class ImpTeamService implements TeamsService {
     @Override
     @Transactional
     public String createTeam(String teamName) {
+        boolean isTeamNameDuplicated=teamRepository.existsByTeamName(teamName);
+        if(isTeamNameDuplicated){
+            throw new TeamError("Team name already exists");
+        }
         Long coachId = SecuiryUserUtil.getCurrntUserId();
         User coach = userService.getUserById(coachId);
         String teamCode;
