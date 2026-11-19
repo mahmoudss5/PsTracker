@@ -36,6 +36,9 @@ app:
   codeforces-base-url: ${CODEFORCES_BASE_URL}
   swagger-server-url: ${SWAGGER_SERVER_URL}
   trusted-proxy-addresses: ${TRUSTED_PROXY_ADDRESSES}
+  rate-limit:
+    max-requests: ${RATE_LIMIT_MAX_REQUESTS:100}
+    period-seconds: ${RATE_LIMIT_PERIOD_SECONDS:60}
   cors-allowed-origins:
     - ${FRONTEND_ORIGIN_1}
     - ${FRONTEND_ORIGIN_2}

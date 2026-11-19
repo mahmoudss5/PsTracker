@@ -5,6 +5,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.security.autoconfigure.web.servlet.SecurityFilterProperties;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
@@ -19,14 +21,27 @@ import java.io.IOException;
 
 @Component
 @Order(SecurityFilterProperties.DEFAULT_FILTER_ORDER - 1)
-@AllArgsConstructor
 public class GlobalRateLimitFilter extends OncePerRequestFilter {
     private final RedisRateLimiter rateLimiter;
     private final ClientIpResolver clientIpResolver;
     private final CorsConfigurationSource corsConfigurationSource;
-    private static final int MAX_REQUESTS = 100;
-    private static final long WINDOW_MS = 60_000L;
 
+    private final int MAX_REQUESTS;
+
+    private final long WINDOW_MS;
+
+    public GlobalRateLimitFilter(
+            RedisRateLimiter rateLimiter,
+            ClientIpResolver clientIpResolver,
+            CorsConfigurationSource corsConfigurationSource,
+            @Value("${app.rate-limit.max-requests}") int maxRequests,
+            @Value("${app.rate-limit.period-seconds}") long periodSeconds) {
+        this.rateLimiter = rateLimiter;
+        this.clientIpResolver = clientIpResolver;
+        this.corsConfigurationSource = corsConfigurationSource;
+        this.MAX_REQUESTS = maxRequests;
+        this.WINDOW_MS = periodSeconds * 1000L; // convert seconds to ms
+    }
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
@@ -38,8 +53,7 @@ public class GlobalRateLimitFilter extends OncePerRequestFilter {
     protected void doFilterInternal(
             HttpServletRequest request,
             HttpServletResponse response,
-            FilterChain filterChain
-    ) throws ServletException, IOException {
+            FilterChain filterChain) throws ServletException, IOException {
 
         // Identify the client
         String clientIp = clientIpResolver.resolveClientIp(request);
@@ -53,15 +67,13 @@ public class GlobalRateLimitFilter extends OncePerRequestFilter {
             decision = rateLimiter.checkRateLimit(
                     redisKey,
                     MAX_REQUESTS,
-                    WINDOW_MS
-            );
+                    WINDOW_MS);
         } catch (RateLimiterUnavailableException ex) {
             // Fail closed if Redis is unavailable
             addCorsHeaders(request, response);
             response.sendError(
                     HttpServletResponse.SC_SERVICE_UNAVAILABLE,
-                    "Rate limiter unavailable"
-            );
+                    "Rate limiter unavailable");
             return;
         }
 
@@ -69,15 +81,13 @@ public class GlobalRateLimitFilter extends OncePerRequestFilter {
 
             long retryAfterSeconds = Math.max(
                     1,
-                    (long) Math.ceil(decision.retryAfterMs() / 1000.0)
-            );
+                    (long) Math.ceil(decision.retryAfterMs() / 1000.0));
 
             addCorsHeaders(request, response);
             response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
             response.setHeader(
                     "Retry-After",
-                    String.valueOf(retryAfterSeconds)
-            );
+                    String.valueOf(retryAfterSeconds));
 
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
@@ -86,8 +96,7 @@ public class GlobalRateLimitFilter extends OncePerRequestFilter {
             response.getWriter().write(
                     "{\"error\":\"too_many_requests\","
                             + "\"retryAfterSeconds\":"
-                            + retryAfterSeconds + "}"
-            );
+                            + retryAfterSeconds + "}");
 
             return;
         }
