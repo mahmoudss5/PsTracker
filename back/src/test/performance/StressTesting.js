@@ -4,14 +4,14 @@ import { check, group, sleep } from 'k6';
 
 const TEST_CONFIG = {
   baseUrl: 'http://localhost:8080',
-  maxVus: 500,
+  baseVus: 800,
   email: 'fady@gmail.com',
   password: 'test1234',
   resultsFile: 'StressTesting.summary.json',
 };
 
 const BASE_URL = TEST_CONFIG.baseUrl.replace(/\/$/, '');
-const MAX_VUS = TEST_CONFIG.maxVus;
+const BASE_VUS = TEST_CONFIG.baseVus;
 
 export const options = {
   scenarios: {
@@ -20,10 +20,10 @@ export const options = {
       startVUs: 0,
       gracefulRampDown: '30s',
       stages: [
-        { duration: '30s', target: Math.max(1, Math.ceil(MAX_VUS * 0.5)) },
-        { duration: '1m', target: Math.max(1, Math.ceil(MAX_VUS * 0.75)) },
-        { duration: '1m', target: Math.max(1, Math.ceil(MAX_VUS * 0.75)) },
-        { duration: '3m', target: MAX_VUS },
+        { duration: '30s', target: Math.max(1, Math.ceil(BASE_VUS * 0.5)) },
+        { duration: '1m', target: BASE_VUS },
+        { duration: '1m', target: Math.ceil(BASE_VUS * 1.5) },
+        { duration: '3m', target: BASE_VUS * 2 },
         { duration: '30s', target: 0 },
       ],
     },
@@ -59,7 +59,7 @@ export function handleSummary(data) {
   const summaryText = [
     'PsTracker stress test summary',
     `Base URL: ${BASE_URL}`,
-    `Max VUs: ${MAX_VUS}`,
+    `Peak VUs: ${BASE_VUS * 2}`,
     `Checks rate: ${formatNumber((checksRate ?? 0) * 100)}%`,
     `HTTP failed rate: ${formatNumber((httpFailedRate ?? 0) * 100)}%`,
     `HTTP duration p95: ${formatNumber(httpP95)}ms`,
@@ -73,9 +73,12 @@ export function handleSummary(data) {
     '',
   ].join('\n');
 
+  const summary = { ...data };
+  delete summary.setup_data;
+
   return {
     stdout: `${summaryText}\n`,
-    [TEST_CONFIG.resultsFile]: JSON.stringify(data, null, 2),
+    [TEST_CONFIG.resultsFile]: JSON.stringify(summary, null, 2),
   };
 }
 
