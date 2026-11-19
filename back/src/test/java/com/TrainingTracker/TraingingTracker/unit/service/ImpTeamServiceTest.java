@@ -1,0 +1,228 @@
+package com.TrainingTracker.TraingingTracker.unit.service;
+
+import com.TrainingTracker.TraingingTracker.BusinessLogic.ImpServiceLayer.Team.ImpTeamService;
+import com.TrainingTracker.TraingingTracker.BusinessLogic.ImpServiceLayer.Team.TeamMapper;
+import com.TrainingTracker.TraingingTracker.BusinessLogic.InterfacesServiceLayer.UserService;
+import com.TrainingTracker.TraingingTracker.DataAccessLayer.Dto.Team.TeamResponseDto;
+import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.Team;
+import com.TrainingTracker.TraingingTracker.DataAccessLayer.Entites.User;
+import com.TrainingTracker.TraingingTracker.DataAccessLayer.Repositories.TeamRepository;
+import com.TrainingTracker.TraingingTracker.Util.SecuiryUserUtil;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class ImpTeamServiceTest {
+
+    @Mock
+    private TeamRepository teamRepository;
+
+    @Mock
+    private UserService userService;
+
+    @Mock
+    private TeamMapper teamMapper;
+
+    @InjectMocks
+    private ImpTeamService teamService;
+
+    @Test
+    void testCreateTeam() {
+        Long coachId = 1L;
+        User coach = User.builder().id(coachId).username("coach").build();
+
+        try (MockedStatic<SecuiryUserUtil> securityUtilMockedStatic = mockStatic(SecuiryUserUtil.class)) {
+            securityUtilMockedStatic.when(SecuiryUserUtil::getCurrntUserId).thenReturn(coachId);
+            when(userService.getUserById(coachId)).thenReturn(coach);
+            when(teamRepository.existsByTeamCode(anyString())).thenReturn(false);
+
+            String teamCode = teamService.createTeam("Alpha Team");
+
+            assertNotNull(teamCode);
+            assertEquals(6, teamCode.length());
+            verify(userService).getUserById(coachId);
+            verify(teamRepository).existsByTeamCode(teamCode);
+            verify(teamRepository).save(any(Team.class));
+        }
+    }
+
+    @Test
+    void testJoinTeam_Success() {
+        String teamCode = "ABC123";
+        Team team = Team.builder()
+                .id(100L)
+                .teamCode(teamCode)
+                .teamName("Alpha")
+                .trainees(new ArrayList<>())
+                .build();
+        Long traineeId = 2L;
+        User trainee = User.builder().id(traineeId).username("trainee").build();
+
+        try (MockedStatic<SecuiryUserUtil> securityUtilMockedStatic = mockStatic(SecuiryUserUtil.class)) {
+            securityUtilMockedStatic.when(SecuiryUserUtil::getCurrntUserId).thenReturn(traineeId);
+            when(teamRepository.findByTeamCodeForUpdate(teamCode)).thenReturn(Optional.of(team));
+            when(userService.getUserById(traineeId)).thenReturn(trainee);
+
+            teamService.JoinTeam(teamCode);
+
+            assertEquals(true, team.getTrainees().contains(trainee));
+            verify(teamRepository, never()).save(any(Team.class));
+        }
+    }
+
+    @Test
+    void testJoinTeam_TeamFull() {
+        String teamCode = "ABC123";
+        List<User> traineesList = new ArrayList<>();
+        traineesList.add(User.builder().id(10L).build());
+        traineesList.add(User.builder().id(11L).build());
+        traineesList.add(User.builder().id(12L).build());
+        traineesList.add(User.builder().id(13L).build());
+
+        Team team = Team.builder()
+                .id(100L)
+                .teamCode(teamCode)
+                .teamName("Alpha")
+                .trainees(traineesList)
+                .build();
+
+        when(teamRepository.findByTeamCodeForUpdate(teamCode)).thenReturn(Optional.of(team));
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> teamService.JoinTeam(teamCode));
+        assertEquals("Team is full", exception.getMessage());
+        verify(teamRepository, never()).save(any());
+    }
+
+    @Test
+    void testGetTeamCoachId_Success() {
+        Long teamId = 100L;
+        Long coachId = 1L;
+        User coach = User.builder().id(coachId).username("coach").build();
+        Team team = Team.builder().id(teamId).coach(coach).build();
+        when(teamRepository.findById(teamId)).thenReturn(Optional.of(team));
+
+        Long result = teamService.getTeamCoachId(teamId);
+
+        assertEquals(coachId, result);
+    }
+
+    @Test
+    void testLeaveTeam_Success() {
+        Long teamId = 100L;
+        Long userId = 2L;
+        Long coachId = 1L;
+        User coach = User.builder().id(coachId).username("coach").build();
+        User user = User.builder().id(userId).build();
+        List<User> traineesList = new ArrayList<>();
+        traineesList.add(user);
+
+        Team team = Team.builder()
+                .id(teamId)
+                .teamName("Alpha")
+                .teamCode("Ab35")
+                .trainees(traineesList)
+                .coach(coach)
+                .build();
+
+        // Reflect real-world state: a user in a team has traineeTeam set
+        user.setTraineeTeam(team);
+
+        try (MockedStatic<SecuiryUserUtil> securityUtilMockedStatic = mockStatic(SecuiryUserUtil.class)) {
+            securityUtilMockedStatic.when(SecuiryUserUtil::getCurrntUserId).thenReturn(userId);
+            when(userService.getUserById(userId)).thenReturn(user);
+            when(userService.isSameTeam(teamId, userId)).thenReturn(true);
+            when(teamRepository.findById(teamId)).thenReturn(Optional.of(team));
+
+            teamService.leaveTeam(teamId);
+
+            assertFalse(team.getTrainees().contains(user));
+            assertNull(user.getTraineeTeam());
+            verify(teamRepository).save(team);
+        }
+    }
+
+    @Test
+    void testGetTeamById_Success() {
+        Long teamId = 100L;
+        Team team = Team.builder().id(teamId).teamName("Alpha").build();
+        when(teamRepository.findById(teamId)).thenReturn(Optional.of(team));
+
+        Team result = teamService.getTeamById(teamId);
+
+        assertNotNull(result);
+        assertEquals("Alpha", result.getTeamName());
+    }
+
+    @Test
+    void testGetTeamById_NotFound() {
+        Long teamId = 999L;
+        when(teamRepository.findById(teamId)).thenReturn(Optional.empty());
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> teamService.getTeamById(teamId));
+        assertEquals("Team not found with id: " + teamId, exception.getMessage());
+    }
+
+    @Test
+    void testGetTeamResponseById_Success() {
+        Long teamId = 100L;
+        Team team = Team.builder().id(teamId).teamName("Alpha").build();
+        TeamResponseDto responseDto = new TeamResponseDto(teamId, "Alpha", "ABC123", 1L, "coach", List.of());
+
+        when(teamRepository.findById(teamId)).thenReturn(Optional.of(team));
+        when(teamMapper.toDto(team)).thenReturn(responseDto);
+
+        TeamResponseDto result = teamService.getTeamResponseById(teamId);
+
+        assertNotNull(result);
+        assertEquals("Alpha", result.teamName());
+        verify(teamRepository).findById(teamId);
+        verify(teamMapper).toDto(team);
+    }
+
+    @Test
+    void testGetCurrentCoachTeam(){
+        Long coachId = 1L;
+        User user = User.builder().id(1L).username("john_doe").build();
+        Team team = Team.builder().id(1L).teamName("Alpha").build();
+        Team team2 = Team.builder().id(2L).teamName("Beta").build();
+        TeamResponseDto alpha = new TeamResponseDto(1L, "Alpha", null, coachId, "john_doe", List.of());
+        TeamResponseDto beta = new TeamResponseDto(2L, "Beta", null, coachId, "john_doe", List.of());
+
+        try(MockedStatic<SecuiryUserUtil> securityUtilMockedStatic = mockStatic(SecuiryUserUtil.class)) {
+            securityUtilMockedStatic.when(SecuiryUserUtil::getCurrntUserId).thenReturn(coachId);
+            when(teamRepository.findByCoachId(coachId)).thenReturn(List.of(team, team2));
+            when(teamMapper.toDto(team)).thenReturn(alpha);
+            when(teamMapper.toDto(team2)).thenReturn(beta);
+
+            java.util.List<TeamResponseDto> result = teamService.getCurrentCoachTeams();
+
+            assertNotNull(result);
+            assertEquals(2, result.size());
+            assertEquals("Alpha", result.get(0).teamName());
+            assertEquals("Beta", result.get(1).teamName());
+            verify(teamRepository).findByCoachId(coachId);
+        }
+    }
+
+    @Test
+    void testUpdateTeamName(){
+        Team team = Team.builder().id(1L).teamName("Alpha").build();
+        when(teamRepository.findById(1L)).thenReturn(Optional.of(team));
+
+        teamService.updateTeamName(1L, "Beta");
+
+        assertEquals("Beta", team.getTeamName());
+        verify(teamRepository).save(team);
+    }
+}
