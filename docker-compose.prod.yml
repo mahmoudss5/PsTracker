@@ -32,9 +32,7 @@ services:
     restart: unless-stopped
 
   backend:
-    build:
-      context: ./back
-      dockerfile: Dockerfile.prod
+    image: ${ECR_REGISTRY}/pstracker/backend:${IMAGE_TAG}
     container_name: pstracker_backend
 
     ports:
@@ -145,12 +143,7 @@ services:
       - loki
       - tempo
   frontend:
-    build:
-      context: ./Front/icpc-tracker
-      dockerfile: Dockerfile.prod
-      args:
-        VITE_API_URL: ${VITE_API_URL:-http://localhost:8080/api}
-        VITE_WS_URL: ${VITE_WS_URL:-http://localhost:8080/ws}
+    image: ${ECR_REGISTRY}/pstracker/frontend:${IMAGE_TAG}
     container_name: pstracker_frontend
     ports:
       - "5173:80"
