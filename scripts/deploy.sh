@@ -38,7 +38,7 @@ echo "Setting up infrastructure..."
 
 AWS_BUCKET_NAME="$AWS_BUCKET_NAME" \
 AWS_REGION="$AWS_REGION" \
-bash back/Infra/createS3Bucket.sh
+bash back/Infra/aws/createS3Bucket.sh
 
 # Deploy application
 echo "Deploying application..."
