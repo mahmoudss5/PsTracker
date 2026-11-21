@@ -48,3 +48,15 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+
+  frontend:
+    build:
+      context: ./Front/icpc-tracker
+      dockerfile: Dockerfile.prod
+      args:
+        VITE_API_URL: /api
+        VITE_WS_URL: /ws
+    ports:
+      - "127.0.0.1:8081:80"
+    depends_on:
+      - backend
