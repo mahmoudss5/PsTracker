@@ -99,6 +99,8 @@ jobs:
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
+
+
       - name: Push tested backend image to ECR
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         env:
