@@ -99,6 +99,20 @@ jobs:
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
+      - name: Push tested backend image to ECR
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ vars.ECR_BACKEND_REPOSITORY }}
+          IMAGE_TAG: ${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+        run: |
+            set -euo pipefail
+            
+            IMAGE_ID=$(docker compose -f compose.ci.yml images -q backend)
+            IMAGE_URI="$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+            
+            docker tag "$IMAGE_ID" "$IMAGE_URI"
+            docker push "$IMAGE_URI"
 
       - name: Show container logs on failure
         if: failure()
