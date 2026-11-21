@@ -144,7 +144,7 @@ services:
     image: ${ECR_REGISTRY}/pstracker/frontend:${IMAGE_TAG}
     container_name: pstracker_frontend
     ports:
-      - "5173:80"
+      - "80:80"
     depends_on:
       - backend
     restart: unless-stopped
