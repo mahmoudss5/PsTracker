@@ -68,6 +68,8 @@ jobs:
   image-smoke:
     needs: [backend-tests, frontend-checks]
     runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.release.outputs.image_tag }}
     permissions:
       contents: read
       id-token: write
@@ -118,13 +120,19 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
+      - name: Set release image tag
+        id: release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          IMAGE_TAG: ${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+        run: echo "image_tag=$IMAGE_TAG" >> "$GITHUB_OUTPUT"
 
       - name: Push tested backend image to ECR
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ vars.ECR_BACKEND_REPOSITORY }}
-          IMAGE_TAG: ${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          IMAGE_TAG: ${{ steps.release.outputs.image_tag }}
         run: |
           set -euo pipefail
           
@@ -139,7 +147,7 @@ jobs:
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ vars.ECR_FRONTEND_REPOSITORY }}
-          IMAGE_TAG: ${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          IMAGE_TAG: ${{ steps.release.outputs.image_tag }}
         run: |
           set -euo pipefail
           
@@ -156,3 +164,41 @@ jobs:
       - name: Remove test containers
         if: always()
         run: docker compose -f compose.ci.yml down -v
+
+
+  deploy:
+    name: Deploy to EC2
+    needs: image-smoke
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    permissions:
+      contents: read
+      id-token: write
+
+    concurrency:
+      group: pstracker-production
+      cancel-in-progress: false
+
+    env:
+      AWS_REGION: ${{ vars.AWS_REGION }}
+      EC2_INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID }}
+      IMAGE_TAG: ${{ needs.image-smoke.outputs.image_tag }}
+      DEPLOY_COMMIT: ${{ github.sha }}
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v7
+
+      - name: Check deployment variables
+        run: |
+          set -euo pipefail
+          : "${EC2_INSTANCE_ID:?Set the EC2_INSTANCE_ID repository variable}"
+          : "${IMAGE_TAG:?The image-smoke job did not provide an image tag}"
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6.3.0
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
