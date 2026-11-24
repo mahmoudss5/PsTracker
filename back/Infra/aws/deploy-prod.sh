@@ -39,3 +39,42 @@ docker compose \
   --env-file "$ENV_FILE" \
   -f "$COMPOSE_FILE" \
   ps
+
+echo "Waiting for backend health..."
+
+for attempt in {1..40}; do
+  if curl --fail --silent --max-time 5 \
+    http://127.0.0.1:8080/actuator/health >/dev/null; then
+
+    docker compose \
+      --env-file "$ENV_FILE" \
+      -f "$COMPOSE_FILE" \
+      exec -T frontend nginx -s reload
+
+    curl --fail --silent --show-error \
+      --max-time 10 \
+      --retry 5 --retry-delay 2 --retry-connrefused \
+      http://127.0.0.1/ \
+      | grep -F 'id="root"' >/dev/null
+
+    status=$(curl --silent --show-error \
+      --max-time 10 \
+      --retry 5 --retry-delay 2 --retry-connrefused \
+      --output /dev/null \
+      --write-out '%{http_code}' \
+      http://127.0.0.1/api/auth/refresh)
+
+    if [[ "$status" != "400" ]]; then
+      echo "API proxy check failed: expected 400, got $status" >&2
+      exit 1
+    fi
+
+    echo "Deployment checks passed."
+    exit 0
+  fi
+
+  sleep 3
+done
+
+echo "Backend did not become healthy." >&2
+exit 1
