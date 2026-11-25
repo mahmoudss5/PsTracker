@@ -38,7 +38,7 @@ export function SubmissionsPage() {
   // Derived display values (fall back to the ID if navigation state is incomplete)
   const displayName = navigationState?.userName ?? (numericUserId ? `User #${numericUserId}` : 'My');
   const avatarInitials = navigationState?.userName
-    ? navigationState.userName.slice(0, 2).toUpperCase()
+    ? navigationState.userName.slice(0, 2)?.toUpperCase() ?? ''
     : numericUserId
       ? 'U'
       : '';

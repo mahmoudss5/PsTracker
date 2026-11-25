@@ -16,10 +16,10 @@ import type { ChatMessage } from "../../types/api.types";
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
-function initials(name: string): string {
+function initials(name?: string | null): string {
   return (
     name
-      .split(" ")
+      ?.split(" ")
       .filter(Boolean)
       .slice(0, 2)
       .map((p) => p[0]?.toUpperCase())

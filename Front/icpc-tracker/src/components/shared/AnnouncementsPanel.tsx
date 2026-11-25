@@ -30,8 +30,8 @@ function formatDate(iso: string) {
   }
 }
 
-function initials(str: string) {
-  return str.slice(0, 2).toUpperCase();
+function initials(str?: string | null) {
+  return str?.slice(0, 2)?.toUpperCase() ?? '';
 }
 
 interface AnnouncementsPanelProps {

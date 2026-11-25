@@ -46,13 +46,15 @@ function isCoachRole(role?: string) {
   return role?.toLowerCase() === "coach";
 }
 
-function initials(name: string) {
-  return name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
-    .join("") || "U";
+function initials(name?: string | null) {
+  return (
+    name
+      ?.split(" ")
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase())
+      .join("") || "U"
+  );
 }
 
 function EmptyState({ title, action }: { title: string; action?: React.ReactNode }) {

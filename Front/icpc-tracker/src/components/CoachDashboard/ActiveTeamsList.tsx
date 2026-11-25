@@ -6,13 +6,15 @@ interface ActiveTeamsListProps {
   teams: TeamResponse[];
 }
 
-function initials(name: string): string {
-  return name
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((p) => p[0]?.toUpperCase())
-    .join('') || '?';
+function initials(name?: string | null): string {
+  return (
+    name
+      ?.split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((p) => p[0]?.toUpperCase())
+      .join('') || '?'
+  );
 }
 
 function avgRating(team: TeamResponse): number | null {

@@ -1,3 +1,4 @@
+
 /**
  * useSubmissions.ts
  *
@@ -25,36 +26,37 @@ import {
 
 const VERDICT_MAP: Record<string, Verdict> = {
   // Codeforces raw values
-  OK:                    'AC',
-  WRONG_ANSWER:          'WA',
-  TIME_LIMIT_EXCEEDED:   'TLE',
-  RUNTIME_ERROR:         'RE',
+  OK: 'AC',
+  WRONG_ANSWER: 'WA',
+  TIME_LIMIT_EXCEEDED: 'TLE',
+  RUNTIME_ERROR: 'RE',
   MEMORY_LIMIT_EXCEEDED: 'MLE',
   // Already-normalised values (in case backend normalises them)
-  AC:  'AC',
-  WA:  'WA',
+  AC: 'AC',
+  WA: 'WA',
   TLE: 'TLE',
-  RE:  'RE',
+  RE: 'RE',
   MLE: 'MLE',
 };
 
-function normaliseVerdict(raw: string): Verdict {
-  return VERDICT_MAP[raw.toUpperCase()] ?? 'WA';
+function normaliseVerdict(raw?: string | null): Verdict {
+  const upper = raw?.toUpperCase();
+  return (upper ? VERDICT_MAP[upper] : undefined) ?? 'WA';
 }
 
 /** Convert a backend SubmissionResponseDto to the frontend SubmissionEntry */
 function toSubmissionEntry(dto: SubmissionResponse): SubmissionEntry {
   return {
-    id:           String(dto.id),
-    problemName:  dto.problemName,
-    verdict:      normaliseVerdict(dto.verdict),
+    id: String(dto.id),
+    problemName: dto.problemName,
+    verdict: normaliseVerdict(dto.verdict),
     // Backend stores language in the Codeforces sync; it is not yet a field in
     // SubmissionResponseDto — use a sensible placeholder until the backend adds it.
-    language:     'C++',
-    runtimeMs:    dto.timeConsumedMs,
+    language: 'C++',
+    runtimeMs: dto.timeConsumedMs,
     // Backend stores memory in bytes; convert to KB for display consistency
-    memoryKB:     Math.round(dto.memoryConsumedBytes / 1024),
-    date:         dto.createdAt,
+    memoryKB: Math.round(dto.memoryConsumedBytes / 1024),
+    date: dto.createdAt,
   };
 }
 

@@ -6,7 +6,7 @@ export function getFallbackAvatar(seed?: string | null): string {
     .map((part) => part[0])
     .join('')
     .slice(0, 2)
-    .toUpperCase();
+    ?.toUpperCase() ?? 'U';
   const safeInitials = encodeURIComponent(initials || 'U');
 
   return `data:image/svg+xml,${encodeURIComponent(

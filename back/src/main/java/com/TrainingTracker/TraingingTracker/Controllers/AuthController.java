@@ -49,6 +49,7 @@ public class AuthController {
   @PostMapping("/register")
   @RateLimit(requests = 5, windowSeconds = 60, key = "auth:register", identity = RateLimitIdentity.IP)
   public ResponseEntity<AuthResponse> register(@Valid @RequestBody SignUpDto dto, HttpServletResponse response) {
+      log.info("Registering user with email: {}", dto.email());
       AuthResponse authResponse=authService.signUp(dto);
       ResponseCookie cookie=ResponseCookie.from("refreshToken",authResponse.RefershToken())
               .httpOnly(true)

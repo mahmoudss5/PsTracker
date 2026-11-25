@@ -55,7 +55,6 @@ public class PresenceService {
         for (Long userId : onlineUserIds) {
             userPresences.add(new UserPresence(userId));
         }
-        log.info("Sending presence update: {}", userPresences);
         simpMessagingTemplate.convertAndSend("/topic/presence", userPresences);
     }
 

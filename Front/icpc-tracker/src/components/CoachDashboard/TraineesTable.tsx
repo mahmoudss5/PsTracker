@@ -28,13 +28,15 @@ function rankColor(rank: string): string {
   return RANK_COLOR[rank] ?? 'text-dashboard-muted';
 }
 
-function initials(name: string): string {
-  return name
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((p) => p[0]?.toUpperCase())
-    .join('') || '?';
+function initials(name?: string | null): string {
+  return (
+    name
+      ?.split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((p) => p[0]?.toUpperCase())
+      .join('') || '?'
+  );
 }
 
 function SortIcon({ active, dir }: { active: boolean; dir: SortDir }) {

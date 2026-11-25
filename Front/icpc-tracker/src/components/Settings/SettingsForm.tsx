@@ -65,7 +65,7 @@ export function SettingsForm({ user, onUpdated }: SettingsFormProps) {
   const cfAvatar = useCfAvatar(user?.codeforcesHandle);
   const avatarUrl = cfAvatar || getFallbackAvatar(user?.userName);
 
-  const roleText = user?.role ? user.role.toUpperCase() : 'USER';
+  const roleText = user?.role?.toUpperCase() ?? 'USER';
   const roleBadgeColor = roleText === 'COACH' 
     ? 'bg-dashboard-primary/20 text-dashboard-primary border-dashboard-primary/30' 
     : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
